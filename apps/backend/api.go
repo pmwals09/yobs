@@ -106,9 +106,6 @@ func handlePing(w http.ResponseWriter, r *http.Request) {
 func handlePostOppty(repo opportunity.GormRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		data := &OpportunityRequest{}
-		req := []byte{}
-		r.Body.Read(req)
-		fmt.Println(string(req))
 		if err := render.Bind(r, data); err != nil {
 			render.Render(w, r, ErrRender(r, err, 400))
 			return
@@ -178,6 +175,18 @@ func handleGetOppty(repo opportunity.GormRepository) http.HandlerFunc {
 func handleUpdateOppty(repo opportunity.GormRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// get the new details from the request body
+		data := &OpportunityRequest{}
+		if err := render.Bind(r, data); err != nil {
+			render.Render(w, r, ErrRender(r, err, 400))
+			return
+		}
+
+		updatedOppty := OpportunityDTO{
+			ID:          data.ID,
+			Description: data.Description,
+			URL:         data.URL,
+		}
+		fmt.Println(updatedOppty)
 		// pass them to the repository to db.Save per GORM
 		// https://gorm.io/docs/update.html
 		// ? How to get a partial update?
