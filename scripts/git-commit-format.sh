@@ -19,4 +19,7 @@ fi
 
 for FILE in $GO_FILES; do
   $GOFMT -w "$TOPLEVEL/$FILE"
+  git add "$TOPLEVEL/$FILE"
 done
+
+exit 0
