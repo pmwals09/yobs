@@ -2,7 +2,7 @@ package backend
 
 import (
 	"errors"
-	"fmt"
+	// "fmt"
 	"net/http"
 	"strconv"
 
@@ -12,21 +12,10 @@ import (
 	"gorm.io/gorm"
 )
 
-// DTO that excludes the GORM Model but includes an ID
-type OpportunityDTO struct {
-	ID          uint   `json:"id"`
-	Description string `json:"description"`
-	URL         string `json:"url"`
-}
-
-func (o OpportunityDTO) Render(w http.ResponseWriter, r *http.Request) error {
-	return nil
-}
-
 // ----- Request types -----
 
 type OpportunityRequest struct {
-	*OpportunityDTO
+	*opportunity.OpportunityDTO
 }
 
 func (o *OpportunityRequest) Bind(r *http.Request) error {
@@ -68,7 +57,7 @@ func ErrRender(r *http.Request, err error, code int) render.Renderer {
 }
 
 type OpportunityResponse struct {
-	*opportunity.Opportunity
+	*opportunity.OpportunityDTO
 }
 
 func (o *OpportunityResponse) Render(w http.ResponseWriter, r *http.Request) error {
@@ -105,27 +94,25 @@ func handlePing(w http.ResponseWriter, r *http.Request) {
 
 func handlePostOppty(repo opportunity.GormRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		data := &OpportunityRequest{}
-		if err := render.Bind(r, data); err != nil {
-			render.Render(w, r, ErrRender(r, err, 400))
-			return
-		}
-
-		newOpportunity := opportunity.NewOpportunity(
-			data.Description,
-			data.URL,
-		)
-
-		if createdOppty, err := repo.CreateOpportunity(newOpportunity); err != nil {
-			render.Render(w, r, ErrRender(r, err, 500))
+		if data, err := bindRequest(w, r); err != nil {
 			return
 		} else {
-			res := OpportunityDTO{
-				ID:          createdOppty.ID,
-				Description: createdOppty.Description,
-				URL:         createdOppty.URL,
+			newOpportunity := opportunity.NewOpportunity(
+				data.Description,
+				data.URL,
+			)
+
+			if createdOppty, err := repo.CreateOpportunity(newOpportunity); err != nil {
+				render.Render(w, r, ErrRender(r, err, 500))
+				return
+			} else {
+				res := opportunity.OpportunityDTO{
+					ID:          createdOppty.ID,
+					Description: createdOppty.Description,
+					URL:         createdOppty.URL,
+				}
+				render.Render(w, r, res)
 			}
-			render.Render(w, r, res)
 		}
 	}
 }
@@ -138,7 +125,7 @@ func handleGetAllOppty(repo opportunity.GormRepository) http.HandlerFunc {
 		} else {
 			res := []render.Renderer{}
 			for _, o := range opptys {
-				res = append(res, OpportunityDTO{
+				res = append(res, opportunity.OpportunityDTO{
 					ID:          o.ID,
 					Description: o.Description,
 					URL:         o.URL,
@@ -155,16 +142,15 @@ func handleGetOppty(repo opportunity.GormRepository) http.HandlerFunc {
 			render.Render(w, r, ErrRender(r, err, 401))
 			return
 		} else {
-			if oppty, err := repo.GetOpportuntyById(uint(id)); err != nil {
-				if errors.Is(err, gorm.ErrRecordNotFound) {
-					render.Render(w, r, ErrRender(r, err, 404))
-					return
-				}
-				render.Render(w, r, ErrRender(r, err, 500))
+			if oppty, err := handleGetOpptyById(repo, id, w, r); err != nil {
 				return
 			} else {
 				res := OpportunityResponse{
-					&oppty,
+					&opportunity.OpportunityDTO{
+						ID:          oppty.ID,
+						Description: oppty.Description,
+						URL:         oppty.URL,
+					},
 				}
 				render.Render(w, r, &res)
 			}
@@ -172,29 +158,86 @@ func handleGetOppty(repo opportunity.GormRepository) http.HandlerFunc {
 	}
 }
 
+// TODO: How to get a partial update? Would be nice if this becomes a
+// large model
+//   - https://gorm.io/docs/update.html#Update-Selected-Fields
+//   - Would need additional logic around what keys exist from user
+//     provided JSON to handle in the Bind/marshalling/DTO model
 func handleUpdateOppty(repo opportunity.GormRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// get the new details from the request body
-		data := &OpportunityRequest{}
-		if err := render.Bind(r, data); err != nil {
-			render.Render(w, r, ErrRender(r, err, 400))
+		if data, err := bindRequest(w, r); err != nil {
 			return
+		} else {
+			idParam := chi.URLParam(r, "opportunityId")
+			if id, err := strconv.ParseUint(idParam, 10, 64); err != nil {
+				render.Render(w, r, ErrRender(r, err, 401))
+				return
+			} else {
+				if oppty, err := handleGetOpptyById(repo, id, w, r); err != nil {
+					return
+				} else {
+					updatedOppty := opportunity.NewOpportunity(data.Description, data.URL)
+					updatedOppty.ID = oppty.ID
+
+					if oppty, err := repo.UpdateOpporunity(updatedOppty); err != nil {
+						render.Render(w, r, ErrRender(r, err, 500))
+						return
+					} else {
+						res := OpportunityResponse{
+							&opportunity.OpportunityDTO{
+								ID:          oppty.ID,
+								Description: oppty.Description,
+								URL:         oppty.URL,
+							},
+						}
+						render.Render(w, r, &res)
+					}
+				}
+			}
 		}
 
-		updatedOppty := OpportunityDTO{
-			ID:          data.ID,
-			Description: data.Description,
-			URL:         data.URL,
-		}
-		fmt.Println(updatedOppty)
-		// pass them to the repository to db.Save per GORM
-		// https://gorm.io/docs/update.html
-		// ? How to get a partial update?
-		//   - Would need additional logic around what keys exist from user
-		//     provided JSON to handle in the Bind/marshalling/DTO model
 	}
 }
+
 func handleDeleteOppty(repo opportunity.GormRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		idParam := chi.URLParam(r, "opportunityId")
+		if id, err := strconv.ParseUint(idParam, 10, 64); err != nil {
+			render.Render(w, r, ErrRender(r, err, 401))
+			return
+		} else {
+			if err := repo.DeleteOpportunity(uint(id)); err != nil {
+				render.Render(w, r, ErrRender(r, err, 500))
+			} else {
+				render.NoContent(w, r)
+			}
+		}
+	}
+}
+
+func bindRequest(w http.ResponseWriter, r *http.Request) (*OpportunityRequest, error) {
+	data := &OpportunityRequest{}
+	if err := render.Bind(r, data); err != nil {
+		render.Render(w, r, ErrRender(r, err, 400))
+		return data, err
+	}
+	return data, nil
+}
+
+func handleGetOpptyById(
+	repo opportunity.GormRepository,
+	id uint64,
+	w http.ResponseWriter,
+	r *http.Request,
+) (opportunity.Opportunity, error) {
+	if oppty, err := repo.GetOpportuntyById(uint(id)); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			render.Render(w, r, ErrRender(r, err, 404))
+			return oppty, err
+		}
+		render.Render(w, r, ErrRender(r, err, 500))
+		return oppty, err
+	} else {
+		return oppty, nil
 	}
 }

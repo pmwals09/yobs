@@ -2,9 +2,20 @@ package opportunity
 
 import (
 	"fmt"
-
 	"gorm.io/gorm"
+	"net/http"
 )
+
+// DTO that excludes the GORM Model but includes an ID
+type OpportunityDTO struct {
+	ID          uint   `json:"id"`
+	Description string `json:"description"`
+	URL         string `json:"url"`
+}
+
+func (o OpportunityDTO) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
+}
 
 type Opportunity struct {
 	gorm.Model
@@ -48,8 +59,12 @@ func (g *GormRepository) GetAllOpportunities() ([]Opportunity, error) {
 	return opptys, res.Error
 }
 
-// func (g *GormRepository) UpdateOpporunity(opptyId uint, newOpportunity OpportunityDTO) error {
-// }
-//
-// func (g *GormRepository) DeleteOpportunity(opptyId uint) error {
-// }
+func (g *GormRepository) UpdateOpporunity(opp *Opportunity) (*Opportunity, error) {
+	res := g.DB.Save(&opp)
+	return opp, res.Error
+}
+
+func (g *GormRepository) DeleteOpportunity(opptyId uint) error {
+	res := g.DB.Delete(&Opportunity{}, opptyId)
+	return res.Error
+}
