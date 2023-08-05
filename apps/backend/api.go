@@ -107,9 +107,11 @@ func handlePostOppty(repo opportunity.GormRepository) http.HandlerFunc {
 				return
 			} else {
 				res := opportunity.OpportunityDTO{
-					ID:          createdOppty.ID,
-					Description: createdOppty.Description,
-					URL:         createdOppty.URL,
+					ID: createdOppty.ID,
+					OpportunityModel: opportunity.OpportunityModel{
+						Description: createdOppty.Description,
+						URL:         createdOppty.URL,
+					},
 				}
 				render.Render(w, r, res)
 			}
@@ -126,9 +128,8 @@ func handleGetAllOppty(repo opportunity.GormRepository) http.HandlerFunc {
 			res := []render.Renderer{}
 			for _, o := range opptys {
 				res = append(res, opportunity.OpportunityDTO{
-					ID:          o.ID,
-					Description: o.Description,
-					URL:         o.URL,
+					ID:               o.ID,
+					OpportunityModel: *o.OpportunityModel,
 				})
 			}
 			render.RenderList(w, r, res)
@@ -147,9 +148,8 @@ func handleGetOppty(repo opportunity.GormRepository) http.HandlerFunc {
 			} else {
 				res := OpportunityResponse{
 					&opportunity.OpportunityDTO{
-						ID:          oppty.ID,
-						Description: oppty.Description,
-						URL:         oppty.URL,
+						ID:               oppty.ID,
+						OpportunityModel: *oppty.OpportunityModel,
 					},
 				}
 				render.Render(w, r, &res)
@@ -185,9 +185,8 @@ func handleUpdateOppty(repo opportunity.GormRepository) http.HandlerFunc {
 					} else {
 						res := OpportunityResponse{
 							&opportunity.OpportunityDTO{
-								ID:          oppty.ID,
-								Description: oppty.Description,
-								URL:         oppty.URL,
+								ID:               oppty.ID,
+								OpportunityModel: *oppty.OpportunityModel,
 							},
 						}
 						render.Render(w, r, &res)

@@ -6,11 +6,15 @@ import (
 	"net/http"
 )
 
-// DTO that excludes the GORM Model but includes an ID
-type OpportunityDTO struct {
-	ID          uint   `json:"id"`
+type OpportunityModel struct {
 	Description string `json:"description"`
 	URL         string `json:"url"`
+}
+
+// DTO that excludes the GORM Model but includes an ID
+type OpportunityDTO struct {
+	ID uint `json:"id"`
+	OpportunityModel
 }
 
 func (o OpportunityDTO) Render(w http.ResponseWriter, r *http.Request) error {
@@ -19,12 +23,15 @@ func (o OpportunityDTO) Render(w http.ResponseWriter, r *http.Request) error {
 
 type Opportunity struct {
 	gorm.Model
-	Description string
-	URL         string
+	*OpportunityModel
 }
 
 func NewOpportunity(description string, url string) *Opportunity {
-	return &Opportunity{Description: description, URL: url}
+	return &Opportunity{
+		OpportunityModel: &OpportunityModel{
+			Description: description, URL: url,
+		},
+	}
 }
 
 type Repository interface {
@@ -40,7 +47,12 @@ type GormRepository struct {
 }
 
 func (g *GormRepository) CreateOpportunity(opp *Opportunity) (Opportunity, error) {
-	o := Opportunity{Description: opp.Description, URL: opp.URL}
+	o := Opportunity{
+		OpportunityModel: &OpportunityModel{
+			Description: opp.Description,
+			URL:         opp.URL,
+		},
+	}
 	if result := g.DB.Create(&o); result.Error != nil {
 		return o, fmt.Errorf("Error creating opportunity: %w", result.Error)
 	}
