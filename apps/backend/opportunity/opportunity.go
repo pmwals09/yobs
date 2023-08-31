@@ -2,35 +2,30 @@ package opportunity
 
 import (
 	"fmt"
-	"gorm.io/gorm"
 	"net/http"
+
+	"github.com/pmwals09/yobs/apps/backend/task"
+	"gorm.io/gorm"
 )
 
-type OpportunityModel struct {
-	Description string `json:"description"`
-	URL         string `json:"url"`
+type Opportunity struct {
+	ID          uint        `gorm:"primary_key" json:"id"`
+	Description string      `json:"description"`
+	URL         string      `json:"url"`
+	Tasks       []task.Task `json:"tasks"`
+	// Status
+	// Tasks
+	// Materials
+	// Contacts
 }
 
-// DTO that excludes the GORM Model but includes an ID
-type OpportunityDTO struct {
-	ID uint `json:"id"`
-	OpportunityModel
-}
-
-func (o OpportunityDTO) Render(w http.ResponseWriter, r *http.Request) error {
+func (o Opportunity) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-type Opportunity struct {
-	gorm.Model
-	*OpportunityModel
-}
-
-func NewOpportunity(description string, url string) *Opportunity {
+func NewOpportunity(description string, url string, tasks []task.Task) *Opportunity {
 	return &Opportunity{
-		OpportunityModel: &OpportunityModel{
-			Description: description, URL: url,
-		},
+		Description: description, URL: url, Tasks: tasks,
 	}
 }
 
@@ -48,27 +43,27 @@ type GormRepository struct {
 
 func (g *GormRepository) CreateOpportunity(opp *Opportunity) (Opportunity, error) {
 	o := Opportunity{
-		OpportunityModel: &OpportunityModel{
-			Description: opp.Description,
-			URL:         opp.URL,
-		},
+		Description: opp.Description,
+		URL:         opp.URL,
+		Tasks:       opp.Tasks,
 	}
 	if result := g.DB.Create(&o); result.Error != nil {
 		return o, fmt.Errorf("Error creating opportunity: %w", result.Error)
 	}
+
 	return o, nil
 }
 
 func (g *GormRepository) GetOpportuntyById(opptyId uint) (Opportunity, error) {
-	oppty := Opportunity{}
-	res := g.DB.First(&oppty, opptyId)
-	return oppty, res.Error
+	var oppty Opportunity
+	err := g.DB.Model(&Opportunity{}).Preload("Tasks").First(&oppty, opptyId).Error
+	return oppty, err
 }
 
 func (g *GormRepository) GetAllOpportunities() ([]Opportunity, error) {
-	opptys := []Opportunity{}
-	res := g.DB.Find(&opptys)
-	return opptys, res.Error
+	var opptys []Opportunity
+	err := g.DB.Model(&Opportunity{}).Preload("Tasks").Find(&opptys).Error
+	return opptys, err
 }
 
 func (g *GormRepository) UpdateOpporunity(opp *Opportunity) (*Opportunity, error) {
@@ -77,6 +72,18 @@ func (g *GormRepository) UpdateOpporunity(opp *Opportunity) (*Opportunity, error
 }
 
 func (g *GormRepository) DeleteOpportunity(opptyId uint) error {
-	res := g.DB.Delete(&Opportunity{}, opptyId)
+	res := g.DB.Select("Tasks").Delete(&Opportunity{ID: opptyId})
 	return res.Error
+}
+
+func (g *GormRepository) AddTask(opptyId uint, t []*task.Task) (*Opportunity, error) {
+	if opp, err := g.GetOpportuntyById(opptyId); err != nil {
+		return &opp, err
+	} else {
+		if appendErr := g.DB.Model(&opp).Association("Tasks").Append(t); appendErr != nil {
+			return &opp, err
+		} else {
+			return &opp, nil
+		}
+	}
 }

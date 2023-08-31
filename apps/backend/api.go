@@ -2,7 +2,7 @@ package backend
 
 import (
 	"errors"
-	// "fmt"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -15,7 +15,7 @@ import (
 // ----- Request types -----
 
 type OpportunityRequest struct {
-	*opportunity.OpportunityDTO
+	*opportunity.Opportunity
 }
 
 func (o *OpportunityRequest) Bind(r *http.Request) error {
@@ -25,7 +25,7 @@ func (o *OpportunityRequest) Bind(r *http.Request) error {
 	return nil
 }
 
-// Response types
+// ----- Response types -----
 
 type PongRes struct {
 	Msg string `json:"msg"`
@@ -57,14 +57,14 @@ func ErrRender(r *http.Request, err error, code int) render.Renderer {
 }
 
 type OpportunityResponse struct {
-	*opportunity.OpportunityDTO
+	*opportunity.Opportunity
 }
 
 func (o *OpportunityResponse) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-// API Router
+// ----- API Router -----
 func ApiRouter(db *gorm.DB) http.Handler {
 	r := chi.NewRouter()
 
@@ -84,7 +84,7 @@ func ApiRouter(db *gorm.DB) http.Handler {
 	return r
 }
 
-// Endpoint Handlers
+// ----- Endpoint Handlers -----
 func handlePing(w http.ResponseWriter, r *http.Request) {
 	if err := render.Render(w, r, PongRes{"pong"}); err != nil {
 		render.Render(w, r, ErrRender(r, err, 500))
@@ -100,25 +100,21 @@ func handlePostOppty(repo opportunity.GormRepository) http.HandlerFunc {
 			newOpportunity := opportunity.NewOpportunity(
 				data.Description,
 				data.URL,
+				data.Tasks,
 			)
 
 			if createdOppty, err := repo.CreateOpportunity(newOpportunity); err != nil {
 				render.Render(w, r, ErrRender(r, err, 500))
 				return
 			} else {
-				res := opportunity.OpportunityDTO{
-					ID: createdOppty.ID,
-					OpportunityModel: opportunity.OpportunityModel{
-						Description: createdOppty.Description,
-						URL:         createdOppty.URL,
-					},
-				}
-				render.Render(w, r, res)
+				render.Render(w, r, createdOppty)
 			}
 		}
 	}
 }
 
+// TODO: Would love to get rid of the overly verbose task objects when
+// retrieving these
 func handleGetAllOppty(repo opportunity.GormRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if opptys, err := repo.GetAllOpportunities(); err != nil {
@@ -127,15 +123,16 @@ func handleGetAllOppty(repo opportunity.GormRepository) http.HandlerFunc {
 		} else {
 			res := []render.Renderer{}
 			for _, o := range opptys {
-				res = append(res, opportunity.OpportunityDTO{
-					ID:               o.ID,
-					OpportunityModel: *o.OpportunityModel,
-				})
+				fmt.Println(o.Tasks[0].Description)
+				res = append(res, o)
 			}
 			render.RenderList(w, r, res)
 		}
 	}
 }
+
+// TODO: Would love to get rid of the overly verbose task objects when
+// retrieving these
 func handleGetOppty(repo opportunity.GormRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idParam := chi.URLParam(r, "opportunityId")
@@ -147,10 +144,7 @@ func handleGetOppty(repo opportunity.GormRepository) http.HandlerFunc {
 				return
 			} else {
 				res := OpportunityResponse{
-					&opportunity.OpportunityDTO{
-						ID:               oppty.ID,
-						OpportunityModel: *oppty.OpportunityModel,
-					},
+					&oppty,
 				}
 				render.Render(w, r, &res)
 			}
@@ -176,7 +170,7 @@ func handleUpdateOppty(repo opportunity.GormRepository) http.HandlerFunc {
 				if oppty, err := handleGetOpptyById(repo, id, w, r); err != nil {
 					return
 				} else {
-					updatedOppty := opportunity.NewOpportunity(data.Description, data.URL)
+					updatedOppty := opportunity.NewOpportunity(data.Description, data.URL, data.Tasks)
 					updatedOppty.ID = oppty.ID
 
 					if oppty, err := repo.UpdateOpporunity(updatedOppty); err != nil {
@@ -184,10 +178,7 @@ func handleUpdateOppty(repo opportunity.GormRepository) http.HandlerFunc {
 						return
 					} else {
 						res := OpportunityResponse{
-							&opportunity.OpportunityDTO{
-								ID:               oppty.ID,
-								OpportunityModel: *oppty.OpportunityModel,
-							},
+							oppty,
 						}
 						render.Render(w, r, &res)
 					}
