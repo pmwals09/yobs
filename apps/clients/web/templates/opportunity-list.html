@@ -1,0 +1,22 @@
+{{ define "opportunity-list" }}
+<table class="table-auto border-collapse w-full">
+  <thead>
+    <tr>
+      <th class="border-b text-left">Name</th>
+      <th class="border-b text-left">Description</th>
+      <th class="border-b text-left">URL</th>
+      <th class="border-b text-left">Application Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{ range . }}
+    <tr>
+      <td class="border-b">{{ .Name }}</td>
+      <td class="border-b">{{ .Description }}</td>
+      <td class="border-b">{{ .URL }}</td>
+      <td class="border-b">{{ FormatApplicationDate .ApplicationDate }}</td>
+    </tr>
+    {{ end }}
+  </tbody>
+</table>
+{{end}}

@@ -3,16 +3,19 @@ package opportunity
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/pmwals09/yobs/apps/backend/task"
 	"gorm.io/gorm"
 )
 
 type Opportunity struct {
-	ID          uint        `gorm:"primary_key" json:"id"`
-	Description string      `json:"description"`
-	URL         string      `json:"url"`
-	Tasks       []task.Task `json:"tasks"`
+	ID              uint        `gorm:"primary_key" json:"id"`
+	Name            string      `json:"name"`
+	Description     string      `json:"description"`
+	URL             string      `json:"url"`
+	Tasks           []task.Task `json:"tasks"`
+	ApplicationDate time.Time   `json:"applicationDate"`
 	// Status
 	// Tasks
 	// Materials
@@ -23,14 +26,43 @@ func (o Opportunity) Render(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func NewOpportunity(description string, url string, tasks []task.Task) *Opportunity {
-	return &Opportunity{
-		Description: description, URL: url, Tasks: tasks,
+func NewOpportunity() *Opportunity {
+	return &Opportunity{}
+}
+
+func (o *Opportunity) WithName(name string) *Opportunity {
+	o.Name = name
+	return o
+}
+
+func (o *Opportunity) WithDescription(description string) *Opportunity {
+	o.Description = description
+	return o
+}
+
+func (o *Opportunity) WithURL(url string) *Opportunity {
+	o.URL = url
+	return o
+}
+
+func (o *Opportunity) WithApplicationDateString(applicationDate string) *Opportunity {
+	fmt.Printf("\n%s\n", applicationDate)
+	t, err := time.Parse("2006-01-02", applicationDate)
+	if err != nil {
+		fmt.Printf("\nError parsing date: %s\n", err.Error())
+		return o
 	}
+	o.ApplicationDate = t
+	return o
+}
+
+func (o *Opportunity) WithApplicationDateTime(applicationDate time.Time) *Opportunity {
+	o.ApplicationDate = applicationDate
+	return o
 }
 
 type Repository interface {
-	CreateOpportunity(description string, url string) (Opportunity, error)
+	CreateOpportunity(opp *Opportunity) (Opportunity, error)
 	GetOpportuntyById(opptyId uint) (Opportunity, error)
 	GetAllOpportunities() ([]Opportunity, error)
 	UpdateOpporunity(opptyId uint, newOpportunity Opportunity) error
@@ -42,16 +74,11 @@ type GormRepository struct {
 }
 
 func (g *GormRepository) CreateOpportunity(opp *Opportunity) (Opportunity, error) {
-	o := Opportunity{
-		Description: opp.Description,
-		URL:         opp.URL,
-		Tasks:       opp.Tasks,
-	}
-	if result := g.DB.Create(&o); result.Error != nil {
-		return o, fmt.Errorf("Error creating opportunity: %w", result.Error)
+	if result := g.DB.Create(&opp); result.Error != nil {
+		return *opp, fmt.Errorf("Error creating opportunity: %w", result.Error)
 	}
 
-	return o, nil
+	return *opp, nil
 }
 
 func (g *GormRepository) GetOpportuntyById(opptyId uint) (Opportunity, error) {
