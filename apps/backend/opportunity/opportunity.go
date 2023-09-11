@@ -9,14 +9,27 @@ import (
 	"gorm.io/gorm"
 )
 
+type Status string
+
+const (
+	None          Status = "None"
+	Applied              = "Applied"
+	Rejected             = "Rejected"
+	FollowedUp           = "Followed Up"
+	Pending              = "Pending"
+	Offer                = "Offer"
+	AcceptedOffer        = "Accepted Offer"
+)
+
 type Opportunity struct {
 	ID              uint        `gorm:"primary_key" json:"id"`
-	Name            string      `json:"name"`
+	CompanyName     string      `json:"companyName"`
+	Role            string      `json:"role"`
 	Description     string      `json:"description"`
 	URL             string      `json:"url"`
 	Tasks           []task.Task `json:"tasks"`
 	ApplicationDate time.Time   `json:"applicationDate"`
-	// Status
+	Status          Status      `json:"status"`
 	// Tasks
 	// Materials
 	// Contacts
@@ -30,8 +43,13 @@ func NewOpportunity() *Opportunity {
 	return &Opportunity{}
 }
 
-func (o *Opportunity) WithName(name string) *Opportunity {
-	o.Name = name
+func (o *Opportunity) WithCompanyName(name string) *Opportunity {
+	o.CompanyName = name
+	return o
+}
+
+func (o *Opportunity) WithRole(role string) *Opportunity {
+	o.Role = role
 	return o
 }
 
@@ -46,7 +64,6 @@ func (o *Opportunity) WithURL(url string) *Opportunity {
 }
 
 func (o *Opportunity) WithApplicationDateString(applicationDate string) *Opportunity {
-	fmt.Printf("\n%s\n", applicationDate)
 	t, err := time.Parse("2006-01-02", applicationDate)
 	if err != nil {
 		fmt.Printf("\nError parsing date: %s\n", err.Error())

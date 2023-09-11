@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -36,9 +37,10 @@ func Run() {
 	r.Route("/opportunities", func(r chi.Router) {
 		r.Post("/", handlePostOppty(opptyRepo))
 		// r.Get("/", handleGetAllOppty(opptyRepo))
-		r.Get("/active", handleGetActiveOppty(opptyRepo))
+		r.Get("/active", handleGetActiveOpptys(opptyRepo))
 		r.Route("/{opportunityId}", func(r chi.Router) {
-			// r.Get("/", handleGetOppty(opptyRepo))
+			r.Get("/", handleGetOppty(opptyRepo))
+			// r.Get("/edit", handleEditOppty(opptyRepo))
 			// r.Put("/", handleUpdateOppty(opptyRepo))
 			// r.Delete("/", handleDeleteOppty(opptyRepo))
 		})
@@ -51,21 +53,16 @@ func handleGetHomepage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		wd, err := os.Getwd()
 		if err != nil {
-			w.Write([]byte(fmt.Sprintf(
-				"<p>An error has occurred: %s</p>",
-				err.Error(),
-			)))
+			writeError(w, err)
 			return
 		}
 		t, err := template.ParseFiles(
-			wd+"/apps/clients/web/templates/opportunity-form.html",
-			wd+"/apps/clients/web/templates/index.html",
+			wd+"/apps/clients/web/templates/opportunity-form-partial.html",
+			wd+"/apps/clients/web/templates/index-page.html",
+			wd+"/apps/clients/web/templates/base.html",
 		)
 		if err != nil {
-			w.Write([]byte(fmt.Sprintf(
-				"<p>An error has occurred: %s</p>",
-				err.Error(),
-			)))
+			writeError(w, err)
 			return
 		}
 		t.ExecuteTemplate(w, "base", nil)
@@ -75,7 +72,8 @@ func handleGetHomepage() http.HandlerFunc {
 func handlePing(w http.ResponseWriter, r *http.Request) {
 	t, err := template.New("pong").Parse("<p>Pong</p>")
 	if err != nil {
-		w.Write([]byte(fmt.Sprintf("<p>An error has occurred: %s</p>", err.Error())))
+		writeError(w, err)
+		return
 	}
 	t.Execute(w, nil)
 }
@@ -97,15 +95,8 @@ func handlePostOppty(repo opportunity.GormRepository) http.HandlerFunc {
 		}
 
 		r.Header.Add("HX-Retarget", "#main-content")
-		tmpl, templateErr := template.New("opportunity-list").Funcs(template.FuncMap{
-			"FormatApplicationDate": func(t time.Time) string {
-				if t.IsZero() {
-					return ""
-				}
-				return t.Format("2006-01-02")
-			},
-		}).ParseFiles(
-			wd + "/apps/clients/web/templates/opportunity-list.html",
+		tmpl, templateErr := template.New("opportunity-list").Funcs(getListFuncMap()).ParseFiles(
+			wd + "/apps/clients/web/templates/opportunity-list-partial.html",
 		)
 
 		if templateErr != nil {
@@ -124,7 +115,7 @@ func handlePostOppty(repo opportunity.GormRepository) http.HandlerFunc {
 
 func handleCreateOpptyError(w http.ResponseWriter, wd string, err error) {
 	t, templateError := template.ParseFiles(
-		wd + "/apps/clients/web/templates/opportunity-form.html",
+		wd + "/apps/clients/web/templates/opportunity-form-partial.html",
 	)
 
 	if templateError != nil {
@@ -162,7 +153,7 @@ func handleCreateOpptyError(w http.ResponseWriter, wd string, err error) {
 // 	}
 // }
 
-func handleGetActiveOppty(repo opportunity.GormRepository) http.HandlerFunc {
+func handleGetActiveOpptys(repo opportunity.GormRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		opptys, err := repo.GetAllOpportunities()
 		if err != nil {
@@ -174,15 +165,8 @@ func handleGetActiveOppty(repo opportunity.GormRepository) http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
-		tmpl, err := template.New("opportunity-list").Funcs(template.FuncMap{
-			"FormatApplicationDate": func(t time.Time) string {
-				if t.IsZero() {
-					return ""
-				}
-				return t.Format("2006-01-02")
-			},
-		}).ParseFiles(
-			wd + "/apps/clients/web/templates/opportunity-list.html",
+		tmpl, err := template.New("opportunity-list").Funcs(getListFuncMap()).ParseFiles(
+			wd + "/apps/clients/web/templates/opportunity-list-partial.html",
 		)
 		if err != nil {
 			writeError(w, err)
@@ -192,26 +176,38 @@ func handleGetActiveOppty(repo opportunity.GormRepository) http.HandlerFunc {
 	}
 }
 
-// TODO: Would love to get rid of the overly verbose task objects when
-// retrieving these
-// func handleGetOppty(repo opportunity.GormRepository) http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		idParam := chi.URLParam(r, "opportunityId")
-// 		if id, err := strconv.ParseUint(idParam, 10, 64); err != nil {
-// 			render.Render(w, r, ErrRender(r, err, 401))
-// 			return
-// 		} else {
-// 			if oppty, err := handleGetOpptyById(repo, id, w, r); err != nil {
-// 				return
-// 			} else {
-// 				res := OpportunityResponse{
-// 					&oppty,
-// 				}
-// 				render.Render(w, r, &res)
-// 			}
-// 		}
-// 	}
-// }
+func handleGetOppty(repo opportunity.GormRepository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		wd, err := os.Getwd()
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+		t, err := template.New("base").Funcs(getListFuncMap()).ParseFiles(
+			wd+"/apps/clients/web/templates/opportunity-details-page.html",
+			wd+"/apps/clients/web/templates/base.html",
+		)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		idParam := chi.URLParam(r, "opportunityId")
+		id, err := strconv.ParseUint(idParam, 10, 64) // Sqlite id's are 64-bit int
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		opp, err := repo.GetOpportuntyById(uint(id))
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		t.ExecuteTemplate(w, "base", opp)
+	}
+}
 
 // TODO: How to get a partial update? Would be nice if this becomes a
 // large model
@@ -289,7 +285,14 @@ func newOpportunityFromRequest(r *http.Request) *opportunity.Opportunity {
 	description := r.PostForm.Get("opportunity-description")
 	url := r.PostForm.Get("opportunity-url")
 	date := r.PostForm.Get("opportunity-date")
-	return opportunity.NewOpportunity().WithName(name).WithDescription(description).WithURL(url).WithApplicationDateString(date)
+	role := r.PostForm.Get("opportunity-role")
+	o := opportunity.NewOpportunity().WithCompanyName(name).WithRole(role).WithDescription(description).WithURL(url).WithApplicationDateString(date)
+	if o.ApplicationDate.IsZero() {
+		o.Status = opportunity.None
+	} else {
+		o.Status = opportunity.Applied
+	}
+	return o
 }
 
 func writeError(w http.ResponseWriter, err error) {
@@ -297,4 +300,15 @@ func writeError(w http.ResponseWriter, err error) {
 		"<p>An error has occurred: %s</p>",
 		err.Error(),
 	)))
+}
+
+func getListFuncMap() template.FuncMap {
+	return template.FuncMap{
+		"FormatApplicationDate": func(t time.Time) string {
+			if t.IsZero() {
+				return ""
+			}
+			return t.Format("2006-01-02")
+		},
+	}
 }

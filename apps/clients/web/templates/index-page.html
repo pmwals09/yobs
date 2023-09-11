@@ -1,0 +1,13 @@
+{{ define "main-content" }}
+  <h1 class="text-center text-[2em]">Always look ahead</h1>
+  <section class="mb-4"
+    hx-get="/opportunities/active"
+    hx-trigger="load, newOpportunity from:body"
+    id="main-content"
+  >
+  </section>
+  <section class="mb-4">
+  <h2 class="text-[1.5em]">New Opportunity</h2>
+  {{ template "opportunity-form" . }}
+  </section>
+{{ end }}
