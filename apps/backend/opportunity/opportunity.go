@@ -1,13 +1,12 @@
 package opportunity
 
 import (
+	"database/sql"
 	"fmt"
-	"net/http"
+	"strings"
 	"time"
-
 	// "github.com/pmwals09/yobs/apps/backend/document"
-	"github.com/pmwals09/yobs/apps/backend/task"
-	"gorm.io/gorm"
+	// "github.com/pmwals09/yobs/apps/backend/task"
 )
 
 type Status string
@@ -23,21 +22,33 @@ const (
 )
 
 type Opportunity struct {
-	ID              uint        `gorm:"primary_key" json:"id"`
-	CompanyName     string      `json:"companyName"`
-	Role            string      `json:"role"`
-	Description     string      `json:"description"`
-	URL             string      `json:"url"`
-	Tasks           []task.Task `json:"tasks"`
-	ApplicationDate time.Time   `json:"applicationDate"`
-	Status          Status      `json:"status"`
+	ID              uint      `json:"id"`
+	CompanyName     string    `json:"companyName"`
+	Role            string    `json:"role"`
+	Description     string    `json:"description"`
+	URL             string    `json:"url"`
+	ApplicationDate time.Time `json:"applicationDate"`
+	Status          Status    `json:"status"`
+	// Tasks           []task.Task `json:"tasks"`
 	// Documents       []document.Document `json:"documents"`
 	// Tasks
 	// Contacts
 }
 
-func (o Opportunity) Render(w http.ResponseWriter, r *http.Request) error {
-	return nil
+func CreateTable(db *sql.DB) error {
+	createStr := `
+		CREATE TABLE IF NOT EXISTS opportunities (
+			id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+			company_name TEXT,
+			role TEXT,
+			description TEXT,
+			url TEXT,
+			application_date DATETIME,
+			status TEXT
+		);
+	`
+	_, err := db.Exec(createStr)
+	return err
 }
 
 func NewOpportunity() *Opportunity {
@@ -87,48 +98,135 @@ type Repository interface {
 	DeleteOpportunity(opptyId uint) error
 }
 
-type GormRepository struct {
-	DB *gorm.DB
+type OpportunityModel struct {
+	DB *sql.DB
 }
 
-func (g *GormRepository) CreateOpportunity(opp *Opportunity) (Opportunity, error) {
-	if result := g.DB.Create(&opp); result.Error != nil {
-		return *opp, fmt.Errorf("Error creating opportunity: %w", result.Error)
-	}
+func (g *OpportunityModel) CreateOpportunity(opp *Opportunity) (Opportunity, error) {
+	_, err := g.DB.Exec(`
+		INSERT INTO opportunities (
+			company_name,
+			role,
+			description,
+			url,
+			application_date,
+			status
+		) VALUES (?, ?, ?, ?, ?, ?);
+	`,
+		opp.CompanyName,
+		opp.Role,
+		opp.Description,
+		opp.URL,
+		opp.ApplicationDate,
+		opp.Status,
+	)
 
+	if err != nil {
+		return *opp, err
+	}
 	return *opp, nil
 }
 
-func (g *GormRepository) GetOpportuntyById(opptyId uint) (Opportunity, error) {
+func (g *OpportunityModel) GetOpportuntyById(opptyId uint) (Opportunity, error) {
 	var oppty Opportunity
-	err := g.DB.Model(&Opportunity{}).Preload("Tasks").First(&oppty, opptyId).Error
+	res := g.DB.QueryRow(`
+		SELECT
+			id,
+			company_name,
+			role,
+			description,
+			url,
+			application_date,
+			status
+		FROM opportunities WHERE id = ?;
+	`, opptyId)
+	err := res.Scan(
+		&oppty.ID,
+		&oppty.CompanyName,
+		&oppty.Role,
+		&oppty.Description,
+		&oppty.URL,
+		&oppty.ApplicationDate,
+		&oppty.Status,
+	)
+
 	return oppty, err
 }
 
-func (g *GormRepository) GetAllOpportunities() ([]Opportunity, error) {
+func (g *OpportunityModel) GetAllOpportunities() ([]Opportunity, error) {
 	var opptys []Opportunity
-	err := g.DB.Model(&Opportunity{}).Preload("Tasks").Find(&opptys).Error
-	return opptys, err
-}
+	rows, err := g.DB.Query(`
+		SELECT
+			id,
+			company_name,
+			role,
+			description,
+			url,
+			application_date,
+			status
+		FROM opportunities;
+	`)
 
-func (g *GormRepository) UpdateOpporunity(opp *Opportunity) (*Opportunity, error) {
-	res := g.DB.Save(&opp)
-	return opp, res.Error
-}
-
-func (g *GormRepository) DeleteOpportunity(opptyId uint) error {
-	res := g.DB.Select("Tasks").Delete(&Opportunity{ID: opptyId})
-	return res.Error
-}
-
-func (g *GormRepository) AddTask(opptyId uint, t []*task.Task) (*Opportunity, error) {
-	if opp, err := g.GetOpportuntyById(opptyId); err != nil {
-		return &opp, err
-	} else {
-		if appendErr := g.DB.Model(&opp).Association("Tasks").Append(t); appendErr != nil {
-			return &opp, err
-		} else {
-			return &opp, nil
-		}
+	if err != nil {
+		return opptys, err
 	}
+	for rows.Next() {
+		oppty := Opportunity{}
+		err := rows.Scan(
+			&oppty.ID,
+			&oppty.CompanyName,
+			&oppty.Role,
+			&oppty.Description,
+			&oppty.URL,
+			&oppty.ApplicationDate,
+			&oppty.Status,
+		)
+		if err != nil {
+			return opptys, err
+		}
+		opptys = append(opptys, oppty)
+	}
+	return opptys, nil
 }
+
+func (g *OpportunityModel) UpdateOpporunity(opp *Opportunity) (*Opportunity, error) {
+	_, err := g.DB.Exec(`
+		UPDATE opportunities
+		SET
+			company_name = ?,
+			role = ?,
+			description = ?,
+			url = ?,
+			application_date = ?,
+			status = ?
+		WHERE id = ?;
+	`,
+		opp.CompanyName,
+		opp.Role,
+		opp.Description,
+		opp.URL,
+		opp.ApplicationDate,
+		opp.Status,
+		opp.ID,
+	)
+	return opp, err
+}
+
+func (g *OpportunityModel) DeleteOpportunity(opptyId uint) error {
+	_, err := g.DB.Exec(`
+		DELETE FROM opportunities WHERE id = ?
+	`, opptyId)
+	return err
+}
+
+// func (g *GormRepository) AddTask(opptyId uint, t []*task.Task) (*Opportunity, error) {
+// 	if opp, err := g.GetOpportuntyById(opptyId); err != nil {
+// 		return &opp, err
+// 	} else {
+// 		if appendErr := g.DB.Model(&opp).Association("Tasks").Append(t); appendErr != nil {
+// 			return &opp, err
+// 		} else {
+// 			return &opp, nil
+// 		}
+// 	}
+// }

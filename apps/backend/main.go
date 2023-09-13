@@ -31,7 +31,7 @@ func Run() {
 		os.Exit(1)
 	}
 
-	opptyRepo := opportunity.GormRepository{DB: sqlDb}
+	opptyRepo := opportunity.OpportunityModel{DB: sqlDb}
 	r.Get("/", handleGetHomepage())
 	r.Get("/ping", handlePing)
 	r.Route("/opportunities", func(r chi.Router) {
@@ -79,7 +79,7 @@ func handlePing(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, nil)
 }
 
-func handlePostOppty(repo opportunity.GormRepository) http.HandlerFunc {
+func handlePostOppty(repo opportunity.OpportunityModel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		newOpportunity := newOpportunityFromRequest(r)
@@ -154,7 +154,7 @@ func handleCreateOpptyError(w http.ResponseWriter, wd string, err error) {
 // 	}
 // }
 
-func handleGetActiveOpptys(repo opportunity.GormRepository) http.HandlerFunc {
+func handleGetActiveOpptys(repo opportunity.OpportunityModel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		opptys, err := repo.GetAllOpportunities()
 		if err != nil {
@@ -177,7 +177,7 @@ func handleGetActiveOpptys(repo opportunity.GormRepository) http.HandlerFunc {
 	}
 }
 
-func handleGetOppty(repo opportunity.GormRepository) http.HandlerFunc {
+func handleGetOppty(repo opportunity.OpportunityModel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		wd, err := os.Getwd()
 		if err != nil {
@@ -210,7 +210,7 @@ func handleGetOppty(repo opportunity.GormRepository) http.HandlerFunc {
 	}
 }
 
-func handleUploadToOppty(repo opportunity.GormRepository) http.HandlerFunc {
+func handleUploadToOppty(repo opportunity.OpportunityModel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.ParseMultipartForm(10 << 20)
 		file, handler, err := r.FormFile("attachment-file")
@@ -220,7 +220,7 @@ func handleUploadToOppty(repo opportunity.GormRepository) http.HandlerFunc {
 		}
 		defer file.Close()
 
-		fmt.Println(handler.Header)
+		fmt.Println(handler.Filename)
 	}
 }
 

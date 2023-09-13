@@ -1,39 +1,20 @@
 package backend
 
 import (
-	"fmt"
-	"log"
-	"os"
+	"database/sql"
 
-	"github.com/pmwals09/yobs/apps/backend/document"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/pmwals09/yobs/apps/backend/opportunity"
-	"github.com/pmwals09/yobs/apps/backend/task"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	// "github.com/pmwals09/yobs/apps/backend/document"
 )
 
-func InitDb() (*gorm.DB, error) {
-	newLogger := logger.New(
-		log.New(os.Stdout, "\r\n", log.LstdFlags),
-		logger.Config{
-			LogLevel: logger.Info,
-		},
-	)
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{
-		Logger: newLogger,
-	})
+func InitDb() (*sql.DB, error) {
+	db, err := sql.Open("sqlite3", "test.db")
 	if err != nil {
-		return db, fmt.Errorf("Unable to open database: %w", err)
+		return nil, err
 	}
 
-	err = db.AutoMigrate(
-		&opportunity.Opportunity{},
-		&task.Task{},
-		&document.Document{},
-	)
-	if err != nil {
-		return db, fmt.Errorf("unable to migrate database: %w", err)
-	}
+	opportunity.CreateTable(db)
+	// document.CreateTable(db)
 	return db, nil
 }
