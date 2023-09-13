@@ -18,4 +18,23 @@
   <h2 class="text-[1.5em]">Job Description</h2>
   {{ .Description }}
 </section>
+<section class="mb-4">
+  <h2 class="text-[1.5em]">Tasks</h2>
+</section>
+<section class="mb-4" id="attachments-section">
+  <h2 class="text-[1.5em]">Attachments</h2>
+  <form
+    method="POST"
+    action="/opportunities/{{ .ID }}/upload"
+    hx-post="/opportunities/{{ .ID }}/upload"
+    hx-target="#attachments-section"
+    enctype="multipart/form-data"
+  >
+    <label for="attachment-name">Attachment Name</label>
+    <input type="text" name="attachment-name" value="">
+    <label for="attachment-file">PDF Attachment</label>
+    <input type="file" name="attachment-file" accept=".pdf">
+    <input type="submit" name="attachment-submit" value="Submit">
+  </form>
+</section>
 {{ end }}

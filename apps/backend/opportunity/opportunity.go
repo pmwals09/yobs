@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	// "github.com/pmwals09/yobs/apps/backend/document"
 	"github.com/pmwals09/yobs/apps/backend/task"
 	"gorm.io/gorm"
 )
@@ -30,8 +31,8 @@ type Opportunity struct {
 	Tasks           []task.Task `json:"tasks"`
 	ApplicationDate time.Time   `json:"applicationDate"`
 	Status          Status      `json:"status"`
+	// Documents       []document.Document `json:"documents"`
 	// Tasks
-	// Materials
 	// Contacts
 }
 

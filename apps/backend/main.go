@@ -40,6 +40,7 @@ func Run() {
 		r.Get("/active", handleGetActiveOpptys(opptyRepo))
 		r.Route("/{opportunityId}", func(r chi.Router) {
 			r.Get("/", handleGetOppty(opptyRepo))
+			r.Post("/upload", handleUploadToOppty(opptyRepo))
 			// r.Get("/edit", handleEditOppty(opptyRepo))
 			// r.Put("/", handleUpdateOppty(opptyRepo))
 			// r.Delete("/", handleDeleteOppty(opptyRepo))
@@ -206,6 +207,20 @@ func handleGetOppty(repo opportunity.GormRepository) http.HandlerFunc {
 		}
 
 		t.ExecuteTemplate(w, "base", opp)
+	}
+}
+
+func handleUploadToOppty(repo opportunity.GormRepository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		r.ParseMultipartForm(10 << 20)
+		file, handler, err := r.FormFile("attachment-file")
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+		defer file.Close()
+
+		fmt.Println(handler.Header)
 	}
 }
 

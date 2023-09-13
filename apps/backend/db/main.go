@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/pmwals09/yobs/apps/backend/document"
 	"github.com/pmwals09/yobs/apps/backend/opportunity"
 	"github.com/pmwals09/yobs/apps/backend/task"
 	"gorm.io/driver/sqlite"
@@ -29,6 +30,7 @@ func InitDb() (*gorm.DB, error) {
 	err = db.AutoMigrate(
 		&opportunity.Opportunity{},
 		&task.Task{},
+		&document.Document{},
 	)
 	if err != nil {
 		return db, fmt.Errorf("unable to migrate database: %w", err)
