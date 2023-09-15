@@ -3,7 +3,6 @@ package opportunity
 import (
 	"database/sql"
 	"fmt"
-	"strings"
 	"time"
 	// "github.com/pmwals09/yobs/apps/backend/document"
 	// "github.com/pmwals09/yobs/apps/backend/task"
@@ -51,7 +50,7 @@ func CreateTable(db *sql.DB) error {
 	return err
 }
 
-func NewOpportunity() *Opportunity {
+func New() *Opportunity {
 	return &Opportunity{}
 }
 
@@ -91,18 +90,19 @@ func (o *Opportunity) WithApplicationDateTime(applicationDate time.Time) *Opport
 }
 
 type Repository interface {
-	CreateOpportunity(opp *Opportunity) (Opportunity, error)
-	GetOpportuntyById(opptyId uint) (Opportunity, error)
+	CreateOpportunity(opp *Opportunity) error
+	GetOpportuntyById(opptyId uint) (*Opportunity, error)
 	GetAllOpportunities() ([]Opportunity, error)
 	UpdateOpporunity(opptyId uint, newOpportunity Opportunity) error
 	DeleteOpportunity(opptyId uint) error
+	AddDocument(opptyId uint, documentId uint) error
 }
 
 type OpportunityModel struct {
 	DB *sql.DB
 }
 
-func (g *OpportunityModel) CreateOpportunity(opp *Opportunity) (Opportunity, error) {
+func (g *OpportunityModel) CreateOpportunity(opp *Opportunity) error {
 	_, err := g.DB.Exec(`
 		INSERT INTO opportunities (
 			company_name,
@@ -121,13 +121,10 @@ func (g *OpportunityModel) CreateOpportunity(opp *Opportunity) (Opportunity, err
 		opp.Status,
 	)
 
-	if err != nil {
-		return *opp, err
-	}
-	return *opp, nil
+	return err
 }
 
-func (g *OpportunityModel) GetOpportuntyById(opptyId uint) (Opportunity, error) {
+func (g *OpportunityModel) GetOpportuntyById(opptyId uint) (*Opportunity, error) {
 	var oppty Opportunity
 	res := g.DB.QueryRow(`
 		SELECT
@@ -150,7 +147,7 @@ func (g *OpportunityModel) GetOpportuntyById(opptyId uint) (Opportunity, error) 
 		&oppty.Status,
 	)
 
-	return oppty, err
+	return &oppty, err
 }
 
 func (g *OpportunityModel) GetAllOpportunities() ([]Opportunity, error) {
@@ -189,7 +186,7 @@ func (g *OpportunityModel) GetAllOpportunities() ([]Opportunity, error) {
 	return opptys, nil
 }
 
-func (g *OpportunityModel) UpdateOpporunity(opp *Opportunity) (*Opportunity, error) {
+func (g *OpportunityModel) UpdateOpporunity(opp *Opportunity) error {
 	_, err := g.DB.Exec(`
 		UPDATE opportunities
 		SET
@@ -209,13 +206,23 @@ func (g *OpportunityModel) UpdateOpporunity(opp *Opportunity) (*Opportunity, err
 		opp.Status,
 		opp.ID,
 	)
-	return opp, err
+	return err
 }
 
 func (g *OpportunityModel) DeleteOpportunity(opptyId uint) error {
 	_, err := g.DB.Exec(`
 		DELETE FROM opportunities WHERE id = ?
 	`, opptyId)
+	return err
+}
+
+func (g *OpportunityModel) AddDocument(opptyId uint, documentId uint) error {
+	_, err := g.DB.Exec(`
+		INSERT INTO opportunity_documents (
+			opportunity_id,
+			document_id
+		) VALUES (?, ?);
+	`, opptyId, documentId)
 	return err
 }
 

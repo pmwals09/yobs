@@ -12,6 +12,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	db "github.com/pmwals09/yobs/apps/backend/db"
+	"github.com/pmwals09/yobs/apps/backend/document"
 	"github.com/pmwals09/yobs/apps/backend/opportunity"
 )
 
@@ -32,6 +33,7 @@ func Run() {
 	}
 
 	opptyRepo := opportunity.OpportunityModel{DB: sqlDb}
+	docRepo := document.DocumentModel{DB: sqlDb}
 	r.Get("/", handleGetHomepage())
 	r.Get("/ping", handlePing)
 	r.Route("/opportunities", func(r chi.Router) {
@@ -40,14 +42,14 @@ func Run() {
 		r.Get("/active", handleGetActiveOpptys(opptyRepo))
 		r.Route("/{opportunityId}", func(r chi.Router) {
 			r.Get("/", handleGetOppty(opptyRepo))
-			r.Post("/upload", handleUploadToOppty(opptyRepo))
+			r.Post("/upload", handleUploadToOppty(opptyRepo, docRepo))
 			// r.Get("/edit", handleEditOppty(opptyRepo))
 			// r.Put("/", handleUpdateOppty(opptyRepo))
 			// r.Delete("/", handleDeleteOppty(opptyRepo))
 		})
 	})
 
-	http.ListenAndServe(":8080", r)
+	log.Fatal(http.ListenAndServe(":8081", r))
 }
 
 func handleGetHomepage() http.HandlerFunc {
@@ -90,7 +92,7 @@ func handlePostOppty(repo opportunity.OpportunityModel) http.HandlerFunc {
 			return
 		}
 
-		if _, err := repo.CreateOpportunity(newOpportunity); err != nil {
+		if err := repo.CreateOpportunity(newOpportunity); err != nil {
 			handleCreateOpptyError(w, wd, err)
 			return
 		}
@@ -210,17 +212,63 @@ func handleGetOppty(repo opportunity.OpportunityModel) http.HandlerFunc {
 	}
 }
 
-func handleUploadToOppty(repo opportunity.OpportunityModel) http.HandlerFunc {
+func handleUploadToOppty(
+	oppRepo opportunity.OpportunityModel,
+	docRepo document.DocumentModel,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.ParseMultipartForm(10 << 20)
 		file, handler, err := r.FormFile("attachment-file")
+		defer file.Close()
 		if err != nil {
 			writeError(w, err)
 			return
 		}
-		defer file.Close()
 
-		fmt.Println(handler.Filename)
+		// 1. Upload the file to its destination
+		var docType document.DocumentType
+		selectedType := r.FormValue("attachment-type")
+		switch selectedType {
+		case "Resume":
+			docType = document.Resume
+		case "CoverLetter":
+			docType = document.CoverLetter
+		case "Communication":
+			docType = document.Communication
+		}
+		d := document.New(handler.Filename, docType)
+
+		docTitle := r.FormValue("attachment-name")
+		if docTitle != "" {
+			d.WithTitle(docTitle)
+		}
+
+		err = d.Upload(file)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		// 2. Insert a document entry into the db
+		if err := docRepo.CreateDocument(d); err != nil {
+			writeError(w, err)
+			return
+		}
+
+		// 3. Associate the document with this oppty
+		idParam := chi.URLParam(r, "opportunityId")
+		id, err := strconv.ParseUint(idParam, 10, 64) // Sqlite id's are 64-bit int
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+		if err = oppRepo.AddDocument(uint(id), d.ID); err != nil {
+			writeError(w, err)
+			return
+		}
+
+		// 4. What to return? And where?
+		// Should be a list of documents above the form
 	}
 }
 
@@ -301,7 +349,7 @@ func newOpportunityFromRequest(r *http.Request) *opportunity.Opportunity {
 	url := r.PostForm.Get("opportunity-url")
 	date := r.PostForm.Get("opportunity-date")
 	role := r.PostForm.Get("opportunity-role")
-	o := opportunity.NewOpportunity().WithCompanyName(name).WithRole(role).WithDescription(description).WithURL(url).WithApplicationDateString(date)
+	o := opportunity.New().WithCompanyName(name).WithRole(role).WithDescription(description).WithURL(url).WithApplicationDateString(date)
 	if o.ApplicationDate.IsZero() {
 		o.Status = opportunity.None
 	} else {

@@ -4,8 +4,8 @@ import (
 	"database/sql"
 
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/pmwals09/yobs/apps/backend/document"
 	"github.com/pmwals09/yobs/apps/backend/opportunity"
-	// "github.com/pmwals09/yobs/apps/backend/document"
 )
 
 func InitDb() (*sql.DB, error) {
@@ -15,6 +15,6 @@ func InitDb() (*sql.DB, error) {
 	}
 
 	opportunity.CreateTable(db)
-	// document.CreateTable(db)
+	document.CreateTable(db)
 	return db, nil
 }
