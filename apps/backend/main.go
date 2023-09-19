@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/joho/godotenv"
 	db "github.com/pmwals09/yobs/apps/backend/db"
 	"github.com/pmwals09/yobs/apps/backend/document"
 	"github.com/pmwals09/yobs/apps/backend/opportunity"
@@ -27,6 +28,12 @@ func Run() {
 	r.Use(middleware.Timeout(60 * time.Second))
 
 	sqlDb, err := db.InitDb()
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+
+	err = godotenv.Load(".env")
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
@@ -236,7 +243,7 @@ func handleUploadToOppty(
 		case "Communication":
 			docType = document.Communication
 		}
-		d := document.New(handler.Filename, docType)
+		d := document.New(handler, docType)
 
 		docTitle := r.FormValue("attachment-name")
 		if docTitle != "" {

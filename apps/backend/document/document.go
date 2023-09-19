@@ -1,10 +1,18 @@
 package document
 
 import (
+	"bytes"
+	"context"
 	"database/sql"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"os"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
 type DocumentType string
@@ -16,10 +24,11 @@ const (
 )
 
 type Document struct {
-	ID       uint         `json:"id"`
-	FileName string       `json:"fileName"`
-	Title    string       `json:"title"`
-	Type     DocumentType `json:"type"`
+	ID          uint         `json:"id"`
+	FileName    string       `json:"fileName"`
+	Title       string       `json:"title"`
+	Type        DocumentType `json:"type"`
+	ContentType string       `json:"contentType"`
 }
 
 func CreateTable(db *sql.DB) error {
@@ -53,8 +62,13 @@ func CreateTable(db *sql.DB) error {
 	return nil
 }
 
-func New(fileName string, documentType DocumentType) *Document {
-	return &Document{FileName: fileName, Type: documentType}
+func New(handler *multipart.FileHeader, documentType DocumentType) *Document {
+	fmt.Println("CONTENTTYPE", handler.Header.Get("Content-Type"))
+	return &Document{
+		FileName:    handler.Filename,
+		Type:        documentType,
+		ContentType: handler.Header.Get("Content-Type"),
+	}
 }
 
 func (d *Document) WithTitle(title string) *Document {
@@ -71,15 +85,42 @@ type Repository interface {
 }
 
 func (d *Document) Upload(file multipart.File) error {
-	destination, err := os.Create(d.FileName)
-	defer destination.Close()
+	// how to use aws?
+	// https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html
+	// Content-MD5 header for md5 of the file
+	// IAM must have s3:PutObject
+	// eventually preface with UUID of user
+
+	region := os.Getenv("AWS_REGION")
+	key := os.Getenv("AWS_ACCESS_KEY")
+	secret := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	bucketName := os.Getenv("AWS_S3_BUCKET")
+
+	s3Config := &aws.Config{
+		Region:      aws.String(region),
+		Credentials: credentials.NewStaticCredentials(key, secret, ""),
+	}
+	s3Session, err := session.NewSession(s3Config)
+
+	uploader := s3manager.NewUploader(s3Session)
+
+	f, err := io.ReadAll(file)
 	if err != nil {
 		return err
 	}
+	input := &s3manager.UploadInput{
+		Bucket:      aws.String(bucketName),
+		Key:         aws.String(d.FileName), // TODO: add user's UUID in front
+		Body:        bytes.NewReader(f),
+		ContentType: aws.String(d.ContentType),
+	}
 
-	if _, err := io.Copy(destination, file); err != nil {
+	// TODO: write file download link to database
+	output, err := uploader.UploadWithContext(context.Background(), input)
+	if err != nil {
 		return err
 	}
+	fmt.Println(output)
 
 	return nil
 }
