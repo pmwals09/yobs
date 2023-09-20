@@ -1,18 +1,16 @@
 package document
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"fmt"
-	"io"
 	"mime/multipart"
 	"os"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	// signer "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 )
 
 type DocumentType string
@@ -41,7 +39,8 @@ func CreateTable(db *sql.DB) error {
 			id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 			file_name TEXT,
 			title TEXT UNIQUE,
-			type TEXT
+			type TEXT,
+			content_type TEXT
 		);
 	`)
 	_, oppDocErr := tx.Exec(`
@@ -54,6 +53,8 @@ func CreateTable(db *sql.DB) error {
 		);
 		`)
 	if docErr != nil || oppDocErr != nil {
+		fmt.Println("DOCERR", docErr.Error())
+		fmt.Println("OPPDOCERR", oppDocErr.Error())
 		return err
 	}
 	if err = tx.Commit(); err != nil {
@@ -92,36 +93,27 @@ func (d *Document) Upload(file multipart.File) error {
 	// eventually preface with UUID of user
 
 	region := os.Getenv("AWS_REGION")
-	key := os.Getenv("AWS_ACCESS_KEY")
-	secret := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	// key := os.Getenv("AWS_ACCESS_KEY_ID")
+	// secret := os.Getenv("AWS_SECRET_ACCESS_KEY")
 	bucketName := os.Getenv("AWS_S3_BUCKET")
 
-	s3Config := &aws.Config{
-		Region:      aws.String(region),
-		Credentials: credentials.NewStaticCredentials(key, secret, ""),
-	}
-	s3Session, err := session.NewSession(s3Config)
 
-	uploader := s3manager.NewUploader(s3Session)
-
-	f, err := io.ReadAll(file)
+	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(region))
 	if err != nil {
 		return err
 	}
-	input := &s3manager.UploadInput{
+	c := s3.NewFromConfig(cfg)
+	
+	_, err = c.PutObject(context.Background(), &s3.PutObjectInput{
 		Bucket:      aws.String(bucketName),
-		Key:         aws.String(d.FileName), // TODO: add user's UUID in front
-		Body:        bytes.NewReader(f),
+		Key:         aws.String(d.FileName),
+		Body:        file,
 		ContentType: aws.String(d.ContentType),
-	}
+	})
 
-	// TODO: write file download link to database
-	output, err := uploader.UploadWithContext(context.Background(), input)
 	if err != nil {
 		return err
 	}
-	fmt.Println(output)
-
 	return nil
 }
 
@@ -135,8 +127,9 @@ func (d *DocumentModel) CreateDocument(doc *Document) error {
 		INSERT INTO documents (
 			file_name,
 			title,
-			type
-		) VALUES ( $1, $2, $3 ) RETURNING id;
+			type,
+			content_type
+		) VALUES ( $1, $2, $3, $4 ) RETURNING id;
 	`)
 	if err != nil {
 		return err
@@ -147,6 +140,7 @@ func (d *DocumentModel) CreateDocument(doc *Document) error {
 		doc.FileName,
 		doc.Title,
 		doc.Type,
+		doc.ContentType,
 	).Scan(&id)
 	if err != nil {
 		return err
@@ -159,4 +153,9 @@ func (d *DocumentModel) CreateDocument(doc *Document) error {
 
 	doc.ID = id
 	return err
+}
+
+func (d *Document) GetPresignedDownloadUrl() (string, error) {
+
+	return "", nil
 }

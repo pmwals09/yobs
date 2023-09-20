@@ -186,6 +186,11 @@ func handleGetActiveOpptys(repo opportunity.OpportunityModel) http.HandlerFunc {
 	}
 }
 
+type OpptyDetails struct {
+	Oppty     opportunity.Opportunity
+	Documents []document.Document
+}
+
 func handleGetOppty(repo opportunity.OpportunityModel) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		wd, err := os.Getwd()
@@ -194,6 +199,7 @@ func handleGetOppty(repo opportunity.OpportunityModel) http.HandlerFunc {
 			return
 		}
 		t, err := template.New("base").Funcs(getListFuncMap()).ParseFiles(
+			wd+"/apps/clients/web/templates/attachments-section-partial.html",
 			wd+"/apps/clients/web/templates/opportunity-details-page.html",
 			wd+"/apps/clients/web/templates/base.html",
 		)
@@ -201,6 +207,8 @@ func handleGetOppty(repo opportunity.OpportunityModel) http.HandlerFunc {
 			writeError(w, err)
 			return
 		}
+
+		od := OpptyDetails{}
 
 		idParam := chi.URLParam(r, "opportunityId")
 		id, err := strconv.ParseUint(idParam, 10, 64) // Sqlite id's are 64-bit int
@@ -215,7 +223,18 @@ func handleGetOppty(repo opportunity.OpportunityModel) http.HandlerFunc {
 			return
 		}
 
-		t.ExecuteTemplate(w, "base", opp)
+		od.Oppty = *opp
+		d, err := repo.GetAllDocuments(opp.ID)
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		od.Documents = d
+
+		fmt.Println(od)
+
+		t.ExecuteTemplate(w, "base", od)
 	}
 }
 
@@ -275,7 +294,30 @@ func handleUploadToOppty(
 		}
 
 		// 4. What to return? And where?
-		// Should be a list of documents above the form
+		wd, err := os.Getwd()
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+		t, err := template.New("attachments-section").Funcs(getListFuncMap()).ParseFiles(
+			wd + "/apps/clients/web/templates/attachments-section-partial.html",
+		)
+		o, err := oppRepo.GetOpportuntyById(uint(id))
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+
+		docs, err := oppRepo.GetAllDocuments(uint(id))
+		if err != nil {
+			writeError(w, err)
+			return
+		}
+		od := OpptyDetails{
+			Oppty: *o,
+			Documents: docs,
+		}
+		t.ExecuteTemplate(w, "attachments-section", od)
 	}
 }
 

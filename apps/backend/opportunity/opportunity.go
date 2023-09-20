@@ -4,7 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"time"
-	// "github.com/pmwals09/yobs/apps/backend/document"
+
+	"github.com/pmwals09/yobs/apps/backend/document"
 	// "github.com/pmwals09/yobs/apps/backend/task"
 )
 
@@ -96,6 +97,7 @@ type Repository interface {
 	UpdateOpporunity(opptyId uint, newOpportunity Opportunity) error
 	DeleteOpportunity(opptyId uint) error
 	AddDocument(opptyId uint, documentId uint) error
+	GetAllDocuments() ([]document.Document, error)
 }
 
 type OpportunityModel struct {
@@ -224,6 +226,41 @@ func (g *OpportunityModel) AddDocument(opptyId uint, documentId uint) error {
 		) VALUES (?, ?);
 	`, opptyId, documentId)
 	return err
+}
+
+func (o *OpportunityModel) GetAllDocuments(opptyId uint) ([]document.Document, error) {
+	var docs []document.Document
+	rows, err := o.DB.Query(`
+		SELECT
+			file_name,
+			title,
+			type,
+			content_type
+		FROM documents d
+		JOIN opportunity_documents od ON d.id = od.document_id
+		JOIN opportunities o ON o.id = od.opportunity_id
+		WHERE o.id = ?;
+	`, opptyId)
+	if err != nil {
+		fmt.Println("QUERY ERROR",err.Error())
+		return docs, err
+	}
+
+	for rows.Next() {
+		var d document.Document
+		err := rows.Scan(
+			&d.FileName,
+			&d.Title,
+			&d.Type,
+			&d.ContentType,
+		)
+		if err != nil {
+			return docs, err
+		}
+		docs = append(docs, d)
+	}
+	
+	return docs, nil
 }
 
 // func (g *GormRepository) AddTask(opptyId uint, t []*task.Task) (*Opportunity, error) {
