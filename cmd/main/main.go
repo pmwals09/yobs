@@ -40,8 +40,12 @@ func main() {
 	opptyRepo := opportunity.OpportunityModel{DB: sqlDb}
 	docRepo := document.DocumentModel{DB: sqlDb}
 
-	r.Get("/", controllers.HandleGetHomepage())
+	r.Get("/", controllers.HandleGetLandingPage())
+	r.Get("/login", controllers.HandleGetLoginPage())
 	r.Get("/ping", controllers.HandlePing)
+	r.Get("/sign-up", controllers.HandleGetSignUpPage())
+	// TODO: All these routes should be behind Auth - only a valid user can see them
+	r.Get("/home", controllers.HandleGetHomepage())
 	r.Route("/profile", func(r chi.Router) {
 		r.Get("/", controllers.HandleGetProfilePage())
 	})
