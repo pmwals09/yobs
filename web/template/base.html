@@ -6,11 +6,15 @@
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
   </head>
   <body class="w-4/5 mx-auto">
-    <nav>
+    <nav class="flex justify-between">
       <ul class="flex gap-4">
         <li><a href="/">Home</a></li>
         <li><a href="/opportunities/all">All Opportunities</a></li>
         <li><a href="/tasks/active">All Active Tasks</a></li>
+      </ul>
+      <ul>
+        <!-- TODO: this will need to change based on login status -->
+        <li><a href="/profile">My Profile</a></li>
       </ul>
     </nav>
     <main hx-boost>

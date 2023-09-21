@@ -42,6 +42,9 @@ func main() {
 
 	r.Get("/", controllers.HandleGetHomepage())
 	r.Get("/ping", controllers.HandlePing)
+	r.Route("/profile", func(r chi.Router) {
+		r.Get("/", controllers.HandleGetProfilePage())
+	})
 	r.Route("/opportunities", func(r chi.Router) {
 		r.Post("/", controllers.HandlePostOppty(opptyRepo))
 		r.Get("/active", controllers.HandleGetActiveOpptys(opptyRepo))
