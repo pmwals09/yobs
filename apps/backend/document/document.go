@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"mime/multipart"
 	"os"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -27,6 +28,7 @@ type Document struct {
 	Title       string       `json:"title"`
 	Type        DocumentType `json:"type"`
 	ContentType string       `json:"contentType"`
+	URL         string       `json:"url"`
 }
 
 func CreateTable(db *sql.DB) error {
@@ -34,6 +36,9 @@ func CreateTable(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
+	// NOTE: We don't store the URL. We use the URL when creating something
+	// clickable in order to download a document, but it's time-limited by AWS
+	// so we don't try to save it with the document
 	_, docErr := tx.Exec(`
 		CREATE TABLE IF NOT EXISTS documents (
 			id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -86,24 +91,20 @@ type Repository interface {
 }
 
 func (d *Document) Upload(file multipart.File) error {
-	// how to use aws?
-	// https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html
-	// Content-MD5 header for md5 of the file
-	// IAM must have s3:PutObject
-	// eventually preface with UUID of user
+	// TODO: eventually preface with UUID of user
 
 	region := os.Getenv("AWS_REGION")
-	// key := os.Getenv("AWS_ACCESS_KEY_ID")
-	// secret := os.Getenv("AWS_SECRET_ACCESS_KEY")
 	bucketName := os.Getenv("AWS_S3_BUCKET")
 
-
-	cfg, err := config.LoadDefaultConfig(context.Background(), config.WithRegion(region))
+	cfg, err := config.LoadDefaultConfig(
+		context.Background(),
+		config.WithRegion(region),
+	)
 	if err != nil {
 		return err
 	}
 	c := s3.NewFromConfig(cfg)
-	
+
 	_, err = c.PutObject(context.Background(), &s3.PutObjectInput{
 		Bucket:      aws.String(bucketName),
 		Key:         aws.String(d.FileName),
@@ -156,6 +157,32 @@ func (d *DocumentModel) CreateDocument(doc *Document) error {
 }
 
 func (d *Document) GetPresignedDownloadUrl() (string, error) {
+	bucketName := os.Getenv("AWS_S3_BUCKET")
+	region := os.Getenv("AWS_REGION")
+	lifetimeSeconds := int64(60 * 30)
 
-	return "", nil
+	cfg, err := config.LoadDefaultConfig(
+		context.Background(),
+		config.WithRegion(region),
+	)
+	if err != nil {
+		return "", err
+	}
+
+	c := s3.NewFromConfig(cfg)
+	pc := s3.NewPresignClient(c)
+	req, err := pc.PresignGetObject(context.Background(), &s3.GetObjectInput{
+		Bucket: aws.String(bucketName),
+		// TODO: Preface with user's UUID
+		Key: &d.FileName,
+	}, func(opts *s3.PresignOptions) {
+		opts.Expires = time.Duration(lifetimeSeconds * int64(time.Second))
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	d.URL = req.URL
+	return req.URL, nil
 }

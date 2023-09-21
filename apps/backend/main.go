@@ -224,15 +224,21 @@ func handleGetOppty(repo opportunity.OpportunityModel) http.HandlerFunc {
 		}
 
 		od.Oppty = *opp
-		d, err := repo.GetAllDocuments(opp.ID)
+		docs, err := repo.GetAllDocuments(opp.ID)
 		if err != nil {
 			writeError(w, err)
 			return
 		}
 
-		od.Documents = d
+		for i := range docs {
+			_, err := docs[i].GetPresignedDownloadUrl()
+			if err != nil {
+				writeError(w, err)
+				return
+			}
+		}
 
-		fmt.Println(od)
+		od.Documents = docs
 
 		t.ExecuteTemplate(w, "base", od)
 	}
@@ -313,6 +319,16 @@ func handleUploadToOppty(
 			writeError(w, err)
 			return
 		}
+
+		for i := range docs {
+			_, err := docs[i].GetPresignedDownloadUrl()
+			if err != nil {
+				fmt.Println(err.Error())
+				writeError(w, err)
+				return
+			}
+		}
+
 		od := OpptyDetails{
 			Oppty: *o,
 			Documents: docs,
