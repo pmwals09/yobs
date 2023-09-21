@@ -1,11 +1,11 @@
-package backend
+package db
 
 import (
 	"database/sql"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/pmwals09/yobs/apps/backend/document"
-	"github.com/pmwals09/yobs/apps/backend/opportunity"
+	"github.com/pmwals09/yobs/internal/models/document"
+	"github.com/pmwals09/yobs/internal/models/opportunity"
 )
 
 func InitDb() (*sql.DB, error) {

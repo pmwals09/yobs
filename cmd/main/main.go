@@ -1,4 +1,4 @@
-package backend
+package main
 
 import (
 	"fmt"
@@ -12,12 +12,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
-	db "github.com/pmwals09/yobs/apps/backend/db"
-	"github.com/pmwals09/yobs/apps/backend/document"
-	"github.com/pmwals09/yobs/apps/backend/opportunity"
+	db "github.com/pmwals09/yobs/internal"
+	"github.com/pmwals09/yobs/internal/models/document"
+	"github.com/pmwals09/yobs/internal/models/opportunity"
 )
 
-func Run() {
+func main() {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -67,9 +67,9 @@ func handleGetHomepage() http.HandlerFunc {
 			return
 		}
 		t, err := template.ParseFiles(
-			wd+"/apps/clients/web/templates/opportunity-form-partial.html",
-			wd+"/apps/clients/web/templates/index-page.html",
-			wd+"/apps/clients/web/templates/base.html",
+			wd+"/web/template/opportunity-form-partial.html",
+			wd+"/web/template/index-page.html",
+			wd+"/web/template/base.html",
 		)
 		if err != nil {
 			writeError(w, err)
@@ -106,7 +106,7 @@ func handlePostOppty(repo opportunity.OpportunityModel) http.HandlerFunc {
 
 		r.Header.Add("HX-Retarget", "#main-content")
 		tmpl, templateErr := template.New("opportunity-list").Funcs(getListFuncMap()).ParseFiles(
-			wd + "/apps/clients/web/templates/opportunity-list-partial.html",
+			wd + "/web/template/opportunity-list-partial.html",
 		)
 
 		if templateErr != nil {
@@ -125,7 +125,7 @@ func handlePostOppty(repo opportunity.OpportunityModel) http.HandlerFunc {
 
 func handleCreateOpptyError(w http.ResponseWriter, wd string, err error) {
 	t, templateError := template.ParseFiles(
-		wd + "/apps/clients/web/templates/opportunity-form-partial.html",
+		wd + "/web/template/opportunity-form-partial.html",
 	)
 
 	if templateError != nil {
@@ -176,7 +176,7 @@ func handleGetActiveOpptys(repo opportunity.OpportunityModel) http.HandlerFunc {
 			return
 		}
 		tmpl, err := template.New("opportunity-list").Funcs(getListFuncMap()).ParseFiles(
-			wd + "/apps/clients/web/templates/opportunity-list-partial.html",
+			wd + "/web/template/opportunity-list-partial.html",
 		)
 		if err != nil {
 			writeError(w, err)
@@ -199,9 +199,9 @@ func handleGetOppty(repo opportunity.OpportunityModel) http.HandlerFunc {
 			return
 		}
 		t, err := template.New("base").Funcs(getListFuncMap()).ParseFiles(
-			wd+"/apps/clients/web/templates/attachments-section-partial.html",
-			wd+"/apps/clients/web/templates/opportunity-details-page.html",
-			wd+"/apps/clients/web/templates/base.html",
+			wd+"/web/template/attachments-section-partial.html",
+			wd+"/web/template/opportunity-details-page.html",
+			wd+"/web/template/base.html",
 		)
 		if err != nil {
 			writeError(w, err)
@@ -306,7 +306,7 @@ func handleUploadToOppty(
 			return
 		}
 		t, err := template.New("attachments-section").Funcs(getListFuncMap()).ParseFiles(
-			wd + "/apps/clients/web/templates/attachments-section-partial.html",
+			wd + "/web/template/attachments-section-partial.html",
 		)
 		o, err := oppRepo.GetOpportuntyById(uint(id))
 		if err != nil {

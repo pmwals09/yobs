@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pmwals09/yobs/apps/backend/document"
+	"github.com/pmwals09/yobs/internal/models/document"
 	// "github.com/pmwals09/yobs/apps/backend/task"
 )
 
