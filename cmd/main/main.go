@@ -45,6 +45,10 @@ func main() {
 	r.Get("/ping", controllers.HandlePing)
 	r.Get("/sign-up", controllers.HandleGetSignUpPage())
 	// TODO: All these routes should be behind Auth - only a valid user can see them
+	// so we should add some middleware for these routes that confirms a user is:
+	// - logged in
+	//   - use previously set JWT
+	// - allowed to see this content (i.e., admin vs. user)
 	r.Get("/home", controllers.HandleGetHomepage())
 	r.Route("/profile", func(r chi.Router) {
 		r.Get("/", controllers.HandleGetProfilePage())
@@ -58,5 +62,5 @@ func main() {
 		})
 	})
 
-	log.Fatal(http.ListenAndServe(":8081", r))
+	log.Fatal(http.ListenAndServe(":8082", r))
 }

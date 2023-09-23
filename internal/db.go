@@ -14,6 +14,9 @@ func InitDb() (*sql.DB, error) {
 		return nil, err
 	}
 
+	// TODO: Ideally we would have some kind of migrations system so we could
+	// just run them all with one command, instead of relying on the practice of 
+	// having a CreateTable method for each model in use
 	opportunity.CreateTable(db)
 	document.CreateTable(db)
 	return db, nil
