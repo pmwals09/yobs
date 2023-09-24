@@ -13,6 +13,7 @@ import (
 	"github.com/pmwals09/yobs/internal/controllers"
 	"github.com/pmwals09/yobs/internal/models/document"
 	"github.com/pmwals09/yobs/internal/models/opportunity"
+	"github.com/pmwals09/yobs/internal/models/session"
 	"github.com/pmwals09/yobs/internal/models/user"
 )
 
@@ -41,6 +42,7 @@ func main() {
 	opptyRepo := opportunity.OpportunityModel{DB: sqlDb}
 	docRepo := document.DocumentModel{DB: sqlDb}
 	userRepo := user.UserModel{DB: sqlDb}
+  sessionRepo := session.SessionModel{DB: sqlDb}
 
 	r.Get("/", controllers.HandleGetLandingPage())
 	r.Get("/ping", controllers.HandlePing)
@@ -48,6 +50,7 @@ func main() {
   r.Get("/login", controllers.HandleGetLoginPage())
   r.Route("/user", func(r chi.Router) {
     r.Post("/register", controllers.HandleRegisterUser(&userRepo))
+    r.Post("/login", controllers.HandleLogInUser(&userRepo, &sessionRepo))
   })
 	// TODO: All these routes should be behind Auth - only a valid user can see them
 	// so we should add some middleware for these routes that confirms a user is:

@@ -53,6 +53,21 @@ func HandleGetLoginPage() http.HandlerFunc {
 		// TODO: Get the user row from the database
 		// TODO: Compare hash and password
 		// TODO: set jwt token cookie for additional requests
+    wd, err := os.Getwd()
+    if err != nil {
+      helpers.WriteError(w, err)
+      return
+    }
+    t, err := template.ParseFiles(
+      wd+"/web/template/login-user-form-partial.html",
+      wd+"/web/template/login-page.html",
+      wd+"/web/template/base.html",
+    )
+    if err != nil {
+      helpers.WriteError(w, err)
+      return
+    }
+    t.ExecuteTemplate(w, "base", nil)
 	}
 }
 

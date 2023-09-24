@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	helpers "github.com/pmwals09/yobs/internal"
+	"github.com/pmwals09/yobs/internal/models/session"
 	"github.com/pmwals09/yobs/internal/models/user"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -108,12 +109,66 @@ func HandleRegisterUser(repo user.Repository) http.HandlerFunc {
 	}
 }
 
+func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		newUserInfo := newUserFromRequest(r)
+
+		user, err := userRepo.GetUserByEmailOrUsername(
+			newUserInfo["usernameOrEmail"],
+			newUserInfo["usernameOrEmail"],
+		)
+
+		if err != nil {
+			// TODO: return form w/ messages
+			helpers.WriteError(w, err)
+			return
+		}
+
+		if err = bcrypt.CompareHashAndPassword(
+			[]byte(user.Password),
+			[]byte(newUserInfo["password"]),
+		); err != nil {
+			// TODO: return form w/ messages
+			helpers.WriteError(w, err)
+			return
+		}
+
+    // TODO: I don't like this arrangement. It would be really easy to create
+    // a session object, but not insert it into the database before sending a
+    // cookie to the browser
+    s := session.New()
+    s.WithUser(user)
+    sessionRepo.CreateSession(s)
+    c := http.Cookie{
+      Name: "yobs",
+      Value: s.UUID.String(),
+      Path: "/",
+      Expires: s.Expiration,
+      HttpOnly: true,
+      Secure: true,
+      SameSite: http.SameSiteLaxMode,
+    }
+    http.SetCookie(w, &c)
+
+    // NOTE: This seems unintuitive, but it works with the HTMX model. One may
+    // expect to do http.Redirect(w, r, "/home", http.StatusFound), but that
+    // will replace the hx-boost area with the contents of the page to which
+    // we redirect. Done enough times, this is like the "infinite mirror" effect
+    w.Header().Add("HX-Redirect", "/home")
+    w.WriteHeader(http.StatusFound)
+    w.Write([]byte(""))
+    return
+	}
+}
+
 func newUserFromRequest(r *http.Request) map[string]string {
 	r.ParseForm()
 
 	newUserInfo := map[string]string{}
 	newUserInfo["username"] = r.PostForm.Get("username")
 	newUserInfo["email"] = r.PostForm.Get("email")
+	newUserInfo["usernameOrEmail"] = r.PostForm.Get("username-or-email")
 	newUserInfo["password"] = r.PostForm.Get("password")
 	newUserInfo["passwordRepeat"] = r.PostForm.Get("password-repeat")
 	return newUserInfo
@@ -142,7 +197,7 @@ func validateUserInfo(userInfo map[string]string, repo user.Repository) (map[str
 		userInfo["username"],
 	)
 	if potentialUser != nil {
-    errorMessage := "Email or username already in use. You can log in <a href='/login'>here.</a>"
+		errorMessage := "Email or username already in use. You can log in <a href='/login'>here.</a>"
 		errorData["username"] = template.HTML(
 			openTag + errorMessage + "</p>",
 		)
@@ -152,7 +207,7 @@ func validateUserInfo(userInfo map[string]string, repo user.Repository) (map[str
 		errorMessages = append(errorMessages, errorMessage)
 	}
 
-  if err != nil {
+	if err != nil {
 		errorMessage := "Error validating username and email"
 		errorData["username"] = template.HTML(
 			openTag + errorMessage + "</p>",
@@ -161,7 +216,7 @@ func validateUserInfo(userInfo map[string]string, repo user.Repository) (map[str
 			openTag + errorMessage + "</p>",
 		)
 		errorMessages = append(errorMessages, errorMessage)
-  }
+	}
 
 	if len(errorMessages) == 0 {
 		return nil, nil

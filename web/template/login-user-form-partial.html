@@ -1,9 +1,9 @@
 {{ define "login-user-form-partial" }}
-<form action="/user/register" method="POST" class="mt-4" hx-post="/user/register" hx-swap="outerHTML">
+<form action="/user/login" method="POST" class="mt-4" hx-post="/user/login" hx-swap="outerHTML">
   <section class="grid grid-cols-2 gap-y-2">
     <label for="username-or-email" class="self-center">User Name or Email</label>
     <input type="text" id="username-or-email" name="username-or-email" value="{{ .Values.usernameOrEmail }}" />
-    {{.Errors.username}}
+    {{.Errors.usernameOrEmail}}
     <label for="password" class="self-center">Password</label>
     <input type="password" id="password" name="password" value="{{ .Values.password }}" />
     {{.Errors.password}}
