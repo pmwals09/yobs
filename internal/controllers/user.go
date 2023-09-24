@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"database/sql"
 	"errors"
 	"html/template"
 	"net/http"
@@ -154,7 +155,10 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository) h
     // NOTE: This seems unintuitive, but it works with the HTMX model. One may
     // expect to do http.Redirect(w, r, "/home", http.StatusFound), but that
     // will replace the hx-boost area with the contents of the page to which
-    // we redirect. Done enough times, this is like the "infinite mirror" effect
+    // we redirect. Done enough times, this is like the "infinite mirror"
+    // effect. In retrospect, a 302 forwards a GET request to the new path, and
+    // the server returns the full HTML of the page to replace the boosted area,
+    // so it makes sense. This is the alternative proposed by HTMX
     w.Header().Add("HX-Redirect", "/home")
     w.WriteHeader(http.StatusFound)
     w.Write([]byte(""))
@@ -196,7 +200,7 @@ func validateUserInfo(userInfo map[string]string, repo user.Repository) (map[str
 		userInfo["email"],
 		userInfo["username"],
 	)
-	if potentialUser != nil {
+	if potentialUser.ID != 0 {
 		errorMessage := "Email or username already in use. You can log in <a href='/login'>here.</a>"
 		errorData["username"] = template.HTML(
 			openTag + errorMessage + "</p>",
@@ -207,7 +211,7 @@ func validateUserInfo(userInfo map[string]string, repo user.Repository) (map[str
 		errorMessages = append(errorMessages, errorMessage)
 	}
 
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		errorMessage := "Error validating username and email"
 		errorData["username"] = template.HTML(
 			openTag + errorMessage + "</p>",
