@@ -14,9 +14,8 @@ import (
 	"github.com/pmwals09/yobs/internal/models/opportunity"
 )
 
-func HandlePostOppty(repo opportunity.OpportunityModel) http.HandlerFunc {
+func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		r.ParseForm()
 		newOpportunity := newOpportunityFromRequest(r)
 
 		wd, wdErr := os.Getwd()
@@ -72,7 +71,7 @@ func handleCreateOpptyError(w http.ResponseWriter, wd string, err error) {
 	)
 }
 
-func HandleGetActiveOpptys(repo opportunity.OpportunityModel) http.HandlerFunc {
+func HandleGetActiveOpptys(repo opportunity.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		opptys, err := repo.GetAllOpportunities()
 		if err != nil {
@@ -100,7 +99,7 @@ type OpptyDetails struct {
 	Documents []document.Document
 }
 
-func HandleGetOppty(repo opportunity.OpportunityModel) http.HandlerFunc {
+func HandleGetOppty(repo opportunity.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		wd, err := os.Getwd()
 		if err != nil {
@@ -154,8 +153,8 @@ func HandleGetOppty(repo opportunity.OpportunityModel) http.HandlerFunc {
 }
 
 func HandleUploadToOppty(
-	oppRepo opportunity.OpportunityModel,
-	docRepo document.DocumentModel,
+	oppRepo opportunity.Repository,
+	docRepo document.Repository,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.ParseMultipartForm(10 << 20)
@@ -239,7 +238,7 @@ func HandleUploadToOppty(
 		}
 
 		od := OpptyDetails{
-			Oppty: *o,
+			Oppty:     *o,
 			Documents: docs,
 		}
 		t.ExecuteTemplate(w, "attachments-section", od)
@@ -247,6 +246,7 @@ func HandleUploadToOppty(
 }
 
 func newOpportunityFromRequest(r *http.Request) *opportunity.Opportunity {
+	r.ParseForm()
 	name := r.PostForm.Get("opportunity-name")
 	description := r.PostForm.Get("opportunity-description")
 	url := r.PostForm.Get("opportunity-url")
@@ -260,7 +260,6 @@ func newOpportunityFromRequest(r *http.Request) *opportunity.Opportunity {
 	}
 	return o
 }
-
 
 func getListFuncMap() template.FuncMap {
 	return template.FuncMap{

@@ -10,9 +10,10 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
 	helpers "github.com/pmwals09/yobs/internal"
+	"github.com/pmwals09/yobs/internal/controllers"
 	"github.com/pmwals09/yobs/internal/models/document"
 	"github.com/pmwals09/yobs/internal/models/opportunity"
-	"github.com/pmwals09/yobs/internal/controllers"
+	"github.com/pmwals09/yobs/internal/models/user"
 )
 
 func main() {
@@ -39,11 +40,15 @@ func main() {
 
 	opptyRepo := opportunity.OpportunityModel{DB: sqlDb}
 	docRepo := document.DocumentModel{DB: sqlDb}
+	userRepo := user.UserModel{DB: sqlDb}
 
 	r.Get("/", controllers.HandleGetLandingPage())
-	r.Get("/login", controllers.HandleGetLoginPage())
 	r.Get("/ping", controllers.HandlePing)
 	r.Get("/sign-up", controllers.HandleGetSignUpPage())
+  r.Get("/login", controllers.HandleGetLoginPage())
+  r.Route("/user", func(r chi.Router) {
+    r.Post("/register", controllers.HandleRegisterUser(&userRepo))
+  })
 	// TODO: All these routes should be behind Auth - only a valid user can see them
 	// so we should add some middleware for these routes that confirms a user is:
 	// - logged in
@@ -54,11 +59,11 @@ func main() {
 		r.Get("/", controllers.HandleGetProfilePage())
 	})
 	r.Route("/opportunities", func(r chi.Router) {
-		r.Post("/", controllers.HandlePostOppty(opptyRepo))
-		r.Get("/active", controllers.HandleGetActiveOpptys(opptyRepo))
+		r.Post("/", controllers.HandlePostOppty(&opptyRepo))
+		r.Get("/active", controllers.HandleGetActiveOpptys(&opptyRepo))
 		r.Route("/{opportunityId}", func(r chi.Router) {
-			r.Get("/", controllers.HandleGetOppty(opptyRepo))
-			r.Post("/upload", controllers.HandleUploadToOppty(opptyRepo, docRepo))
+			r.Get("/", controllers.HandleGetOppty(&opptyRepo))
+			r.Post("/upload", controllers.HandleUploadToOppty(&opptyRepo, &docRepo))
 		})
 	})
 

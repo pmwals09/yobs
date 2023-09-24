@@ -87,7 +87,7 @@ type DocumentModel struct {
 }
 
 type Repository interface {
-	CreateDocument()
+	CreateDocument(doc *Document) error
 }
 
 func (d *Document) Upload(file multipart.File) error {

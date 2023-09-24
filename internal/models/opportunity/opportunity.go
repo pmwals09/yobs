@@ -94,10 +94,10 @@ type Repository interface {
 	CreateOpportunity(opp *Opportunity) error
 	GetOpportuntyById(opptyId uint) (*Opportunity, error)
 	GetAllOpportunities() ([]Opportunity, error)
-	UpdateOpporunity(opptyId uint, newOpportunity Opportunity) error
+	UpdateOpportunity(opp *Opportunity) error
 	DeleteOpportunity(opptyId uint) error
 	AddDocument(opptyId uint, documentId uint) error
-	GetAllDocuments() ([]document.Document, error)
+	GetAllDocuments(opptyId uint) ([]document.Document, error)
 }
 
 type OpportunityModel struct {
@@ -188,7 +188,7 @@ func (g *OpportunityModel) GetAllOpportunities() ([]Opportunity, error) {
 	return opptys, nil
 }
 
-func (g *OpportunityModel) UpdateOpporunity(opp *Opportunity) error {
+func (g *OpportunityModel) UpdateOpportunity(opp *Opportunity) error {
 	_, err := g.DB.Exec(`
 		UPDATE opportunities
 		SET
