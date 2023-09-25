@@ -6,6 +6,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/pmwals09/yobs/internal/models/document"
 	"github.com/pmwals09/yobs/internal/models/opportunity"
+	"github.com/pmwals09/yobs/internal/models/session"
 	"github.com/pmwals09/yobs/internal/models/user"
 )
 
@@ -21,5 +22,6 @@ func InitDb() (*sql.DB, error) {
 	opportunity.CreateTable(db)
 	document.CreateTable(db)
 	user.CreateTable(db)
+	session.CreateTable(db)
 	return db, nil
 }

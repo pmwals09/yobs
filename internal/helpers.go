@@ -11,3 +11,9 @@ func WriteError(w http.ResponseWriter, err error) {
 		err.Error(),
 	)))
 }
+
+func HTMXRedirect(w http.ResponseWriter, route string, code int) {
+	w.Header().Add("HX-Redirect", route)
+	w.WriteHeader(code)
+	w.Write([]byte(""))
+}

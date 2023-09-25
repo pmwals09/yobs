@@ -160,8 +160,6 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository) h
     // the server returns the full HTML of the page to replace the boosted area,
     // so it makes sense. This is the alternative proposed by HTMX
     w.Header().Add("HX-Redirect", "/home")
-    w.WriteHeader(http.StatusFound)
-    w.Write([]byte(""))
     return
 	}
 }

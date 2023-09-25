@@ -5,7 +5,7 @@
     <script src="https://unpkg.com/htmx.org@1.9.5"></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
   </head>
-  <body class="w-4/5 mx-auto">
+  <body class="w-4/5 mx-auto" hx-boost>
     <nav class="flex justify-between">
       <ul class="flex gap-4">
         <li><a href="/home">Home</a></li>
@@ -17,7 +17,7 @@
         <li><a href="/profile">My Profile</a></li>
       </ul>
     </nav>
-    <main hx-boost>
+    <main>
       {{ template "main-content" . }}
     </main>
   </body>
