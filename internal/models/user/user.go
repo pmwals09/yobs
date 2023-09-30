@@ -24,21 +24,21 @@ func CreateTable(db *sql.DB) error {
       password TEXT NOT NULL
     );
   `
-  _, err := db.Exec(createStr)
-  return err
+	_, err := db.Exec(createStr)
+	return err
 }
 
 func New(username string, email string) *User {
-  return &User{
-    UUID: uuid.New(),
-    Username: username,
-    Email: email,
-  }
+	return &User{
+		UUID:     uuid.New(),
+		Username: username,
+		Email:    email,
+	}
 }
 
 func (u *User) WithPasswordHash(pw string) *User {
-  u.Password = pw
-  return u
+	u.Password = pw
+	return u
 }
 
 type UserModel struct {
@@ -46,16 +46,17 @@ type UserModel struct {
 }
 
 type Repository interface {
-  GetUserByEmailOrUsername(email string, username string) (*User, error)
-  CreateUser(user *User) error
+	GetUserByEmailOrUsername(email string, username string) (*User, error)
+	CreateUser(user *User) error
+  GetUserById(userId uint) (*User, error)
 }
 
 func (um *UserModel) GetUserByEmailOrUsername(
-  email string,
-  username string,
+	email string,
+	username string,
 ) (*User, error) {
-  var user User
-  res := um.DB.QueryRow(`
+	var user User
+	res := um.DB.QueryRow(`
     SELECT
       id,
       uuid,
@@ -64,19 +65,19 @@ func (um *UserModel) GetUserByEmailOrUsername(
       password
     FROM users WHERE email = ? OR username = ?;
   `, email, username)
-  err := res.Scan(
-    &user.ID,
-    &user.UUID,
-    &user.Email,
-    &user.Username,
-    &user.Password,
-  )
+	err := res.Scan(
+		&user.ID,
+		&user.UUID,
+		&user.Email,
+		&user.Username,
+		&user.Password,
+	)
 
-  return &user, err
+	return &user, err
 }
 
 func (um *UserModel) CreateUser(user *User) error {
-  _, err := um.DB.Exec(`
+	_, err := um.DB.Exec(`
     INSERT INTO users (
       uuid,
       username,
@@ -84,11 +85,34 @@ func (um *UserModel) CreateUser(user *User) error {
       password
     ) VALUES (?, ?, ?, ?);
   `,
-    user.UUID,
-    user.Username,
-    user.Email,
-    user.Password,
-  )
+		user.UUID,
+		user.Username,
+		user.Email,
+		user.Password,
+	)
 
-  return err
+	return err
+}
+
+func (um *UserModel) GetUserById(userId uint) (*User, error) {
+	var user User
+	res := um.DB.QueryRow(`
+    SELECT 
+      id,
+      uuid,
+      username,
+      email,
+      password
+    FROM users WHERE id = ?
+  `, userId)
+
+	err := res.Scan(
+		&user.ID,
+		&user.UUID,
+		&user.Username,
+		&user.Email,
+		&user.Password,
+	)
+
+	return &user, err
 }

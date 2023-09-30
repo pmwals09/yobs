@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/pmwals09/yobs/internal/models/document"
+	"github.com/pmwals09/yobs/internal/models/user"
 	// "github.com/pmwals09/yobs/apps/backend/task"
 )
 
@@ -22,13 +23,14 @@ const (
 )
 
 type Opportunity struct {
-	ID              uint      `json:"id"`
-	CompanyName     string    `json:"companyName"`
-	Role            string    `json:"role"`
-	Description     string    `json:"description"`
-	URL             string    `json:"url"`
-	ApplicationDate time.Time `json:"applicationDate"`
-	Status          Status    `json:"status"`
+	ID              uint       `json:"id"`
+	CompanyName     string     `json:"companyName"`
+	Role            string     `json:"role"`
+	Description     string     `json:"description"`
+	URL             string     `json:"url"`
+	ApplicationDate time.Time  `json:"applicationDate"`
+	Status          Status     `json:"status"`
+	User            *user.User `json:"user"`
 	// Tasks           []task.Task `json:"tasks"`
 	// Documents       []document.Document `json:"documents"`
 	// Tasks
@@ -44,7 +46,9 @@ func CreateTable(db *sql.DB) error {
 			description TEXT,
 			url TEXT,
 			application_date DATETIME,
-			status TEXT
+			status TEXT,
+      user_id INTEGER NOT NULL,
+      FOREIGN KEY (user_id) REFERENCES users(id)
 		);
 	`
 	_, err := db.Exec(createStr)
@@ -75,6 +79,11 @@ func (o *Opportunity) WithURL(url string) *Opportunity {
 	return o
 }
 
+func (o *Opportunity) WithUser(user *user.User) *Opportunity {
+	o.User = user
+  return o
+}
+
 func (o *Opportunity) WithApplicationDateString(applicationDate string) *Opportunity {
 	t, err := time.Parse("2006-01-02", applicationDate)
 	if err != nil {
@@ -92,12 +101,12 @@ func (o *Opportunity) WithApplicationDateTime(applicationDate time.Time) *Opport
 
 type Repository interface {
 	CreateOpportunity(opp *Opportunity) error
-	GetOpportuntyById(opptyId uint) (*Opportunity, error)
-	GetAllOpportunities() ([]Opportunity, error)
+	GetOpportuntyById(opptyId uint, user *user.User) (*Opportunity, error)
+	GetAllOpportunities(user *user.User) ([]Opportunity, error)
 	UpdateOpportunity(opp *Opportunity) error
-	DeleteOpportunity(opptyId uint) error
-	AddDocument(opptyId uint, documentId uint) error
-	GetAllDocuments(opptyId uint) ([]document.Document, error)
+	DeleteOpportunity(oppty *Opportunity) error
+	AddDocument(oppty *Opportunity, document *document.Document) error
+	GetAllDocuments(oppty *Opportunity) ([]document.Document, error)
 }
 
 type OpportunityModel struct {
@@ -112,8 +121,9 @@ func (g *OpportunityModel) CreateOpportunity(opp *Opportunity) error {
 			description,
 			url,
 			application_date,
-			status
-		) VALUES (?, ?, ?, ?, ?, ?);
+			status,
+      user_id
+		) VALUES (?, ?, ?, ?, ?, ?, ?);
 	`,
 		opp.CompanyName,
 		opp.Role,
@@ -121,12 +131,13 @@ func (g *OpportunityModel) CreateOpportunity(opp *Opportunity) error {
 		opp.URL,
 		opp.ApplicationDate,
 		opp.Status,
+    opp.User.ID,
 	)
 
 	return err
 }
 
-func (g *OpportunityModel) GetOpportuntyById(opptyId uint) (*Opportunity, error) {
+func (g *OpportunityModel) GetOpportuntyById(opptyId uint, user *user.User) (*Opportunity, error) {
 	var oppty Opportunity
 	res := g.DB.QueryRow(`
 		SELECT
@@ -136,9 +147,10 @@ func (g *OpportunityModel) GetOpportuntyById(opptyId uint) (*Opportunity, error)
 			description,
 			url,
 			application_date,
-			status
-		FROM opportunities WHERE id = ?;
-	`, opptyId)
+			status,
+      user_id
+		FROM opportunities WHERE id = ? AND user_id = ?;
+	`, opptyId, user.ID)
 	err := res.Scan(
 		&oppty.ID,
 		&oppty.CompanyName,
@@ -152,7 +164,8 @@ func (g *OpportunityModel) GetOpportuntyById(opptyId uint) (*Opportunity, error)
 	return &oppty, err
 }
 
-func (g *OpportunityModel) GetAllOpportunities() ([]Opportunity, error) {
+func (g *OpportunityModel) GetAllOpportunities(user *user.User) ([]Opportunity, error) {
+  fmt.Println(user)
 	var opptys []Opportunity
 	rows, err := g.DB.Query(`
 		SELECT
@@ -163,8 +176,8 @@ func (g *OpportunityModel) GetAllOpportunities() ([]Opportunity, error) {
 			url,
 			application_date,
 			status
-		FROM opportunities;
-	`)
+		FROM opportunities WHERE user_id = ?;
+	`, user.ID)
 
 	if err != nil {
 		return opptys, err
@@ -183,6 +196,7 @@ func (g *OpportunityModel) GetAllOpportunities() ([]Opportunity, error) {
 		if err != nil {
 			return opptys, err
 		}
+    oppty.User = user
 		opptys = append(opptys, oppty)
 	}
 	return opptys, nil
@@ -198,7 +212,7 @@ func (g *OpportunityModel) UpdateOpportunity(opp *Opportunity) error {
 			url = ?,
 			application_date = ?,
 			status = ?
-		WHERE id = ?;
+		WHERE id = ? AND user_id = ?;
 	`,
 		opp.CompanyName,
 		opp.Role,
@@ -207,28 +221,29 @@ func (g *OpportunityModel) UpdateOpportunity(opp *Opportunity) error {
 		opp.ApplicationDate,
 		opp.Status,
 		opp.ID,
+    opp.User.ID,
 	)
 	return err
 }
 
-func (g *OpportunityModel) DeleteOpportunity(opptyId uint) error {
+func (g *OpportunityModel) DeleteOpportunity(oppty *Opportunity) error {
 	_, err := g.DB.Exec(`
-		DELETE FROM opportunities WHERE id = ?
-	`, opptyId)
+		DELETE FROM opportunities WHERE id = ? AND user_id = ?
+	`, oppty.ID, oppty.User.ID)
 	return err
 }
 
-func (g *OpportunityModel) AddDocument(opptyId uint, documentId uint) error {
+func (g *OpportunityModel) AddDocument(oppty *Opportunity, document *document.Document) error {
 	_, err := g.DB.Exec(`
 		INSERT INTO opportunity_documents (
 			opportunity_id,
 			document_id
 		) VALUES (?, ?);
-	`, opptyId, documentId)
+	`, oppty.ID, document.ID)
 	return err
 }
 
-func (o *OpportunityModel) GetAllDocuments(opptyId uint) ([]document.Document, error) {
+func (o *OpportunityModel) GetAllDocuments(oppty *Opportunity) ([]document.Document, error) {
 	var docs []document.Document
 	rows, err := o.DB.Query(`
 		SELECT
@@ -240,9 +255,9 @@ func (o *OpportunityModel) GetAllDocuments(opptyId uint) ([]document.Document, e
 		JOIN opportunity_documents od ON d.id = od.document_id
 		JOIN opportunities o ON o.id = od.opportunity_id
 		WHERE o.id = ?;
-	`, opptyId)
+	`, oppty.ID)
 	if err != nil {
-		fmt.Println("QUERY ERROR",err.Error())
+		fmt.Println("QUERY ERROR", err.Error())
 		return docs, err
 	}
 
@@ -259,18 +274,6 @@ func (o *OpportunityModel) GetAllDocuments(opptyId uint) ([]document.Document, e
 		}
 		docs = append(docs, d)
 	}
-	
+
 	return docs, nil
 }
-
-// func (g *GormRepository) AddTask(opptyId uint, t []*task.Task) (*Opportunity, error) {
-// 	if opp, err := g.GetOpportuntyById(opptyId); err != nil {
-// 		return &opp, err
-// 	} else {
-// 		if appendErr := g.DB.Model(&opp).Association("Tasks").Append(t); appendErr != nil {
-// 			return &opp, err
-// 		} else {
-// 			return &opp, nil
-// 		}
-// 	}
-// }

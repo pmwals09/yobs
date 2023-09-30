@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/google/uuid"
 	helpers "github.com/pmwals09/yobs/internal"
 	"github.com/pmwals09/yobs/internal/models/session"
 	"github.com/pmwals09/yobs/internal/models/user"
@@ -141,14 +142,38 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository) h
     s := session.New()
     s.WithUser(user)
     sessionRepo.CreateSession(s)
+    cName := "yobs"
     c := http.Cookie{
-      Name: "yobs",
+      Name: cName,
       Value: s.UUID.String(),
       Path: "/",
       Expires: s.Expiration,
       HttpOnly: true,
       Secure: true,
-      SameSite: http.SameSiteLaxMode,
+      SameSite: http.SameSiteDefaultMode,
+    }
+    
+    // NOTE: I was running into an issue where certain requests from HTMX would
+    // have 2 "yobs" cookies - the current one and an old one. We should only
+    // have 1 session running at a time, so we will remove the old cookie and
+    // remove the old session from the database before setting the new cookie
+    currentCookies := r.Cookies()
+    for _, cookie := range currentCookies {
+      if cookie.Name == cName {
+        cookie.MaxAge = -1
+        http.SetCookie(w, cookie)
+        oldUuid, err := uuid.Parse(cookie.Value)
+        if err != nil {
+          helpers.WriteError(w, err)
+          return
+        }
+        err = sessionRepo.DeleteSessionByUUID(oldUuid)
+        if err != nil {
+          helpers.WriteError(w, err)
+          return
+        }
+        break
+      }
     }
     http.SetCookie(w, &c)
 

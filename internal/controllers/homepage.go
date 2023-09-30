@@ -1,30 +1,50 @@
 package controllers
 
 import (
+	"errors"
 	"html/template"
 	"net/http"
 	"os"
 
 	helpers "github.com/pmwals09/yobs/internal"
+	"github.com/pmwals09/yobs/internal/models/opportunity"
+	"github.com/pmwals09/yobs/internal/models/user"
 )
 
-func HandleGetHomepage() http.HandlerFunc {
+func HandleGetHomepage(opptyRepo opportunity.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		wd, err := os.Getwd()
 		if err != nil {
 			helpers.WriteError(w, err)
 			return
 		}
-		t, err := template.ParseFiles(
-			wd+"/web/template/opportunity-form-partial.html",
-			wd+"/web/template/home-page.html",
-			wd+"/web/template/base.html",
-		)
+		t, err := template.
+      New("base").
+      Funcs(helpers.GetListFuncMap()).
+      ParseFiles(
+        wd+"/web/template/opportunity-form-partial.html",
+        wd+"/web/template/opportunity-list-partial.html",
+        wd+"/web/template/home-page.html",
+        wd+"/web/template/base.html",
+      )
 		if err != nil {
 			helpers.WriteError(w, err)
 			return
 		}
-		t.ExecuteTemplate(w, "base", nil)
+
+    user := r.Context().Value("user").(*user.User)
+    if user == nil {
+			helpers.WriteError(w, errors.New("No user available"))
+			return
+    }
+
+    opptys, err := opptyRepo.GetAllOpportunities(user)
+    if err != nil {
+			helpers.WriteError(w, err)
+			return
+    }
+
+    t.ExecuteTemplate(w, "base", map[string][]opportunity.Opportunity { "Opportunities": opptys })
 	}
 }
 
@@ -35,10 +55,11 @@ func HandleGetLandingPage() http.HandlerFunc {
 			helpers.WriteError(w, err)
 			return
 		}
-		t, err := template.ParseFiles(
-			wd+"/web/template/index-page.html",
-			wd+"/web/template/base.html",
-		)
+		t, err := template.
+      ParseFiles(
+        wd+"/web/template/index-page.html",
+        wd+"/web/template/base.html",
+      )
 		if err != nil {
 			helpers.WriteError(w, err)
 			return
@@ -49,20 +70,17 @@ func HandleGetLandingPage() http.HandlerFunc {
 
 func HandleGetLoginPage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// https://www.youtube.com/watch?v=d4Y2DkKbxM0&ab_channel=freeCodeCamp.org
-		// TODO: Get the user row from the database
-		// TODO: Compare hash and password
-		// TODO: set jwt token cookie for additional requests
     wd, err := os.Getwd()
     if err != nil {
       helpers.WriteError(w, err)
       return
     }
-    t, err := template.ParseFiles(
-      wd+"/web/template/login-user-form-partial.html",
-      wd+"/web/template/login-page.html",
-      wd+"/web/template/base.html",
-    )
+    t, err := template.
+      ParseFiles(
+        wd+"/web/template/login-user-form-partial.html",
+        wd+"/web/template/login-page.html",
+        wd+"/web/template/base.html",
+      )
     if err != nil {
       helpers.WriteError(w, err)
       return

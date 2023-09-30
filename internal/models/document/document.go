@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/pmwals09/yobs/internal/models/user"
 	// signer "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 )
 
@@ -29,6 +30,7 @@ type Document struct {
 	Type        DocumentType `json:"type"`
 	ContentType string       `json:"contentType"`
 	URL         string       `json:"url"`
+	User        *user.User   `json:"user"`
 }
 
 func CreateTable(db *sql.DB) error {
@@ -45,7 +47,9 @@ func CreateTable(db *sql.DB) error {
 			file_name TEXT,
 			title TEXT UNIQUE,
 			type TEXT,
-			content_type TEXT
+			content_type TEXT,
+      user_id INTEGER NOT NULL,
+      FOREIGN KEY (user_id) REFERENCES users(id)
 		);
 	`)
 	_, oppDocErr := tx.Exec(`
@@ -82,6 +86,15 @@ func (d *Document) WithTitle(title string) *Document {
 	return d
 }
 
+func (d *Document) WithUser(u *user.User) *Document {
+	d.User = u
+	return d
+}
+
+func (d *Document) GetKey() string {
+	return d.User.UUID.String() + "/" + d.FileName
+}
+
 type DocumentModel struct {
 	DB *sql.DB
 }
@@ -91,8 +104,6 @@ type Repository interface {
 }
 
 func (d *Document) Upload(file multipart.File) error {
-	// TODO: eventually preface with UUID of user
-
 	region := os.Getenv("AWS_REGION")
 	bucketName := os.Getenv("AWS_S3_BUCKET")
 
@@ -107,7 +118,7 @@ func (d *Document) Upload(file multipart.File) error {
 
 	_, err = c.PutObject(context.Background(), &s3.PutObjectInput{
 		Bucket:      aws.String(bucketName),
-		Key:         aws.String(d.FileName),
+		Key:         aws.String(d.GetKey()),
 		Body:        file,
 		ContentType: aws.String(d.ContentType),
 	})
@@ -129,8 +140,9 @@ func (d *DocumentModel) CreateDocument(doc *Document) error {
 			file_name,
 			title,
 			type,
-			content_type
-		) VALUES ( $1, $2, $3, $4 ) RETURNING id;
+			content_type,
+      user_id
+		) VALUES ( $1, $2, $3, $4, $5 ) RETURNING id;
 	`)
 	if err != nil {
 		return err
@@ -142,6 +154,7 @@ func (d *DocumentModel) CreateDocument(doc *Document) error {
 		doc.Title,
 		doc.Type,
 		doc.ContentType,
+		doc.User.ID,
 	).Scan(&id)
 	if err != nil {
 		return err
@@ -171,10 +184,10 @@ func (d *Document) GetPresignedDownloadUrl() (string, error) {
 
 	c := s3.NewFromConfig(cfg)
 	pc := s3.NewPresignClient(c)
+	key := d.GetKey()
 	req, err := pc.PresignGetObject(context.Background(), &s3.GetObjectInput{
 		Bucket: aws.String(bucketName),
-		// TODO: Preface with user's UUID
-		Key: &d.FileName,
+		Key:    &key,
 	}, func(opts *s3.PresignOptions) {
 		opts.Expires = time.Duration(lifetimeSeconds * int64(time.Second))
 	})

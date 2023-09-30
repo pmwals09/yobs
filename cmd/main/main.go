@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -53,20 +54,15 @@ func main() {
 		r.Post("/register", controllers.HandleRegisterUser(&userRepo))
 		r.Post("/login", controllers.HandleLogInUser(&userRepo, &sessionRepo))
 	})
-	// TODO: All these routes should be behind Auth - only a valid user can see them
-	// so we should add some middleware for these routes that confirms a user is:
-	// - logged in
-	//   - use previously set JWT
-	// - allowed to see this content (i.e., admin vs. user)
-	r.Mount("/", authenticatedRouter(&opptyRepo, &docRepo, &sessionRepo))
+	r.Mount("/", authenticatedRouter(&opptyRepo, &docRepo, &sessionRepo, &userRepo))
 
 	log.Fatal(http.ListenAndServe(":8082", r))
 }
 
-func authenticatedRouter(opptyRepo opportunity.Repository, docRepo document.Repository, sessionRepo session.Repository) http.Handler {
+func authenticatedRouter(opptyRepo opportunity.Repository, docRepo document.Repository, sessionRepo session.Repository, userRepo user.Repository) http.Handler {
 	r := chi.NewRouter()
-	r.Use(AuthOnly(sessionRepo))
-	r.Get("/home", controllers.HandleGetHomepage())
+	r.Use(authOnly(sessionRepo, userRepo))
+	r.Get("/home", controllers.HandleGetHomepage(opptyRepo))
 	r.Route("/profile", func(r chi.Router) {
 		r.Get("/", controllers.HandleGetProfilePage())
 	})
@@ -81,7 +77,7 @@ func authenticatedRouter(opptyRepo opportunity.Repository, docRepo document.Repo
 	return r
 }
 
-func AuthOnly(sessionRepo session.Repository) func(http.Handler) http.Handler {
+func authOnly(sessionRepo session.Repository, userRepo user.Repository) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			cookies := r.Cookies()
@@ -123,10 +119,19 @@ func AuthOnly(sessionRepo session.Repository) func(http.Handler) http.Handler {
 			}
 
 			session.Expiration = time.Now().Add(time.Minute * 30)
+      err = sessionRepo.UpdateSession(session)
+      if err != nil {
+      }
 			cookie.Expires = session.Expiration
 			http.SetCookie(w, cookie)
 
-			next.ServeHTTP(w, r)
+      u, err := userRepo.GetUserById(session.UserID)
+      if err != nil {
+        http.Redirect(w, r, "/", http.StatusFound)
+        return
+      }
+      ctx := context.WithValue(r.Context(), "user", u)
+			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }

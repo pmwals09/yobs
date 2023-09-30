@@ -7,6 +7,7 @@ import (
 
 	helpers "github.com/pmwals09/yobs/internal"
 	"github.com/pmwals09/yobs/internal/models/document"
+	"github.com/pmwals09/yobs/internal/models/user"
 )
 
 type ProfileArgs struct {
@@ -32,10 +33,11 @@ func HandleGetProfilePage() http.HandlerFunc {
 			return
 		}
 
-		// TODO: get the logged-in user
+    u := r.Context().Value("user").(*user.User)
 		pa := ProfileArgs {
-			Username: "pmwals09",
-			Email: "pmwals09@gmail.com",
+			Username: u.Username,
+			Email: u.Email,
+      // TODO: Make preferred resume a field on the user
 			Resume: document.Document{
 				FileName: "Anonymous Resume",
 				Title: "My fancy resume",

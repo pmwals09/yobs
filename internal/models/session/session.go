@@ -58,6 +58,7 @@ type Repository interface {
 	CreateSession(s *Session) error
 	GetSessionByUUID(uuid uuid.UUID) (*Session, error)
   UpdateSession(s *Session) error
+  DeleteSessionByUUID(uuid uuid.UUID) error
 }
 
 func (sm *SessionModel) CreateSession(s *Session) error {
@@ -102,9 +103,18 @@ func (sm *SessionModel) GetSessionByUUID(uuid uuid.UUID) (*Session, error) {
 }
 
 func (sm *SessionModel) UpdateSession(s *Session) error {
+  // NOTE: the only thing that should change after a session is created is the
+  // expiration time
   _, err := sm.DB.Exec(`
+    UPDATE sessions
+    SET expiration = ?
+    WHERE id = ?
+  `, s.Expiration, s.ID)
 
-  `)
+  return err
+}
 
+func (sm *SessionModel) DeleteSessionByUUID(uuid uuid.UUID) error {
+  _, err := sm.DB.Exec(`DELETE FROM sessions WHERE uuid = ?`, uuid)
   return err
 }
