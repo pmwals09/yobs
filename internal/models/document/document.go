@@ -33,45 +33,6 @@ type Document struct {
 	User        *user.User   `json:"user"`
 }
 
-func CreateTable(db *sql.DB) error {
-	tx, err := db.Begin()
-	if err != nil {
-		return err
-	}
-	// NOTE: We don't store the URL. We use the URL when creating something
-	// clickable in order to download a document, but it's time-limited by AWS
-	// so we don't try to save it with the document
-	_, docErr := tx.Exec(`
-		CREATE TABLE IF NOT EXISTS documents (
-			id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-			file_name TEXT,
-			title TEXT UNIQUE,
-			type TEXT,
-			content_type TEXT,
-      user_id INTEGER NOT NULL,
-      FOREIGN KEY (user_id) REFERENCES users(id)
-		);
-	`)
-	_, oppDocErr := tx.Exec(`
-		CREATE TABLE IF NOT EXISTS opportunity_documents (
-			id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-			opportunity_id INTEGER NOT NULL,
-			document_id INTEGER NOT NULL,
-			FOREIGN KEY (opportunity_id) REFERENCES opportunities(id),
-			FOREIGN KEY (document_id) REFERENCES documents(id)
-		);
-		`)
-	if docErr != nil || oppDocErr != nil {
-		fmt.Println("DOCERR", docErr.Error())
-		fmt.Println("OPPDOCERR", oppDocErr.Error())
-		return err
-	}
-	if err = tx.Commit(); err != nil {
-		return err
-	}
-	return nil
-}
-
 func New(handler *multipart.FileHeader, documentType DocumentType) *Document {
 	fmt.Println("CONTENTTYPE", handler.Header.Get("Content-Type"))
 	return &Document{

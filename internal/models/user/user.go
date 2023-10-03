@@ -14,20 +14,6 @@ type User struct {
 	Password string // this will be the hashed value, not plaintext
 }
 
-func CreateTable(db *sql.DB) error {
-	createStr := `
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-      uuid TEXT NOT NULL,
-      username TEXT NOT NULL,
-      email TEXT NOT NULL,
-      password TEXT NOT NULL
-    );
-  `
-	_, err := db.Exec(createStr)
-	return err
-}
-
 func New(username string, email string) *User {
 	return &User{
 		UUID:     uuid.New(),

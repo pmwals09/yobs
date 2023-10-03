@@ -11,7 +11,8 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
-	helpers "github.com/pmwals09/yobs/internal"
+	
+	"github.com/pmwals09/yobs/internal/db"
 	"github.com/pmwals09/yobs/internal/controllers"
 	"github.com/pmwals09/yobs/internal/models/document"
 	"github.com/pmwals09/yobs/internal/models/opportunity"
@@ -29,7 +30,7 @@ func main() {
 
 	r.Use(middleware.Timeout(60 * time.Second))
 
-	sqlDb, err := helpers.InitDb()
+	sqlDb, err := db.InitDb()
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)

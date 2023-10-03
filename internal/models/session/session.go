@@ -16,21 +16,6 @@ type Session struct {
 	UserID     uint
 }
 
-func CreateTable(db *sql.DB) error {
-	createStr := `
-    CREATE TABLE IF NOT EXISTS sessions (
-      id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-      uuid TEXT NOT NULL UNIQUE,
-      init_time DATETIME,
-      expiration DATETIME NOT NULL,
-      user_id INTEGER NOT NULL,
-      FOREIGN KEY (user_id) REFERENCES users(id)
-    );
-  `
-	_, err := db.Exec(createStr)
-	return err
-}
-
 func New() *Session {
 	now := time.Now()
 	return &Session{
