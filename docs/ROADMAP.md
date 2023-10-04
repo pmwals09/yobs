@@ -4,24 +4,26 @@
 
 - [x] Bare response
 - [x] HTML response
+- [ ] As a developer, I want to simplify template management
 
 ## Opportunity Tracking
 
-- As a user, I want opportunity tracking so that I can have a single place to keep listings interesting to me
-- As a user, I want opportunity tracking so that I can keep track of what materials I use for which opportunity
+- [x] As a user, I want opportunity tracking so that I can have a single place to keep listings interesting to me
+- [x] As a user, I want opportunity tracking so that I can keep track of what materials I use for which opportunity
 
 ## User Management
 
-- As a user, I want user management so that I can differentiate my opportunities from others
-- As a user, I want user management so that I can keep my pursuits private from others
-- As a user, I want user management so that I have a centralized point from which I can manage my account and profile
+- [ ] As a user, I want user management so that I can differentiate my opportunities from others
+- [ ] As a user, I want user management so that I can keep my pursuits private from others
+- [ ] As a user, I want user management so that I have a centralized point from which I can manage my account and profile
+- [ ] 
 
 ## Enriched Opportunity
 
-## Opportunity Pipeline
-
-## Closed Opportunity
-
-## Closed Opportunity Follow-up
+- [ ] As a user, I want to be able to attach a contact to an opportunity to keep track of who I talk to in the application process
+- [ ] As a user, I want to be able to attach correspondence to an opportunity to keep track of the process of applying
 
 ## Scheduling/Calendaring
+
+- [ ] As a user, I want to be able to schedule tasks to stay on top of many applications
+- [ ] As a user, I want to be able to integrate with a variety of calendaring tools
