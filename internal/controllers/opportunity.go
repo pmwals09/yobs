@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/go-chi/chi/v5"
@@ -13,6 +12,7 @@ import (
 	"github.com/pmwals09/yobs/internal/models/document"
 	"github.com/pmwals09/yobs/internal/models/opportunity"
 	"github.com/pmwals09/yobs/internal/models/user"
+	templates "github.com/pmwals09/yobs/web/template"
 )
 
 func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
@@ -22,27 +22,8 @@ func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
       helpers.WriteError(w, err)
     }
 
-		wd, wdErr := os.Getwd()
-		if wdErr != nil {
-			helpers.WriteError(w, wdErr)
-			return
-		}
-
 		if err := repo.CreateOpportunity(newOpportunity); err != nil {
-			handleCreateOpptyError(w, wd, err)
-			return
-		}
-
-		r.Header.Add("HX-Retarget", "#main-content")
-		tmpl, templateErr := template.
-      New("opportunity-list").
-      Funcs(helpers.GetListFuncMap()).
-      ParseFiles(
-        wd + "/web/template/opportunity-list-partial.html",
-      )
-
-		if templateErr != nil {
-			helpers.WriteError(w, templateErr)
+			handleCreateOpptyError(w, r, err)
 			return
 		}
 
@@ -55,39 +36,29 @@ func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
 			helpers.WriteError(w, opptyErr)
 			return
 		}
-		tmpl.ExecuteTemplate(w, "opportunity-list", opportunities)
+
+		r.Header.Add("HX-Retarget", "#main-content")
+    templates.OpportunityList(opportunities).Render(r.Context(), w)
 	}
 }
 
-func handleCreateOpptyError(w http.ResponseWriter, wd string, err error) {
-	t, templateError := template.ParseFiles(
-		wd + "/web/template/opportunity-form-partial.html",
-	)
-
-	if templateError != nil {
-		helpers.WriteError(w, templateError)
-		return
-	}
-
-	data := map[string]string{
-		"Errors": fmt.Sprintf(
-			"<ul><li>An error occurred creating the opportunity: %s</li></ul>",
-			err.Error(),
-		),
-	}
-	t.ExecuteTemplate(
-		w,
-		"opportunity-form",
-		data,
-	)
+func handleCreateOpptyError(w http.ResponseWriter, r *http.Request, err error) {
+  f := helpers.FormData {
+    Errors: map[string]template.HTML{
+      "overall": template.HTML(
+        fmt.Sprintf(
+          "<ul><li>An error occurred creating the opportunity: %s</li></ul>",
+          err.Error(),
+        ),
+      ),
+    },
+  }
+  templates.OpportunityForm(f).Render(r.Context(), w)
 }
 
 func HandleGetActiveOpptys(repo opportunity.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
     user := r.Context().Value("user").(*user.User)
-    fmt.Println()
-    fmt.Println("USER - GET", user)
-    fmt.Println()
     if user == nil {
       helpers.WriteError(w, errors.New("No user available"))
     }
@@ -96,52 +67,14 @@ func HandleGetActiveOpptys(repo opportunity.Repository) http.HandlerFunc {
 			helpers.WriteError(w, err)
 			return
 		}
-		wd, err := os.Getwd()
-		if err != nil {
-			helpers.WriteError(w, err)
-			return
-		}
-		tmpl, err := template.
-      New("opportunity-list").
-      Funcs(helpers.GetListFuncMap()).
-      ParseFiles(
-        wd + "/web/template/opportunity-list-partial.html",
-      )
-		if err != nil {
-			helpers.WriteError(w, err)
-			return
-		}
-		tmpl.ExecuteTemplate(w, "opportunity-list", opptys)
+    templates.OpportunityList(opptys).Render(r.Context(), w)
 	}
-}
-
-type OpptyDetails struct {
-	Oppty     opportunity.Opportunity
-	Documents []document.Document
 }
 
 // TODO: Should only do so for the current user
 func HandleGetOppty(repo opportunity.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		wd, err := os.Getwd()
-		if err != nil {
-			helpers.WriteError(w, err)
-			return
-		}
-		t, err := template.
-      New("base").
-      Funcs(helpers.GetListFuncMap()).
-      ParseFiles(
-        wd+"/web/template/attachments-section-partial.html",
-        wd+"/web/template/opportunity-details-page.html",
-        wd+"/web/template/base.html",
-      )
-		if err != nil {
-			helpers.WriteError(w, err)
-			return
-		}
-
-		od := OpptyDetails{}
+		od := helpers.OpptyDetails{}
 
 		idParam := chi.URLParam(r, "opportunityId")
 		id, err := strconv.ParseUint(idParam, 10, 64) // Sqlite id's are 64-bit int
@@ -177,7 +110,7 @@ func HandleGetOppty(repo opportunity.Repository) http.HandlerFunc {
 
 		od.Documents = docs
 
-		t.ExecuteTemplate(w, "base", od)
+    templates.OpportunityDetailsPage(od).Render(r.Context(), w)
 	}
 }
 
@@ -213,18 +146,18 @@ func HandleUploadToOppty(
 			d.WithTitle(docTitle)
 		}
 
+    user := r.Context().Value("user").(*user.User)
+    if user == nil {
+			helpers.WriteError(w, errors.New("No user available"))
+			return
+    }
+    d.WithUser(user)
+
 		err = d.Upload(file)
 		if err != nil {
 			helpers.WriteError(w, err)
 			return
 		}
-
-    user := r.Context().Value("user").(*user.User)
-    if user == nil {
-      helpers.WriteError(w, errors.New("No user available"))
-      return
-    }
-    d.WithUser(user)
 
 		// 2. Insert a document entry into the db
 		if err := docRepo.CreateDocument(d); err != nil {
@@ -250,18 +183,6 @@ func HandleUploadToOppty(
 		}
 
 		// 4. What to return? And where?
-		wd, err := os.Getwd()
-		if err != nil {
-			helpers.WriteError(w, err)
-			return
-		}
-		t, err := template.
-      New("attachments-section").
-      Funcs(helpers.GetListFuncMap()).
-      ParseFiles(
-        wd + "/web/template/attachments-section-partial.html",
-      )
-
 		docs, err := oppRepo.GetAllDocuments(oppty)
 		if err != nil {
 			helpers.WriteError(w, err)
@@ -277,11 +198,11 @@ func HandleUploadToOppty(
 			}
 		}
 
-		od := OpptyDetails{
+		od := helpers.OpptyDetails{
 			Oppty:     *oppty,
 			Documents: docs,
 		}
-		t.ExecuteTemplate(w, "attachments-section", od)
+    templates.AttachmentsSection(od).Render(r.Context(), w)
 	}
 }
 

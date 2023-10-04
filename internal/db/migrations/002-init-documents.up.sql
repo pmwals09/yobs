@@ -4,7 +4,7 @@
 CREATE TABLE IF NOT EXISTS documents (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   file_name TEXT,
-  title TEXT UNIQUE,
+  title TEXT,
   type TEXT,
   content_type TEXT,
   user_id INTEGER NOT NULL,

@@ -1,40 +1,18 @@
 package controllers
 
 import (
-	"html/template"
 	"net/http"
-	"os"
 
 	helpers "github.com/pmwals09/yobs/internal"
 	"github.com/pmwals09/yobs/internal/models/document"
 	"github.com/pmwals09/yobs/internal/models/user"
+	templates "github.com/pmwals09/yobs/web/template"
 )
-
-type ProfileArgs struct {
-	Username string
-	Email string
-	Resume document.Document
-}
 
 func HandleGetProfilePage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		wd, err := os.Getwd()
-		if err != nil {
-			helpers.WriteError(w, err)
-			return
-		}
-
-		t, err := template.ParseFiles(
-			wd+"/web/template/profile-page.html",
-			wd+"/web/template/base.html",
-		)
-		if err != nil {
-			helpers.WriteError(w, err)
-			return
-		}
-
     u := r.Context().Value("user").(*user.User)
-		pa := ProfileArgs {
+		pa := helpers.ProfileArgs {
 			Username: u.Username,
 			Email: u.Email,
       // TODO: Make preferred resume a field on the user
@@ -45,6 +23,6 @@ func HandleGetProfilePage() http.HandlerFunc {
 				URL: "http://www.google.com",
 			},
 		}
-		t.ExecuteTemplate(w, "base", pa)
+    templates.ProfilePage(pa).Render(r.Context(), w)
 	}
 }

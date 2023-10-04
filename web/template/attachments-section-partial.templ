@@ -1,0 +1,52 @@
+package templates
+
+import (
+	helpers "github.com/pmwals09/yobs/internal"
+)
+
+templ AttachmentsSection(od helpers.OpptyDetails) {
+  <section id="attachments-section" class="mb-4">
+    <h2 class="text-[1.5em]">Attachments</h2>
+    if od.Documents != nil && len(od.Documents) > 0 {
+      <table class="table-auto border-collapse w-full mb-4">
+        <thead>
+          <tr>
+            <th class="border-b text-left">Title</th>
+            <th class="border-b text-left">Type</th>
+            <th class="border-b text-left">File Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          for _, doc := range od.Documents {
+            <tr class="hover:bg-sky-100">
+              <td class="border-b">{ doc.Title }</td>
+              <td class="border-b">{ string(doc.Type) }</td>
+              <td class="border-b">
+                <a href="{ doc.URL }">{ doc.FileName }</a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+    <form
+      method="POST"
+      action={insertIDIntoString("/opportunities/{}/upload", od.Oppty.ID)}
+      hx-post={insertIDIntoString("/opportunities/{}/upload", od.Oppty.ID)}
+      hx-target="#attachments-section"
+      enctype="multipart/form-data"
+    >
+      <label for="attachment-name">Attachment Name</label>
+      <input type="text" name="attachment-name" value=""/>
+      <label for="attachment-type">Attachment Type</label>
+      <select type="text" name="attachment-type">
+        <option value="Resume">Resume</option>
+        <option value="CoverLetter">Cover Letter</option>
+        <option value="Communication">Communication</option>
+      </select>
+      <label for="attachment-file">PDF Attachment</label>
+      <input type="file" name="attachment-file" accept=".pdf"/>
+      <input type="submit" name="attachment-submit" value="Submit"/>
+    </form>
+  </section>
+}

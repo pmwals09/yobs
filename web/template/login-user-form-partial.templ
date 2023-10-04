@@ -1,0 +1,46 @@
+package templates
+
+import (
+	helpers "github.com/pmwals09/yobs/internal"
+)
+
+templ loginUserForm(f helpers.FormData) {
+  <form
+    action="/user/login"
+    method="POST"
+    class="mt-4"
+    hx-post="/user/login"
+    hx-swap="outerHTML"
+  >
+    <section class="grid grid-cols-2 gap-y-2">
+      <label for="username-or-email" class="self-center">
+        User Name or Email
+      </label>
+      <input
+        type="text"
+        id="username-or-email"
+        name="username-or-email"
+        value={f.Values["usernameOrEmail"]}
+      />
+      {string(f.Errors["usernameOrEmail"])}
+      <label for="password" class="self-center">
+        Password
+      </label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        value={f.Values["password"]}
+      />
+      {string(f.Errors["password"])}
+    </section>
+    <section class="my-4">
+      <button
+        type="submit"
+        class="bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer">
+        Submit
+      </button>
+    </section>
+  {string(f.Errors["overall"])}
+  </form>
+}

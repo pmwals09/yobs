@@ -1,0 +1,14 @@
+package templates
+
+import (
+	helpers "github.com/pmwals09/yobs/internal"
+)
+
+templ LoginPage(f helpers.FormData) {
+  @base() {
+    <h1 class="text-center text-[2em]">Log In</h1>
+    <section class="mb-4 w-1/2">
+    @loginUserForm(f)
+  </section>
+  }
+}

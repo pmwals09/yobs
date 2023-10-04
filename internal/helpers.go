@@ -5,6 +5,10 @@ import (
   "html/template"
 	"net/http"
 	"time"
+
+
+	"github.com/pmwals09/yobs/internal/models/document"
+	"github.com/pmwals09/yobs/internal/models/opportunity"
 )
 
 func WriteError(w http.ResponseWriter, err error) {
@@ -29,4 +33,20 @@ func GetListFuncMap() template.FuncMap {
 			return t.Format("2006-01-02")
 		},
 	}
+}
+
+type FormData struct {
+	Errors map[string]template.HTML
+	Values map[string]string
+}
+
+type ProfileArgs struct {
+	Username string
+	Email string
+	Resume document.Document
+}
+
+type OpptyDetails struct {
+	Oppty     opportunity.Opportunity
+	Documents []document.Document
 }

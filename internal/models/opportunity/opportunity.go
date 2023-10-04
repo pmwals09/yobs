@@ -129,8 +129,7 @@ func (g *OpportunityModel) GetOpportuntyById(opptyId uint, user *user.User) (*Op
 			description,
 			url,
 			application_date,
-			status,
-      user_id
+			status
 		FROM opportunities WHERE id = ? AND user_id = ?;
 	`, opptyId, user.ID)
 	err := res.Scan(
@@ -142,6 +141,7 @@ func (g *OpportunityModel) GetOpportuntyById(opptyId uint, user *user.User) (*Op
 		&oppty.ApplicationDate,
 		&oppty.Status,
 	)
+  oppty.User = user
 
 	return &oppty, err
 }

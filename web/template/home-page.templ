@@ -1,0 +1,19 @@
+package templates
+
+import (
+	"github.com/pmwals09/yobs/internal/models/opportunity"
+	helpers "github.com/pmwals09/yobs/internal"
+)
+
+templ HomePage(opportunities []opportunity.Opportunity, f helpers.FormData) {
+  @base() {
+    <h1 class="text-center text-[2em]">Always look ahead</h1>
+    <section class="mb-4">
+      @OpportunityList(opportunities)
+    </section>
+    <section class="mb-4">
+      <h2 class="text-[1.5em]">New Opportunity</h2>
+      @OpportunityForm(f)
+    </section>
+  }
+}

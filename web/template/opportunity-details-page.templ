@@ -1,0 +1,35 @@
+package templates
+
+import (
+	helpers "github.com/pmwals09/yobs/internal"
+)
+
+templ OpportunityDetailsPage(od helpers.OpptyDetails) {
+  @base() {
+    <h1 class="text-center text-[2em]">
+      { od.Oppty.CompanyName } - { od.Oppty.Role }
+    </h1>
+    <section class="mb-4">
+      <dl class="grid grid-cols-[min-content_auto] gap-x-4">
+        <dt class="font-bold whitespace-nowrap">Company Name:</dt>
+        <dd>{ od.Oppty.CompanyName }</dd>
+        <dt class="font-bold whitespace-nowrap">Role:</dt>
+        <dd>{ od.Oppty.Role }</dd>
+        <dt class="font-bold whitespace-nowrap">URL:</dt>
+        <dd>{ od.Oppty.URL }</dd>
+        <dt class="font-bold whitespace-nowrap">Status:</dt>
+        <dd>{ string(od.Oppty.Status) }</dd>
+        <dt class="font-bold whitespace-nowrap">Application Date:</dt>
+        <dd>{ formatApplicationDate(od.Oppty.ApplicationDate) }</dd>
+      </dl>
+    </section>
+    <section class="mb-4">
+      <h2 class="text-[1.5em]">Job Description</h2>
+      { od.Oppty.Description }
+    </section>
+    <section class="mb-4">
+      <h2 class="text-[1.5em]">Tasks</h2>
+    </section>
+    @AttachmentsSection(od)
+  }
+}

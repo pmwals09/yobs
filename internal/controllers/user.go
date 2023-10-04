@@ -5,7 +5,6 @@ import (
 	"errors"
 	"html/template"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/google/uuid"
@@ -13,37 +12,20 @@ import (
 	"github.com/pmwals09/yobs/internal/models/session"
 	"github.com/pmwals09/yobs/internal/models/user"
 	"golang.org/x/crypto/bcrypt"
+  templates "github.com/pmwals09/yobs/web/template"
 )
-
-type FormData struct {
-	Errors map[string]template.HTML
-	Values map[string]string
-}
 
 func HandleRegisterUser(repo user.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		wd, wdErr := os.Getwd()
-		if wdErr != nil {
-			helpers.WriteError(w, wdErr)
-			return
-		}
-
 		r.ParseForm()
 		newUserInfo := newUserFromRequest(r)
 		if errorData, err := validateUserInfo(newUserInfo, repo); err != nil {
-			data := FormData{
+			data := helpers.FormData{
 				Errors: errorData,
 				Values: newUserInfo,
 			}
-			t, err := template.ParseFiles(
-				wd + "/web/template/register-user-form-partial.html",
-			)
-			if err != nil {
-				helpers.WriteError(w, err)
-				return
-			}
-			t.ExecuteTemplate(w, "register-user-form-partial", data)
-			return
+      templates.RegisterUserForm(data).Render(r.Context(), w)
+      return
 		}
 
 		// Confirm that this is a unique user (username, email)
@@ -54,60 +36,39 @@ func HandleRegisterUser(repo user.Repository) http.HandlerFunc {
 			14,
 		)
 		if err != nil {
-			data := FormData{
+			data := helpers.FormData{
 				Errors: map[string]template.HTML{
 					"password":       template.HTML("<p  class='text-red-600 col-start-2'>Invalid password - please try another</p>"),
 					"passwordRepeat": template.HTML("<p class='text-red-600 col-start-2'>Invalid password - please try another</p>"),
 				},
 				Values: newUserInfo,
 			}
-			t, err := template.ParseFiles(
-				wd + "/web/template/register-user-form-partial.html",
-			)
-			if err != nil {
-				helpers.WriteError(w, err)
-				return
-			}
-			t.ExecuteTemplate(w, "register-user-form-partial", data)
-			return
+      templates.RegisterUserForm(data).Render(r.Context(), w)
+      return
 		}
 		u.Password = string(pwHash)
 
 		if err = repo.CreateUser(u); err != nil {
-			data := FormData{
+			data := helpers.FormData{
 				Errors: map[string]template.HTML{
 					"overall": template.HTML("<p  class='text-red-600 col-start-2'>Error creating user</p>"),
 				},
 				Values: newUserInfo,
 			}
-			t, err := template.ParseFiles(
-				wd + "/web/template/register-user-form-partial.html",
-			)
-			if err != nil {
-				helpers.WriteError(w, err)
-				return
-			}
-			t.ExecuteTemplate(w, "register-user-form-partial", data)
-			return
+      templates.RegisterUserForm(data).Render(r.Context(), w)
+      return
 		}
 
 		// TODO: Success message with link to login page
-		data := FormData{
+		data := helpers.FormData{
 			Errors: map[string]template.HTML{
 				"overall": template.HTML("<p  class='text-green-600 col-start-2'>You're registered! <a href='/login'>Login</a> using these credentials.</p>"),
 			},
 			Values: map[string]string{},
 		}
-		t, err := template.ParseFiles(
-			wd + "/web/template/register-user-form-partial.html",
-		)
-		if err != nil {
-			helpers.WriteError(w, err)
-			return
-		}
-		t.ExecuteTemplate(w, "register-user-form-partial", data)
-		return
 
+    templates.RegisterUserForm(data).Render(r.Context(), w)
+    return
 	}
 }
 

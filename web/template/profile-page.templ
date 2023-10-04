@@ -1,0 +1,34 @@
+package templates
+
+import (
+	helpers "github.com/pmwals09/yobs/internal"
+)
+
+templ ProfilePage(pa helpers.ProfileArgs) {
+  @base() {
+    <h1 class="text-center text-[2em]">Welcome back { pa.Username }</h1>
+    <section class="mb-4">
+      <dl class="grid grid-cols-[min-content_auto] gap-x-4">
+        <dt class="font-bold whitespace-nowrap">
+          Email
+        </dt>
+        <dd>{ pa.Email }</dd>
+        <dt class="font-bold whitespace-nowrap">
+          User Name
+        </dt>
+        <dd>{ pa.Username }</dd>
+        <dt class="font-bold whitespace-nowrap">
+          Preferred Resume
+        </dt>
+        <dd>
+          <a href="{ pa.Resume.URL }">
+            { pa.Resume.Title } - { pa.Resume.FileName }
+          </a>
+        </dd>
+      </dl>
+    </section>
+    <button>Update Profile</button>
+
+    <!-- Stats? -->
+    }
+  }
