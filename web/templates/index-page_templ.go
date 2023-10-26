@@ -9,7 +9,11 @@ import "context"
 import "io"
 import "bytes"
 
-func IndexPage() templ.Component {
+import (
+	"github.com/pmwals09/yobs/internal/models/user"
+)
+
+func IndexPage(user *user.User) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
 		templBuffer, templIsBuffer := w.(*bytes.Buffer)
 		if !templIsBuffer {
@@ -100,7 +104,7 @@ func IndexPage() templ.Component {
 			}
 			return err
 		})
-		err = base().Render(templ.WithChildren(ctx, var_2), templBuffer)
+		err = base(user).Render(templ.WithChildren(ctx, var_2), templBuffer)
 		if err != nil {
 			return err
 		}

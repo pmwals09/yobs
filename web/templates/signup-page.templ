@@ -2,10 +2,11 @@ package templates
 
 import (
 	helpers "github.com/pmwals09/yobs/internal"
+	"github.com/pmwals09/yobs/internal/models/user"
 )
 
-templ SignupPage(f helpers.FormData) {
-  @base() {
+templ SignupPage(user *user.User, f helpers.FormData) {
+  @base(user) {
     <h1 class="text-center text-[2em]">Join us!</h1>
     <section class="mb-4 w-1/2">
       @RegisterUserForm(f)

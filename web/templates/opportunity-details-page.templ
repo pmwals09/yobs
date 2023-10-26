@@ -2,10 +2,11 @@ package templates
 
 import (
 	helpers "github.com/pmwals09/yobs/internal"
+	"github.com/pmwals09/yobs/internal/models/user"
 )
 
-templ OpportunityDetailsPage(od helpers.OpptyDetails) {
-  @base() {
+templ OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails) {
+  @base(user) {
     <h1 class="text-center text-[2em]">
       { od.Oppty.CompanyName } - { od.Oppty.Role }
     </h1>

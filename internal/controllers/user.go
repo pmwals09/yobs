@@ -12,7 +12,7 @@ import (
 	"github.com/pmwals09/yobs/internal/models/session"
 	"github.com/pmwals09/yobs/internal/models/user"
 	"golang.org/x/crypto/bcrypt"
-  templates "github.com/pmwals09/yobs/web/template"
+  "github.com/pmwals09/yobs/web/templates"
 )
 
 func HandleRegisterUser(repo user.Repository) http.HandlerFunc {

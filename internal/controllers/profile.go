@@ -6,7 +6,7 @@ import (
 	helpers "github.com/pmwals09/yobs/internal"
 	"github.com/pmwals09/yobs/internal/models/document"
 	"github.com/pmwals09/yobs/internal/models/user"
-	templates "github.com/pmwals09/yobs/web/template"
+	"github.com/pmwals09/yobs/web/templates"
 )
 
 func HandleGetProfilePage() http.HandlerFunc {
@@ -23,6 +23,6 @@ func HandleGetProfilePage() http.HandlerFunc {
 				URL: "http://www.google.com",
 			},
 		}
-    templates.ProfilePage(pa).Render(r.Context(), w)
+    templates.ProfilePage(u, pa).Render(r.Context(), w)
 	}
 }

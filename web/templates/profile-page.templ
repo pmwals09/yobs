@@ -2,10 +2,11 @@ package templates
 
 import (
 	helpers "github.com/pmwals09/yobs/internal"
+	"github.com/pmwals09/yobs/internal/models/user"
 )
 
-templ ProfilePage(pa helpers.ProfileArgs) {
-  @base() {
+templ ProfilePage(user *user.User, pa helpers.ProfileArgs) {
+  @base(user) {
     <h1 class="text-center text-[2em]">Welcome back { pa.Username }</h1>
     <section class="mb-4">
       <dl class="grid grid-cols-[min-content_auto] gap-x-4">

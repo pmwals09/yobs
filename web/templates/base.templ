@@ -1,6 +1,10 @@
 package templates
 
-templ base() {
+import (
+  "github.com/pmwals09/yobs/internal/models/user"
+)
+
+templ base(user *user.User) {
   <!DOCTYPE html>
   <html>
     <head>
@@ -15,8 +19,9 @@ templ base() {
           <li><a href="/tasks/active">All Active Tasks</a></li>
         </ul>
         <ul>
-          <!-- TODO: this will need to change based on login status -->
-          <li><a href="/profile">My Profile</a></li>
+          if user != nil {
+            <li><a href="/profile">My Profile</a></li>
+          }
         </ul>
       </nav>
       <main>

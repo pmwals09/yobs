@@ -11,9 +11,10 @@ import "bytes"
 
 import (
 	helpers "github.com/pmwals09/yobs/internal"
+	"github.com/pmwals09/yobs/internal/models/user"
 )
 
-func LoginPage(f helpers.FormData) templ.Component {
+func LoginPage(user *user.User, f helpers.FormData) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
 		templBuffer, templIsBuffer := w.(*bytes.Buffer)
 		if !templIsBuffer {
@@ -58,7 +59,7 @@ func LoginPage(f helpers.FormData) templ.Component {
 			}
 			return err
 		})
-		err = base().Render(templ.WithChildren(ctx, var_2), templBuffer)
+		err = base(user).Render(templ.WithChildren(ctx, var_2), templBuffer)
 		if err != nil {
 			return err
 		}

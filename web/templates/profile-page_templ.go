@@ -11,9 +11,10 @@ import "bytes"
 
 import (
 	helpers "github.com/pmwals09/yobs/internal"
+	"github.com/pmwals09/yobs/internal/models/user"
 )
 
-func ProfilePage(pa helpers.ProfileArgs) templ.Component {
+func ProfilePage(user *user.User, pa helpers.ProfileArgs) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
 		templBuffer, templIsBuffer := w.(*bytes.Buffer)
 		if !templIsBuffer {
@@ -141,7 +142,7 @@ func ProfilePage(pa helpers.ProfileArgs) templ.Component {
 			}
 			return err
 		})
-		err = base().Render(templ.WithChildren(ctx, var_2), templBuffer)
+		err = base(user).Render(templ.WithChildren(ctx, var_2), templBuffer)
 		if err != nil {
 			return err
 		}

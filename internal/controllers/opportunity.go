@@ -12,7 +12,7 @@ import (
 	"github.com/pmwals09/yobs/internal/models/document"
 	"github.com/pmwals09/yobs/internal/models/opportunity"
 	"github.com/pmwals09/yobs/internal/models/user"
-	templates "github.com/pmwals09/yobs/web/template"
+	"github.com/pmwals09/yobs/web/templates"
 )
 
 func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
@@ -110,7 +110,7 @@ func HandleGetOppty(repo opportunity.Repository) http.HandlerFunc {
 
 		od.Documents = docs
 
-    templates.OpportunityDetailsPage(od).Render(r.Context(), w)
+    templates.OpportunityDetailsPage(user, od).Render(r.Context(), w)
 	}
 }
 

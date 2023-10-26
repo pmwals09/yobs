@@ -11,10 +11,10 @@ import "bytes"
 
 import (
 	helpers "github.com/pmwals09/yobs/internal"
-	"github.com/pmwals09/yobs/internal/models/opportunity"
+	"github.com/pmwals09/yobs/internal/models/user"
 )
 
-func HomePage(opportunities []opportunity.Opportunity, f helpers.FormData) templ.Component {
+func SignupPage(user *user.User, f helpers.FormData) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
 		templBuffer, templIsBuffer := w.(*bytes.Buffer)
 		if !templIsBuffer {
@@ -37,33 +37,16 @@ func HomePage(opportunities []opportunity.Opportunity, f helpers.FormData) templ
 			if err != nil {
 				return err
 			}
-			var_3 := `Always look ahead`
+			var_3 := `Join us!`
 			_, err = templBuffer.WriteString(var_3)
 			if err != nil {
 				return err
 			}
-			_, err = templBuffer.WriteString("</h1> <section class=\"mb-4\">")
+			_, err = templBuffer.WriteString("</h1> <section class=\"mb-4 w-1/2\">")
 			if err != nil {
 				return err
 			}
-			err = OpportunityList(opportunities).Render(ctx, templBuffer)
-			if err != nil {
-				return err
-			}
-			_, err = templBuffer.WriteString("</section> <section class=\"mb-4\"><h2 class=\"text-[1.5em]\">")
-			if err != nil {
-				return err
-			}
-			var_4 := `New Opportunity`
-			_, err = templBuffer.WriteString(var_4)
-			if err != nil {
-				return err
-			}
-			_, err = templBuffer.WriteString("</h2>")
-			if err != nil {
-				return err
-			}
-			err = OpportunityForm(f).Render(ctx, templBuffer)
+			err = RegisterUserForm(f).Render(ctx, templBuffer)
 			if err != nil {
 				return err
 			}
@@ -76,7 +59,7 @@ func HomePage(opportunities []opportunity.Opportunity, f helpers.FormData) templ
 			}
 			return err
 		})
-		err = base().Render(templ.WithChildren(ctx, var_2), templBuffer)
+		err = base(user).Render(templ.WithChildren(ctx, var_2), templBuffer)
 		if err != nil {
 			return err
 		}

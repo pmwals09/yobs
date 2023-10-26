@@ -9,7 +9,11 @@ import "context"
 import "io"
 import "bytes"
 
-func base() templ.Component {
+import (
+	"github.com/pmwals09/yobs/internal/models/user"
+)
+
+func base(user *user.User) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
 		templBuffer, templIsBuffer := w.(*bytes.Buffer)
 		if !templIsBuffer {
@@ -67,25 +71,26 @@ func base() templ.Component {
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("</a></li></ul><ul><!--")
+		_, err = templBuffer.WriteString("</a></li></ul><ul>")
 		if err != nil {
 			return err
 		}
-		var_7 := ` TODO: this will need to change based on login status `
-		_, err = templBuffer.WriteString(var_7)
-		if err != nil {
-			return err
+		if user != nil {
+			_, err = templBuffer.WriteString("<li><a href=\"/profile\">")
+			if err != nil {
+				return err
+			}
+			var_7 := `My Profile`
+			_, err = templBuffer.WriteString(var_7)
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("</a></li>")
+			if err != nil {
+				return err
+			}
 		}
-		_, err = templBuffer.WriteString("--><li><a href=\"/profile\">")
-		if err != nil {
-			return err
-		}
-		var_8 := `My Profile`
-		_, err = templBuffer.WriteString(var_8)
-		if err != nil {
-			return err
-		}
-		_, err = templBuffer.WriteString("</a></li></ul></nav><main>")
+		_, err = templBuffer.WriteString("</ul></nav><main>")
 		if err != nil {
 			return err
 		}
