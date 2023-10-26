@@ -35,12 +35,21 @@ func base(user *user.User) templ.Component {
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("</script><script src=\"https://cdn.tailwindcss.com?plugins=forms\">")
+		_, err = templBuffer.WriteString("</script><!--")
 		if err != nil {
 			return err
 		}
-		var_3 := ``
+		var_3 := ` Will need to host this file ourselves instead of the CDN `
 		_, err = templBuffer.WriteString(var_3)
+		if err != nil {
+			return err
+		}
+		_, err = templBuffer.WriteString("--><script src=\"https://cdn.tailwindcss.com?plugins=forms\">")
+		if err != nil {
+			return err
+		}
+		var_4 := ``
+		_, err = templBuffer.WriteString(var_4)
 		if err != nil {
 			return err
 		}
@@ -48,8 +57,8 @@ func base(user *user.User) templ.Component {
 		if err != nil {
 			return err
 		}
-		var_4 := `Home`
-		_, err = templBuffer.WriteString(var_4)
+		var_5 := `Home`
+		_, err = templBuffer.WriteString(var_5)
 		if err != nil {
 			return err
 		}
@@ -57,8 +66,8 @@ func base(user *user.User) templ.Component {
 		if err != nil {
 			return err
 		}
-		var_5 := `All Opportunities`
-		_, err = templBuffer.WriteString(var_5)
+		var_6 := `All Opportunities`
+		_, err = templBuffer.WriteString(var_6)
 		if err != nil {
 			return err
 		}
@@ -66,12 +75,12 @@ func base(user *user.User) templ.Component {
 		if err != nil {
 			return err
 		}
-		var_6 := `All Active Tasks`
-		_, err = templBuffer.WriteString(var_6)
+		var_7 := `All Active Tasks`
+		_, err = templBuffer.WriteString(var_7)
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("</a></li></ul><ul>")
+		_, err = templBuffer.WriteString("</a></li></ul><ul class=\"flex gap-4\">")
 		if err != nil {
 			return err
 		}
@@ -80,8 +89,31 @@ func base(user *user.User) templ.Component {
 			if err != nil {
 				return err
 			}
-			var_7 := `My Profile`
-			_, err = templBuffer.WriteString(var_7)
+			var_8 := `My Profile`
+			_, err = templBuffer.WriteString(var_8)
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("</a></li> <li><a href=\"/user/logout\">")
+			if err != nil {
+				return err
+			}
+			var_9 := `Log Out`
+			_, err = templBuffer.WriteString(var_9)
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("</a></li>")
+			if err != nil {
+				return err
+			}
+		} else {
+			_, err = templBuffer.WriteString("<li><a href=\"/login\">")
+			if err != nil {
+				return err
+			}
+			var_10 := `Log In`
+			_, err = templBuffer.WriteString(var_10)
 			if err != nil {
 				return err
 			}

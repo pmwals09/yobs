@@ -147,7 +147,6 @@ func (g *OpportunityModel) GetOpportuntyById(opptyId uint, user *user.User) (*Op
 }
 
 func (g *OpportunityModel) GetAllOpportunities(user *user.User) ([]Opportunity, error) {
-  fmt.Println(user)
 	var opptys []Opportunity
 	rows, err := g.DB.Query(`
 		SELECT

@@ -9,6 +9,7 @@ templ base(user *user.User) {
   <html>
     <head>
       <script src="https://unpkg.com/htmx.org@1.9.5"></script>
+      <!-- Will need to host this file ourselves instead of the CDN -->
       <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     </head>
     <body class="w-4/5 mx-auto" hx-boost>
@@ -18,9 +19,12 @@ templ base(user *user.User) {
           <li><a href="/opportunities/all">All Opportunities</a></li>
           <li><a href="/tasks/active">All Active Tasks</a></li>
         </ul>
-        <ul>
+        <ul class="flex gap-4">
           if user != nil {
             <li><a href="/profile">My Profile</a></li>
+            <li><a href="/user/logout">Log Out</a></li>
+          } else {
+            <li><a href="/login">Log In</a></li>
           }
         </ul>
       </nav>
