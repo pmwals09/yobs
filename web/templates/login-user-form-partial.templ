@@ -4,7 +4,7 @@ import (
 	helpers "github.com/pmwals09/yobs/internal"
 )
 
-templ loginUserForm(f helpers.FormData) {
+templ LoginUserForm(f helpers.FormData) {
   <form
     action="/user/login"
     method="POST"
@@ -16,23 +16,27 @@ templ loginUserForm(f helpers.FormData) {
       <label for="username-or-email" class="self-center">
         User Name or Email
       </label>
-      <input
-        type="text"
-        id="username-or-email"
-        name="username-or-email"
-        value={f.Values["usernameOrEmail"]}
-      />
-      {string(f.Errors["usernameOrEmail"])}
+      <div>
+        <input
+          type="text"
+          id="username-or-email"
+          name="username-or-email"
+          value={f.Values["usernameOrEmail"]}
+        />
+        {! UnsafeRawHtml(f.Errors["usernameOrEmail"])}
+      </div>
       <label for="password" class="self-center">
         Password
       </label>
-      <input
-        type="password"
-        id="password"
-        name="password"
-        value={f.Values["password"]}
-      />
-      {string(f.Errors["password"])}
+      <div>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          value={f.Values["password"]}
+        />
+        {! UnsafeRawHtml(f.Errors["password"])}
+      </div>
     </section>
     <section class="my-4">
       <button
@@ -41,6 +45,6 @@ templ loginUserForm(f helpers.FormData) {
         Submit
       </button>
     </section>
-  {string(f.Errors["overall"])}
+    {! UnsafeRawHtml(f.Errors["overall"])}
   </form>
 }

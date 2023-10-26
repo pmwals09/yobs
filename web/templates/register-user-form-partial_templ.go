@@ -43,21 +43,20 @@ func RegisterUserForm(f helpers.FormData) templ.Component {
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("\"> ")
+		_, err = templBuffer.WriteString("\">")
 		if err != nil {
 			return err
 		}
-		var var_3 string = string(f.Errors["username"])
-		_, err = templBuffer.WriteString(templ.EscapeString(var_3))
+		err = UnsafeRawHtml(f.Errors["username"]).Render(ctx, templBuffer)
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString(" <label for=\"email\" class=\"self-center\">")
+		_, err = templBuffer.WriteString("<label for=\"email\" class=\"self-center\">")
 		if err != nil {
 			return err
 		}
-		var_4 := `Email Address`
-		_, err = templBuffer.WriteString(var_4)
+		var_3 := `Email Address`
+		_, err = templBuffer.WriteString(var_3)
 		if err != nil {
 			return err
 		}
@@ -69,21 +68,20 @@ func RegisterUserForm(f helpers.FormData) templ.Component {
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("\"> ")
+		_, err = templBuffer.WriteString("\">")
 		if err != nil {
 			return err
 		}
-		var var_5 string = string(f.Errors["email"])
-		_, err = templBuffer.WriteString(templ.EscapeString(var_5))
+		err = UnsafeRawHtml(f.Errors["email"]).Render(ctx, templBuffer)
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString(" <label for=\"password\" class=\"self-center\">")
+		_, err = templBuffer.WriteString("<label for=\"password\" class=\"self-center\">")
 		if err != nil {
 			return err
 		}
-		var_6 := `Password`
-		_, err = templBuffer.WriteString(var_6)
+		var_4 := `Password`
+		_, err = templBuffer.WriteString(var_4)
 		if err != nil {
 			return err
 		}
@@ -95,21 +93,20 @@ func RegisterUserForm(f helpers.FormData) templ.Component {
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("\"> ")
+		_, err = templBuffer.WriteString("\">")
 		if err != nil {
 			return err
 		}
-		var var_7 string = string(f.Errors["password"])
-		_, err = templBuffer.WriteString(templ.EscapeString(var_7))
+		err = UnsafeRawHtml(f.Errors["password"]).Render(ctx, templBuffer)
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString(" <label for=\"password-repeat\" class=\"self-center\">")
+		_, err = templBuffer.WriteString("<label for=\"password-repeat\" class=\"self-center\">")
 		if err != nil {
 			return err
 		}
-		var_8 := `Re-enter Password`
-		_, err = templBuffer.WriteString(var_8)
+		var_5 := `Re-enter Password`
+		_, err = templBuffer.WriteString(var_5)
 		if err != nil {
 			return err
 		}
@@ -121,12 +118,11 @@ func RegisterUserForm(f helpers.FormData) templ.Component {
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("\"> ")
+		_, err = templBuffer.WriteString("\">")
 		if err != nil {
 			return err
 		}
-		var var_9 string = string(f.Errors["passwordRepeat"])
-		_, err = templBuffer.WriteString(templ.EscapeString(var_9))
+		err = UnsafeRawHtml(f.Errors["passwordRepeat"]).Render(ctx, templBuffer)
 		if err != nil {
 			return err
 		}
@@ -134,17 +130,16 @@ func RegisterUserForm(f helpers.FormData) templ.Component {
 		if err != nil {
 			return err
 		}
-		var_10 := `Submit`
-		_, err = templBuffer.WriteString(var_10)
+		var_6 := `Submit`
+		_, err = templBuffer.WriteString(var_6)
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("</button></section> ")
+		_, err = templBuffer.WriteString("</button></section>")
 		if err != nil {
 			return err
 		}
-		var var_11 string = string(f.Errors["overall"])
-		_, err = templBuffer.WriteString(templ.EscapeString(var_11))
+		err = UnsafeRawHtml(f.Errors["overall"]).Render(ctx, templBuffer)
 		if err != nil {
 			return err
 		}

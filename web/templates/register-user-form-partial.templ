@@ -22,7 +22,7 @@ templ RegisterUserForm(f helpers.FormData) {
         name="username"
         value={ f.Values["username"] }
       />
-      {string(f.Errors["username"])}
+      {! UnsafeRawHtml(f.Errors["username"])}
       <label for="email" class="self-center">
         Email Address
       </label>
@@ -32,7 +32,7 @@ templ RegisterUserForm(f helpers.FormData) {
         name="email"
         value={ f.Values["email"] }
       />
-      { string(f.Errors["email"]) }
+      {! UnsafeRawHtml(f.Errors["email"])}
       <label for="password" class="self-center">
         Password
       </label>
@@ -42,7 +42,7 @@ templ RegisterUserForm(f helpers.FormData) {
         name="password"
         value={ f.Values["password"] }
       />
-      { string(f.Errors["password"]) }
+      {! UnsafeRawHtml(f.Errors["password"] )}
       <label for="password-repeat" class="self-center">
         Re-enter Password
       </label>
@@ -52,7 +52,7 @@ templ RegisterUserForm(f helpers.FormData) {
         name="password-repeat"
         value={ f.Values["passwordRepeat"] }
       />
-      { string(f.Errors["passwordRepeat"]) }
+      {! UnsafeRawHtml(f.Errors["passwordRepeat"] )}
     </section>
     <section class="my-4">
       <button
@@ -62,7 +62,7 @@ templ RegisterUserForm(f helpers.FormData) {
         Submit
       </button>
     </section>
-    { string(f.Errors["overall"]) }
+    {! UnsafeRawHtml(f.Errors["overall"])} 
   </form>
 }
 

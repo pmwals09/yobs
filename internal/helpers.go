@@ -2,10 +2,9 @@ package helpers
 
 import (
 	"fmt"
-  "html/template"
+	"html/template"
 	"net/http"
 	"time"
-
 
 	"github.com/pmwals09/yobs/internal/models/document"
 	"github.com/pmwals09/yobs/internal/models/opportunity"
@@ -36,7 +35,7 @@ func GetListFuncMap() template.FuncMap {
 }
 
 type FormData struct {
-	Errors map[string]template.HTML
+	Errors map[string]string
 	Values map[string]string
 }
 

@@ -75,8 +75,7 @@ func OpportunityForm(f helpers.FormData) templ.Component {
 		if err != nil {
 			return err
 		}
-		var var_7 string = string(f.Errors["overall"])
-		_, err = templBuffer.WriteString(templ.EscapeString(var_7))
+		err = UnsafeRawHtml(f.Errors["overall"]).Render(ctx, templBuffer)
 		if err != nil {
 			return err
 		}

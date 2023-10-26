@@ -13,7 +13,7 @@ import (
 	helpers "github.com/pmwals09/yobs/internal"
 )
 
-func loginUserForm(f helpers.FormData) templ.Component {
+func LoginUserForm(f helpers.FormData) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
 		templBuffer, templIsBuffer := w.(*bytes.Buffer)
 		if !templIsBuffer {
@@ -35,7 +35,7 @@ func loginUserForm(f helpers.FormData) templ.Component {
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("</label><input type=\"text\" id=\"username-or-email\" name=\"username-or-email\" value=\"")
+		_, err = templBuffer.WriteString("</label><div><input type=\"text\" id=\"username-or-email\" name=\"username-or-email\" value=\"")
 		if err != nil {
 			return err
 		}
@@ -43,25 +43,24 @@ func loginUserForm(f helpers.FormData) templ.Component {
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("\"> ")
+		_, err = templBuffer.WriteString("\">")
 		if err != nil {
 			return err
 		}
-		var var_3 string = string(f.Errors["usernameOrEmail"])
-		_, err = templBuffer.WriteString(templ.EscapeString(var_3))
+		err = UnsafeRawHtml(f.Errors["usernameOrEmail"]).Render(ctx, templBuffer)
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString(" <label for=\"password\" class=\"self-center\">")
+		_, err = templBuffer.WriteString("</div><label for=\"password\" class=\"self-center\">")
 		if err != nil {
 			return err
 		}
-		var_4 := `Password`
-		_, err = templBuffer.WriteString(var_4)
+		var_3 := `Password`
+		_, err = templBuffer.WriteString(var_3)
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("</label><input type=\"password\" id=\"password\" name=\"password\" value=\"")
+		_, err = templBuffer.WriteString("</label><div><input type=\"password\" id=\"password\" name=\"password\" value=\"")
 		if err != nil {
 			return err
 		}
@@ -69,30 +68,28 @@ func loginUserForm(f helpers.FormData) templ.Component {
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("\"> ")
+		_, err = templBuffer.WriteString("\">")
 		if err != nil {
 			return err
 		}
-		var var_5 string = string(f.Errors["password"])
-		_, err = templBuffer.WriteString(templ.EscapeString(var_5))
+		err = UnsafeRawHtml(f.Errors["password"]).Render(ctx, templBuffer)
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("</section><section class=\"my-4\"><button type=\"submit\" class=\"bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer\">")
+		_, err = templBuffer.WriteString("</div></section><section class=\"my-4\"><button type=\"submit\" class=\"bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer\">")
 		if err != nil {
 			return err
 		}
-		var_6 := `Submit`
-		_, err = templBuffer.WriteString(var_6)
+		var_4 := `Submit`
+		_, err = templBuffer.WriteString(var_4)
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("</button></section> ")
+		_, err = templBuffer.WriteString("</button></section>")
 		if err != nil {
 			return err
 		}
-		var var_7 string = string(f.Errors["overall"])
-		_, err = templBuffer.WriteString(templ.EscapeString(var_7))
+		err = UnsafeRawHtml(f.Errors["overall"]).Render(ctx, templBuffer)
 		if err != nil {
 			return err
 		}

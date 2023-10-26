@@ -47,5 +47,5 @@ templ OpportunityForm(f helpers.FormData) {
       ></input>
     </section>
   </form>
-  { string(f.Errors["overall"]) }
+  {! UnsafeRawHtml(f.Errors["overall"])}
 }

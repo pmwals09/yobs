@@ -46,7 +46,7 @@ func LoginPage(user *user.User, f helpers.FormData) templ.Component {
 			if err != nil {
 				return err
 			}
-			err = loginUserForm(f).Render(ctx, templBuffer)
+			err = LoginUserForm(f).Render(ctx, templBuffer)
 			if err != nil {
 				return err
 			}

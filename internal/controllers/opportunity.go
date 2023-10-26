@@ -3,7 +3,6 @@ package controllers
 import (
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
@@ -18,19 +17,19 @@ import (
 func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		newOpportunity, err := newOpportunityFromRequest(r)
-    if err != nil {
-      helpers.WriteError(w, err)
-    }
+		if err != nil {
+			helpers.WriteError(w, err)
+		}
 
 		if err := repo.CreateOpportunity(newOpportunity); err != nil {
 			handleCreateOpptyError(w, r, err)
 			return
 		}
 
-    user := r.Context().Value("user").(*user.User)
-    if user == nil {
-      helpers.WriteError(w, errors.New("No user available"))
-    }
+		user := r.Context().Value("user").(*user.User)
+		if user == nil {
+			helpers.WriteError(w, errors.New("No user available"))
+		}
 		opportunities, opptyErr := repo.GetAllOpportunities(user)
 		if opptyErr != nil {
 			helpers.WriteError(w, opptyErr)
@@ -38,40 +37,37 @@ func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
 		}
 
 		r.Header.Add("HX-Retarget", "#main-content")
-    templates.OpportunityList(opportunities).Render(r.Context(), w)
+		templates.OpportunityList(opportunities).Render(r.Context(), w)
 	}
 }
 
 func handleCreateOpptyError(w http.ResponseWriter, r *http.Request, err error) {
-  f := helpers.FormData {
-    Errors: map[string]template.HTML{
-      "overall": template.HTML(
-        fmt.Sprintf(
-          "<ul><li>An error occurred creating the opportunity: %s</li></ul>",
-          err.Error(),
-        ),
-      ),
-    },
-  }
-  templates.OpportunityForm(f).Render(r.Context(), w)
+	f := helpers.FormData{
+		Errors: map[string]string{
+			"overall": fmt.Sprintf(
+				"<ul><li>An error occurred creating the opportunity: %s</li></ul>",
+				err.Error(),
+			),
+		},
+	}
+	templates.OpportunityForm(f).Render(r.Context(), w)
 }
 
 func HandleGetActiveOpptys(repo opportunity.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-    user := r.Context().Value("user").(*user.User)
-    if user == nil {
-      helpers.WriteError(w, errors.New("No user available"))
-    }
+		user := r.Context().Value("user").(*user.User)
+		if user == nil {
+			helpers.WriteError(w, errors.New("No user available"))
+		}
 		opptys, err := repo.GetAllOpportunities(user)
 		if err != nil {
 			helpers.WriteError(w, err)
 			return
 		}
-    templates.OpportunityList(opptys).Render(r.Context(), w)
+		templates.OpportunityList(opptys).Render(r.Context(), w)
 	}
 }
 
-// TODO: Should only do so for the current user
 func HandleGetOppty(repo opportunity.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		od := helpers.OpptyDetails{}
@@ -83,10 +79,10 @@ func HandleGetOppty(repo opportunity.Repository) http.HandlerFunc {
 			return
 		}
 
-    user := r.Context().Value("user").(*user.User)
-    if user == nil {
-      helpers.WriteError(w, errors.New("No user available"))
-    }
+		user := r.Context().Value("user").(*user.User)
+		if user == nil {
+			helpers.WriteError(w, errors.New("No user available"))
+		}
 		opp, err := repo.GetOpportuntyById(uint(id), user)
 		if err != nil {
 			helpers.WriteError(w, err)
@@ -110,11 +106,11 @@ func HandleGetOppty(repo opportunity.Repository) http.HandlerFunc {
 
 		od.Documents = docs
 
-    templates.OpportunityDetailsPage(user, od).Render(r.Context(), w)
+		templates.OpportunityDetailsPage(user, od).Render(r.Context(), w)
 	}
 }
 
-// TODO: ASsociate with user
+// TODO: Associate with user
 func HandleUploadToOppty(
 	oppRepo opportunity.Repository,
 	docRepo document.Repository,
@@ -146,12 +142,12 @@ func HandleUploadToOppty(
 			d.WithTitle(docTitle)
 		}
 
-    user := r.Context().Value("user").(*user.User)
-    if user == nil {
+		user := r.Context().Value("user").(*user.User)
+		if user == nil {
 			helpers.WriteError(w, errors.New("No user available"))
 			return
-    }
-    d.WithUser(user)
+		}
+		d.WithUser(user)
 
 		err = d.Upload(file)
 		if err != nil {
@@ -172,11 +168,11 @@ func HandleUploadToOppty(
 			helpers.WriteError(w, err)
 			return
 		}
-    oppty, err := oppRepo.GetOpportuntyById(uint(id), user)
-    if err != nil {
-      helpers.WriteError(w, err)
-      return
-    }
+		oppty, err := oppRepo.GetOpportuntyById(uint(id), user)
+		if err != nil {
+			helpers.WriteError(w, err)
+			return
+		}
 		if err = oppRepo.AddDocument(oppty, d); err != nil {
 			helpers.WriteError(w, err)
 			return
@@ -202,27 +198,27 @@ func HandleUploadToOppty(
 			Oppty:     *oppty,
 			Documents: docs,
 		}
-    templates.AttachmentsSection(od).Render(r.Context(), w)
+		templates.AttachmentsSection(od).Render(r.Context(), w)
 	}
 }
 
 func newOpportunityFromRequest(r *http.Request) (*opportunity.Opportunity, error) {
-  o := opportunity.New()
+	o := opportunity.New()
 
-  err := r.ParseForm()
-  if err != nil {
-    return o, err
-  }
+	err := r.ParseForm()
+	if err != nil {
+		return o, err
+	}
 	name := r.PostForm.Get("opportunity-name")
 	description := r.PostForm.Get("opportunity-description")
 	url := r.PostForm.Get("opportunity-url")
 	date := r.PostForm.Get("opportunity-date")
 	role := r.PostForm.Get("opportunity-role")
 	o.WithCompanyName(name).
-    WithRole(role).
-    WithDescription(description).
-    WithURL(url).
-    WithApplicationDateString(date)
+		WithRole(role).
+		WithDescription(description).
+		WithURL(url).
+		WithApplicationDateString(date)
 
 	if o.ApplicationDate.IsZero() {
 		o.Status = opportunity.None
@@ -230,12 +226,11 @@ func newOpportunityFromRequest(r *http.Request) (*opportunity.Opportunity, error
 		o.Status = opportunity.Applied
 	}
 
-  user := r.Context().Value("user").(*user.User)
-  if user == nil {
-    return o, errors.New("No user available to associate with opportunity")
-  }
-  o.WithUser(user)
+	user := r.Context().Value("user").(*user.User)
+	if user == nil {
+		return o, errors.New("No user available to associate with opportunity")
+	}
+	o.WithUser(user)
 
 	return o, nil
 }
-
