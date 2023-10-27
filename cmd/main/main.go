@@ -72,8 +72,9 @@ func authenticatedRouter(opptyRepo opportunity.Repository, docRepo document.Repo
 		r.Post("/", controllers.HandlePostOppty(opptyRepo))
 		r.Get("/active", controllers.HandleGetActiveOpptys(opptyRepo))
 		r.Route("/{opportunityId}", func(r chi.Router) {
-			r.Get("/", controllers.HandleGetOppty(opptyRepo))
+			r.Get("/", controllers.HandleGetOppty(opptyRepo, docRepo))
 			r.Post("/upload", controllers.HandleUploadToOppty(opptyRepo, docRepo))
+			r.Post("/attach-existing", controllers.HandleAddExistingToOppty(opptyRepo, docRepo))
 		})
 	})
 	return r

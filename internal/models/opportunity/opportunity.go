@@ -88,7 +88,7 @@ type Repository interface {
 	UpdateOpportunity(opp *Opportunity) error
 	DeleteOpportunity(oppty *Opportunity) error
 	AddDocument(oppty *Opportunity, document *document.Document) error
-	GetAllDocuments(oppty *Opportunity) ([]document.Document, error)
+	GetAllDocuments(oppty *Opportunity, user *user.User) ([]document.Document, error)
 }
 
 type OpportunityModel struct {
@@ -224,7 +224,7 @@ func (g *OpportunityModel) AddDocument(oppty *Opportunity, document *document.Do
 	return err
 }
 
-func (o *OpportunityModel) GetAllDocuments(oppty *Opportunity) ([]document.Document, error) {
+func (o *OpportunityModel) GetAllDocuments(oppty *Opportunity, user *user.User) ([]document.Document, error) {
 	var docs []document.Document
 	rows, err := o.DB.Query(`
 		SELECT
@@ -253,6 +253,7 @@ func (o *OpportunityModel) GetAllDocuments(oppty *Opportunity) ([]document.Docum
 		if err != nil {
 			return docs, err
 		}
+    d.User = user
 		docs = append(docs, d)
 	}
 

@@ -11,10 +11,11 @@ import "bytes"
 
 import (
 	helpers "github.com/pmwals09/yobs/internal"
+	"github.com/pmwals09/yobs/internal/models/document"
 	"github.com/pmwals09/yobs/internal/models/user"
 )
 
-func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails) templ.Component {
+func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocuments []document.Document) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
 		templBuffer, templIsBuffer := w.(*bytes.Buffer)
 		if !templIsBuffer {
@@ -177,7 +178,7 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails) templ.Comp
 			if err != nil {
 				return err
 			}
-			err = AttachmentsSection(od).Render(ctx, templBuffer)
+			err = AttachmentsSection(od, userDocuments).Render(ctx, templBuffer)
 			if err != nil {
 				return err
 			}

@@ -10,10 +10,13 @@ import "io"
 import "bytes"
 
 import (
+	"strconv"
+
 	helpers "github.com/pmwals09/yobs/internal"
+	"github.com/pmwals09/yobs/internal/models/document"
 )
 
-func AttachmentsSection(od helpers.OpptyDetails) templ.Component {
+func AttachmentsSection(od helpers.OpptyDetails, userDocuments []document.Document) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
 		templBuffer, templIsBuffer := w.(*bytes.Buffer)
 		if !templIsBuffer {
@@ -109,6 +112,87 @@ func AttachmentsSection(od helpers.OpptyDetails) templ.Component {
 				return err
 			}
 		}
+		if userDocuments != nil && len(userDocuments) > 0 {
+			_, err = templBuffer.WriteString("<form method=\"POST\" action=\"")
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString(templ.EscapeString(insertIDIntoString("/opportunities/{}/attach-existing", od.Oppty.ID)))
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("\" hx-post=\"")
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString(templ.EscapeString(insertIDIntoString("/opportunities/{}/attach-existing", od.Oppty.ID)))
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("\" hx-target=\"#attachments-section\" class=\"w-1/2\"><section class=\"grid grid-cols-2 gap-y-2\"><label for=\"existing-attachment\">")
+			if err != nil {
+				return err
+			}
+			var_9 := `Existing Attachments`
+			_, err = templBuffer.WriteString(var_9)
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("</label><select name=\"existing-attachment\"><option value=\"\">")
+			if err != nil {
+				return err
+			}
+			var_10 := `Select a document...`
+			_, err = templBuffer.WriteString(var_10)
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("</option>")
+			if err != nil {
+				return err
+			}
+			for _, doc := range userDocuments {
+				_, err = templBuffer.WriteString("<option value=\"")
+				if err != nil {
+					return err
+				}
+				_, err = templBuffer.WriteString(templ.EscapeString(strconv.Itoa(int(doc.ID))))
+				if err != nil {
+					return err
+				}
+				_, err = templBuffer.WriteString("\">")
+				if err != nil {
+					return err
+				}
+				var var_11 string = doc.Title
+				_, err = templBuffer.WriteString(templ.EscapeString(var_11))
+				if err != nil {
+					return err
+				}
+				_, err = templBuffer.WriteString(" ")
+				if err != nil {
+					return err
+				}
+				var_12 := `- `
+				_, err = templBuffer.WriteString(var_12)
+				if err != nil {
+					return err
+				}
+				var var_13 string = doc.FileName
+				_, err = templBuffer.WriteString(templ.EscapeString(var_13))
+				if err != nil {
+					return err
+				}
+				_, err = templBuffer.WriteString("</option>")
+				if err != nil {
+					return err
+				}
+			}
+			_, err = templBuffer.WriteString("</select></section><input type=\"submit\" name=\"attachment-submit\" value=\"Add attached\" class=\"bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer my-3\"></form>")
+			if err != nil {
+				return err
+			}
+		}
 		_, err = templBuffer.WriteString("<form method=\"POST\" action=\"")
 		if err != nil {
 			return err
@@ -125,12 +209,12 @@ func AttachmentsSection(od helpers.OpptyDetails) templ.Component {
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("\" hx-target=\"#attachments-section\" enctype=\"multipart/form-data\"><label for=\"attachment-name\">")
+		_, err = templBuffer.WriteString("\" hx-target=\"#attachments-section\" enctype=\"multipart/form-data\" class=\"w-1/2\"><section class=\"grid grid-cols-2 gap-y-2\"><label for=\"attachment-name\">")
 		if err != nil {
 			return err
 		}
-		var_9 := `Attachment Name`
-		_, err = templBuffer.WriteString(var_9)
+		var_14 := `Attachment Name`
+		_, err = templBuffer.WriteString(var_14)
 		if err != nil {
 			return err
 		}
@@ -138,17 +222,17 @@ func AttachmentsSection(od helpers.OpptyDetails) templ.Component {
 		if err != nil {
 			return err
 		}
-		var_10 := `Attachment Type`
-		_, err = templBuffer.WriteString(var_10)
+		var_15 := `Attachment Type`
+		_, err = templBuffer.WriteString(var_15)
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("</label><select type=\"text\" name=\"attachment-type\"><option value=\"Resume\">")
+		_, err = templBuffer.WriteString("</label><select name=\"attachment-type\"><option value=\"Resume\">")
 		if err != nil {
 			return err
 		}
-		var_11 := `Resume`
-		_, err = templBuffer.WriteString(var_11)
+		var_16 := `Resume`
+		_, err = templBuffer.WriteString(var_16)
 		if err != nil {
 			return err
 		}
@@ -156,8 +240,8 @@ func AttachmentsSection(od helpers.OpptyDetails) templ.Component {
 		if err != nil {
 			return err
 		}
-		var_12 := `Cover Letter`
-		_, err = templBuffer.WriteString(var_12)
+		var_17 := `Cover Letter`
+		_, err = templBuffer.WriteString(var_17)
 		if err != nil {
 			return err
 		}
@@ -165,8 +249,8 @@ func AttachmentsSection(od helpers.OpptyDetails) templ.Component {
 		if err != nil {
 			return err
 		}
-		var_13 := `Communication`
-		_, err = templBuffer.WriteString(var_13)
+		var_18 := `Communication`
+		_, err = templBuffer.WriteString(var_18)
 		if err != nil {
 			return err
 		}
@@ -174,12 +258,12 @@ func AttachmentsSection(od helpers.OpptyDetails) templ.Component {
 		if err != nil {
 			return err
 		}
-		var_14 := `PDF Attachment`
-		_, err = templBuffer.WriteString(var_14)
+		var_19 := `PDF Attachment`
+		_, err = templBuffer.WriteString(var_19)
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("</label><input type=\"file\" name=\"attachment-file\" accept=\".pdf\"><input type=\"submit\" name=\"attachment-submit\" value=\"Submit\"></form></section>")
+		_, err = templBuffer.WriteString("</label><input type=\"file\" name=\"attachment-file\" accept=\".pdf\"></section><input type=\"submit\" name=\"attachment-submit\" value=\"Submit new\" class=\"bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer mt-3\"></form></section>")
 		if err != nil {
 			return err
 		}

@@ -119,7 +119,7 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository) h
 			return
 		}
 
-		// TODO: I don't like this arrangement. It would be really easy to create
+		// NOTE: I don't like this arrangement. It would be really easy to create
 		// a session object, but not insert it into the database before sending a
 		// cookie to the browser
 		s := session.New()

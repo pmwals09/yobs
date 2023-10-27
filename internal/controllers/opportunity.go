@@ -21,6 +21,8 @@ func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
 			helpers.WriteError(w, err)
 		}
 
+		// TODO: Make sure there's enough information here to be useful
+
 		if err := repo.CreateOpportunity(newOpportunity); err != nil {
 			handleCreateOpptyError(w, r, err)
 			return
@@ -68,7 +70,10 @@ func HandleGetActiveOpptys(repo opportunity.Repository) http.HandlerFunc {
 	}
 }
 
-func HandleGetOppty(repo opportunity.Repository) http.HandlerFunc {
+func HandleGetOppty(
+  opptyRepo opportunity.Repository,
+  docRepo document.Repository,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		od := helpers.OpptyDetails{}
 
@@ -83,14 +88,14 @@ func HandleGetOppty(repo opportunity.Repository) http.HandlerFunc {
 		if user == nil {
 			helpers.WriteError(w, errors.New("No user available"))
 		}
-		opp, err := repo.GetOpportuntyById(uint(id), user)
+		opp, err := opptyRepo.GetOpportuntyById(uint(id), user)
 		if err != nil {
 			helpers.WriteError(w, err)
 			return
 		}
 
 		od.Oppty = *opp
-		docs, err := repo.GetAllDocuments(opp)
+		docs, err := opptyRepo.GetAllDocuments(opp, user)
 		if err != nil {
 			helpers.WriteError(w, err)
 			return
@@ -106,9 +111,20 @@ func HandleGetOppty(repo opportunity.Repository) http.HandlerFunc {
 
 		od.Documents = docs
 
-		templates.OpportunityDetailsPage(user, od).Render(r.Context(), w)
+    userDocuments, err := docRepo.GetAllUserDocuments(user)
+    if err != nil {
+      helpers.WriteError(w, err)
+    }
+
+		templates.OpportunityDetailsPage(
+      user,
+      od,
+      userDocuments,
+    ).Render(r.Context(), w)
 	}
 }
+
+// TODO: How to update an existing opportunity?
 
 // TODO: Associate with user
 func HandleUploadToOppty(
@@ -179,7 +195,7 @@ func HandleUploadToOppty(
 		}
 
 		// 4. What to return? And where?
-		docs, err := oppRepo.GetAllDocuments(oppty)
+		docs, err := oppRepo.GetAllDocuments(oppty, user)
 		if err != nil {
 			helpers.WriteError(w, err)
 			return
@@ -188,7 +204,6 @@ func HandleUploadToOppty(
 		for i := range docs {
 			_, err := docs[i].GetPresignedDownloadUrl()
 			if err != nil {
-				fmt.Println(err.Error())
 				helpers.WriteError(w, err)
 				return
 			}
@@ -198,7 +213,13 @@ func HandleUploadToOppty(
 			Oppty:     *oppty,
 			Documents: docs,
 		}
-		templates.AttachmentsSection(od).Render(r.Context(), w)
+
+    userDocuments, err := docRepo.GetAllUserDocuments(user)
+    if err != nil {
+      helpers.WriteError(w, err)
+    }
+
+		templates.AttachmentsSection(od, userDocuments).Render(r.Context(), w)
 	}
 }
 
@@ -233,4 +254,68 @@ func newOpportunityFromRequest(r *http.Request) (*opportunity.Opportunity, error
 	o.WithUser(user)
 
 	return o, nil
+}
+
+func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := r.Context().Value("user").(*user.User)
+		if user == nil {
+			helpers.WriteError(w, errors.New("No user available"))
+			return
+		}
+
+		idParam := chi.URLParam(r, "opportunityId")
+		id, err := strconv.ParseUint(idParam, 10, 64) // Sqlite id's are 64-bit int
+		if err != nil {
+			helpers.WriteError(w, err)
+			return
+		}
+		oppty, err := opptyRepo.GetOpportuntyById(uint(id), user)
+		if err != nil {
+			helpers.WriteError(w, err)
+			return
+		}
+
+    // Get the selected document from the formdata
+    err = r.ParseForm()
+    if err != nil {
+      helpers.WriteError(w, err)
+      return
+    }
+
+    docIdStr := r.PostForm.Get("existing-attachment")
+    docId, err := strconv.ParseUint(docIdStr, 10, 64)
+    if err != nil {
+      helpers.WriteError(w, err)
+      return
+    }
+
+    doc, err := docRepo.GetDocumentById(uint(docId), user)
+
+
+    // Associate the existing document with this opportunity
+		err = opptyRepo.AddDocument(oppty, &doc)
+    if err != nil {
+      helpers.WriteError(w, err)
+      return
+    }
+
+    docs, err := opptyRepo.GetAllDocuments(oppty, user)
+    if err != nil {
+      helpers.WriteError(w, err)
+      return
+    }
+
+    od := helpers.OpptyDetails{
+      Oppty: *oppty,
+      Documents: docs,
+    }
+    userDocs, err := docRepo.GetAllUserDocuments(user)
+    if err != nil {
+      helpers.WriteError(w, err)
+      return
+    }
+
+    templates.AttachmentsSection(od, userDocs).Render(r.Context(), w)
+  }
 }

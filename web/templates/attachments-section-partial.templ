@@ -1,10 +1,13 @@
 package templates
 
 import (
+  "strconv"
+
 	helpers "github.com/pmwals09/yobs/internal"
+	"github.com/pmwals09/yobs/internal/models/document"
 )
 
-templ AttachmentsSection(od helpers.OpptyDetails) {
+templ AttachmentsSection(od helpers.OpptyDetails, userDocuments []document.Document) {
   <section id="attachments-section" class="mb-4">
     <h2 class="text-[1.5em]">Attachments</h2>
     if od.Documents != nil && len(od.Documents) > 0 {
@@ -29,24 +32,57 @@ templ AttachmentsSection(od helpers.OpptyDetails) {
         </tbody>
       </table>
     }
+    if userDocuments != nil && len(userDocuments) > 0 {
+      <form
+        method="POST"
+        action={insertIDIntoString("/opportunities/{}/attach-existing", od.Oppty.ID)}
+        hx-post={insertIDIntoString("/opportunities/{}/attach-existing", od.Oppty.ID)}
+        hx-target="#attachments-section"
+        class="w-1/2"
+      >
+        <section class="grid grid-cols-2 gap-y-2">
+          <label for="existing-attachment">Existing Attachments</label>
+          <select name="existing-attachment">
+            <option value="">Select a document...</option>
+            for _, doc := range userDocuments {
+              <option value={strconv.Itoa(int(doc.ID))}>{doc.Title} - {doc.FileName}</option>
+            }
+          </select>
+        </section>
+        <input
+          type="submit"
+          name="attachment-submit"
+          value="Add attached"
+          class="bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer my-3"
+        />
+      </form>
+    }
     <form
       method="POST"
       action={insertIDIntoString("/opportunities/{}/upload", od.Oppty.ID)}
       hx-post={insertIDIntoString("/opportunities/{}/upload", od.Oppty.ID)}
       hx-target="#attachments-section"
       enctype="multipart/form-data"
+      class="w-1/2"
     >
-      <label for="attachment-name">Attachment Name</label>
-      <input type="text" name="attachment-name" value=""/>
-      <label for="attachment-type">Attachment Type</label>
-      <select type="text" name="attachment-type">
-        <option value="Resume">Resume</option>
-        <option value="CoverLetter">Cover Letter</option>
-        <option value="Communication">Communication</option>
-      </select>
-      <label for="attachment-file">PDF Attachment</label>
-      <input type="file" name="attachment-file" accept=".pdf"/>
-      <input type="submit" name="attachment-submit" value="Submit"/>
+      <section class="grid grid-cols-2 gap-y-2">
+        <label for="attachment-name">Attachment Name</label>
+        <input type="text" name="attachment-name" value=""/>
+        <label for="attachment-type">Attachment Type</label>
+        <select name="attachment-type">
+          <option value="Resume">Resume</option>
+          <option value="CoverLetter">Cover Letter</option>
+          <option value="Communication">Communication</option>
+        </select>
+        <label for="attachment-file">PDF Attachment</label>
+        <input type="file" name="attachment-file" accept=".pdf"/>
+      </section>
+      <input
+        type="submit"
+        name="attachment-submit"
+        value="Submit new"
+        class="bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer mt-3"
+      />
     </form>
   </section>
 }
