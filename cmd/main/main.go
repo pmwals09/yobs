@@ -11,9 +11,9 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
-	
-	"github.com/pmwals09/yobs/internal/db"
+
 	"github.com/pmwals09/yobs/internal/controllers"
+	"github.com/pmwals09/yobs/internal/db"
 	"github.com/pmwals09/yobs/internal/models/document"
 	"github.com/pmwals09/yobs/internal/models/opportunity"
 	"github.com/pmwals09/yobs/internal/models/session"
@@ -54,7 +54,7 @@ func main() {
 	r.Route("/user", func(r chi.Router) {
 		r.Post("/register", controllers.HandleRegisterUser(&userRepo))
 		r.Post("/login", controllers.HandleLogInUser(&userRepo, &sessionRepo))
-    r.Get("/logout", controllers.HandleLogout(&sessionRepo))
+		r.Get("/logout", controllers.HandleLogout(&sessionRepo))
 	})
 	r.Mount("/", authenticatedRouter(&opptyRepo, &docRepo, &sessionRepo, &userRepo))
 
@@ -117,24 +117,24 @@ func authOnly(sessionRepo session.Repository, userRepo user.Repository) func(htt
 
 			now := time.Now()
 			if now.After(session.Expiration) {
-        sessionRepo.DeleteSessionByUUID(session.UUID)
+				sessionRepo.DeleteSessionByUUID(session.UUID)
 				http.Redirect(w, r, "/", http.StatusFound)
 				return
 			}
 
 			session.Expiration = time.Now().Add(time.Minute * 30)
-      err = sessionRepo.UpdateSession(session)
-      if err != nil {
-      }
+			err = sessionRepo.UpdateSession(session)
+			if err != nil {
+			}
 			cookie.Expires = session.Expiration
 			http.SetCookie(w, cookie)
 
-      u, err := userRepo.GetUserById(session.UserID)
-      if err != nil {
-        http.Redirect(w, r, "/", http.StatusFound)
-        return
-      }
-      ctx := context.WithValue(r.Context(), "user", u)
+			u, err := userRepo.GetUserById(session.UserID)
+			if err != nil {
+				http.Redirect(w, r, "/", http.StatusFound)
+				return
+			}
+			ctx := context.WithValue(r.Context(), "user", u)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

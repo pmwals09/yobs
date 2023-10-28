@@ -64,14 +64,14 @@ func (o *Opportunity) WithURL(url string) *Opportunity {
 
 func (o *Opportunity) WithUser(user *user.User) *Opportunity {
 	o.User = user
-  return o
+	return o
 }
 
 func (o *Opportunity) WithApplicationDateString(applicationDate string) *Opportunity {
-  if applicationDate == "" {
-    o.ApplicationDate = time.Time{}
-    return o
-  }
+	if applicationDate == "" {
+		o.ApplicationDate = time.Time{}
+		return o
+	}
 	t, err := time.Parse("2006-01-02", applicationDate)
 	if err != nil {
 		fmt.Printf("\nError parsing date: %s\n", err.Error())
@@ -87,7 +87,7 @@ func (o *Opportunity) WithApplicationDateTime(applicationDate time.Time) *Opport
 }
 
 func (o *Opportunity) IsEmpty() bool {
-  return o.CompanyName == "" && o.URL == "" && o.Role == ""
+	return o.CompanyName == "" && o.URL == "" && o.Role == ""
 }
 
 type Repository interface {
@@ -105,9 +105,9 @@ type OpportunityModel struct {
 }
 
 func (g *OpportunityModel) CreateOpportunity(opp *Opportunity) error {
-  if opp.IsEmpty() {
-    return errors.New("Empty opportunity - must have at least one of Role, Company Name, or URL")
-  }
+	if opp.IsEmpty() {
+		return errors.New("Empty opportunity - must have at least one of Role, Company Name, or URL")
+	}
 
 	_, err := g.DB.Exec(`
 		INSERT INTO opportunities (
@@ -126,7 +126,7 @@ func (g *OpportunityModel) CreateOpportunity(opp *Opportunity) error {
 		opp.URL,
 		opp.ApplicationDate,
 		opp.Status,
-    opp.User.ID,
+		opp.User.ID,
 	)
 
 	return err
@@ -154,7 +154,7 @@ func (g *OpportunityModel) GetOpportuntyById(opptyId uint, user *user.User) (*Op
 		&oppty.ApplicationDate,
 		&oppty.Status,
 	)
-  oppty.User = user
+	oppty.User = user
 
 	return &oppty, err
 }
@@ -190,7 +190,7 @@ func (g *OpportunityModel) GetAllOpportunities(user *user.User) ([]Opportunity, 
 		if err != nil {
 			return opptys, err
 		}
-    oppty.User = user
+		oppty.User = user
 		opptys = append(opptys, oppty)
 	}
 	return opptys, nil
@@ -215,7 +215,7 @@ func (g *OpportunityModel) UpdateOpportunity(opp *Opportunity) error {
 		opp.ApplicationDate,
 		opp.Status,
 		opp.ID,
-    opp.User.ID,
+		opp.User.ID,
 	)
 	return err
 }
@@ -228,7 +228,7 @@ func (g *OpportunityModel) DeleteOpportunity(oppty *Opportunity) error {
 }
 
 func (g *OpportunityModel) AddDocument(oppty *Opportunity, document *document.Document) error {
-  // TODO: Only add it if you haven't already
+	// TODO: Only add it if you haven't already
 	_, err := g.DB.Exec(`
 		INSERT INTO opportunity_documents (
 			opportunity_id,
@@ -267,7 +267,7 @@ func (o *OpportunityModel) GetAllDocuments(oppty *Opportunity, user *user.User) 
 		if err != nil {
 			return docs, err
 		}
-    d.User = user
+		d.User = user
 		docs = append(docs, d)
 	}
 

@@ -11,18 +11,18 @@ import (
 
 func HandleGetProfilePage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-    u := r.Context().Value("user").(*user.User)
-		pa := helpers.ProfileArgs {
+		u := r.Context().Value("user").(*user.User)
+		pa := helpers.ProfileArgs{
 			Username: u.Username,
-			Email: u.Email,
-      // TODO: Make preferred resume a field on the user
+			Email:    u.Email,
+			// TODO: Make preferred resume a field on the user
 			Resume: document.Document{
 				FileName: "Anonymous Resume",
-				Title: "My fancy resume",
-				Type: "Resume",
-				URL: "http://www.google.com",
+				Title:    "My fancy resume",
+				Type:     "Resume",
+				URL:      "http://www.google.com",
 			},
 		}
-    templates.ProfilePage(u, pa).Render(r.Context(), w)
+		templates.ProfilePage(u, pa).Render(r.Context(), w)
 	}
 }

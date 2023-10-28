@@ -60,8 +60,8 @@ type DocumentModel struct {
 
 type Repository interface {
 	CreateDocument(doc *Document) error
-  GetAllUserDocuments(user *user.User) ([]Document, error)
-  GetDocumentById(id uint, user *user.User) (Document, error)
+	GetAllUserDocuments(user *user.User) ([]Document, error)
+	GetDocumentById(id uint, user *user.User) (Document, error)
 }
 
 func (d *Document) Upload(file multipart.File) error {
@@ -162,8 +162,8 @@ func (d *Document) GetPresignedDownloadUrl() (string, error) {
 }
 
 func (d *DocumentModel) GetAllUserDocuments(user *user.User) ([]Document, error) {
-  var documents []Document
-  rows, err := d.DB.Query(`
+	var documents []Document
+	rows, err := d.DB.Query(`
     SELECT
       id
 			file_name,
@@ -174,33 +174,33 @@ func (d *DocumentModel) GetAllUserDocuments(user *user.User) ([]Document, error)
     FROM documents WHERE user_id = ?;
   `, user.ID)
 
-  if err != nil {
-    return documents, err
-  }
+	if err != nil {
+		return documents, err
+	}
 
-  for rows.Next() {
-    document := Document{}
-    err := rows.Scan(
-      &document.ID,
-      &document.FileName,
-      &document.Title,
-      &document.Type,
-      &document.ContentType,
-    )
+	for rows.Next() {
+		document := Document{}
+		err := rows.Scan(
+			&document.ID,
+			&document.FileName,
+			&document.Title,
+			&document.Type,
+			&document.ContentType,
+		)
 
-    if err != nil {
-      return documents, err
-    }
+		if err != nil {
+			return documents, err
+		}
 
-    document.User = user
-    documents = append(documents, document)
-  }
+		document.User = user
+		documents = append(documents, document)
+	}
 
-  return documents, nil
+	return documents, nil
 }
 
 func (d *DocumentModel) GetDocumentById(id uint, user *user.User) (Document, error) {
-  row := d.DB.QueryRow(`
+	row := d.DB.QueryRow(`
     SELECT
       id,     
 			file_name,
@@ -210,20 +210,20 @@ func (d *DocumentModel) GetDocumentById(id uint, user *user.User) (Document, err
     FROM documents WHERE id = ? AND user_id = ?
   `, id, user.ID)
 
-  var doc Document
-  err := row.Scan(
-    &doc.ID,
-    &doc.FileName,
-    &doc.Title,
-    &doc.Type,
-    &doc.ContentType,
-  )
+	var doc Document
+	err := row.Scan(
+		&doc.ID,
+		&doc.FileName,
+		&doc.Title,
+		&doc.Type,
+		&doc.ContentType,
+	)
 
-  if err != nil {
-    return doc, err
-  }
+	if err != nil {
+		return doc, err
+	}
 
-  doc.User = user
+	doc.User = user
 
-  return doc, nil
+	return doc, nil
 }

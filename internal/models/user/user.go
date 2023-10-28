@@ -34,7 +34,7 @@ type UserModel struct {
 type Repository interface {
 	GetUserByEmailOrUsername(email string, username string) (*User, error)
 	CreateUser(user *User) error
-  GetUserById(userId uint) (*User, error)
+	GetUserById(userId uint) (*User, error)
 }
 
 func (um *UserModel) GetUserByEmailOrUsername(

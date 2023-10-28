@@ -75,21 +75,21 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository) h
 		r.ParseForm()
 		newUserInfo := newUserFromRequest(r)
 
-    if newUserInfo["usernameOrEmail"] == "" || newUserInfo["password"] == "" {
-      formErrors := map[string]string{}
-      if newUserInfo["usernameOrEmail"] == "" {
-        formErrors["usernameOrEmail"] = "<p>Must include username</p>"
-      }
-      if newUserInfo["password"] == "" {
-        formErrors["password"] = "<p>Must include password</p>"
-      }
-      f := helpers.FormData{
-        Errors: formErrors,
-        Values: newUserInfo,
-      }
+		if newUserInfo["usernameOrEmail"] == "" || newUserInfo["password"] == "" {
+			formErrors := map[string]string{}
+			if newUserInfo["usernameOrEmail"] == "" {
+				formErrors["usernameOrEmail"] = "<p>Must include username</p>"
+			}
+			if newUserInfo["password"] == "" {
+				formErrors["password"] = "<p>Must include password</p>"
+			}
+			f := helpers.FormData{
+				Errors: formErrors,
+				Values: newUserInfo,
+			}
 			templates.LoginUserForm(f).Render(r.Context(), w)
 			return
-    }
+		}
 
 		user, err := userRepo.GetUserByEmailOrUsername(
 			newUserInfo["usernameOrEmail"],
@@ -189,32 +189,31 @@ func validateUserInfo(userInfo map[string]string, repo user.Repository) (map[str
 	errorMessages := []string{}
 	openTag := "<p class='text-red-600 col-start-2'>"
 
-  // Confirm that the necessary fields have been filled out
-  if userInfo["username"] == "" {
-    errorMessage := "Must include a username"
-    errorData["username"] = openTag + errorMessage + "</p>"
+	// Confirm that the necessary fields have been filled out
+	if userInfo["username"] == "" {
+		errorMessage := "Must include a username"
+		errorData["username"] = openTag + errorMessage + "</p>"
 		errorMessages = append(errorMessages, errorMessage)
-  }
-  if userInfo["email"] == "" {
-    errorMessage := "Must include an email address"
-    errorData["email"] = openTag + errorMessage + "</p>"
+	}
+	if userInfo["email"] == "" {
+		errorMessage := "Must include an email address"
+		errorData["email"] = openTag + errorMessage + "</p>"
 		errorMessages = append(errorMessages, errorMessage)
-  }
-  if userInfo["password"] == "" {
-    errorMessage := "Must include a password"
-    errorData["password"] = openTag + errorMessage + "</p>"
+	}
+	if userInfo["password"] == "" {
+		errorMessage := "Must include a password"
+		errorData["password"] = openTag + errorMessage + "</p>"
 		errorMessages = append(errorMessages, errorMessage)
-  }
-  if userInfo["passwordRepeat"] == "" {
-    errorMessage := "Must repeat the password"
-    errorData["passwordRepeat"] = openTag + errorMessage + "</p>"
+	}
+	if userInfo["passwordRepeat"] == "" {
+		errorMessage := "Must repeat the password"
+		errorData["passwordRepeat"] = openTag + errorMessage + "</p>"
 		errorMessages = append(errorMessages, errorMessage)
-  }
-
-	if len(errorMessages) > 0 {
-    return errorData, errors.New(strings.Join(errorMessages, ", "))
 	}
 
+	if len(errorMessages) > 0 {
+		return errorData, errors.New(strings.Join(errorMessages, ", "))
+	}
 
 	// Confirm that the password fields match
 	if userInfo["password"] != userInfo["passwordRepeat"] {

@@ -41,8 +41,8 @@ type FormData struct {
 
 type ProfileArgs struct {
 	Username string
-	Email string
-	Resume document.Document
+	Email    string
+	Resume   document.Document
 }
 
 type OpptyDetails struct {

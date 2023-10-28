@@ -67,28 +67,28 @@ func HandleGetSignUpPage() http.HandlerFunc {
 
 func HandleLogout(sessionRepo session.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-    cookie, err := r.Cookie("yobs")
-    if err != nil {
-      http.Redirect(w, r, "/", http.StatusFound)
-      return
-    }
+		cookie, err := r.Cookie("yobs")
+		if err != nil {
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
+		}
 
-    if cookie == nil {
-      http.Redirect(w, r, "/", http.StatusFound)
-      return
-    }
+		if cookie == nil {
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
+		}
 
-    uuid, err := uuid.Parse(cookie.Value)
-    if err != nil {
-      http.Redirect(w, r, "/", http.StatusFound)
-      return
-    }
+		uuid, err := uuid.Parse(cookie.Value)
+		if err != nil {
+			http.Redirect(w, r, "/", http.StatusFound)
+			return
+		}
 
-    cookie.Expires = time.Time{}
-    http.SetCookie(w, cookie)
+		cookie.Expires = time.Time{}
+		http.SetCookie(w, cookie)
 
-    err = sessionRepo.DeleteSessionByUUID(uuid)
+		err = sessionRepo.DeleteSessionByUUID(uuid)
 
-    http.Redirect(w, r, "/", http.StatusFound)
+		http.Redirect(w, r, "/", http.StatusFound)
 	}
 }

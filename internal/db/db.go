@@ -44,12 +44,14 @@ func migrate(db *sql.DB) error {
 	}
 
 	for k, v := range migrations {
-    ok, err := hasRunMigration(db, k, v)
-    if err != nil {
-      return fmt.Errorf("Error querying for migration")
-    }
+		ok, err := hasRunMigration(db, k, v)
+		if err != nil {
+			return fmt.Errorf("Error querying for migration")
+		}
 
-    if ok { continue; }
+		if ok {
+			continue
+		}
 
 		upQBytes, err := os.ReadFile(migrationDirectory + "/" + v.Up)
 		if err != nil {
@@ -167,10 +169,10 @@ func hasRunMigration(db *sql.DB, k string, v *MigrationPair) (bool, error) {
 	var filename string
 	err := row.Scan(&migrationNumber, &filename)
 	if err != nil {
-    if err == sql.ErrNoRows {
-      return false, nil
-    }
-    return false, err
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, err
 	}
-  return true, nil
+	return true, nil
 }
