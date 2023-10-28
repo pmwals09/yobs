@@ -15,7 +15,7 @@ import (
 	"github.com/pmwals09/yobs/internal/models/user"
 )
 
-func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocuments []document.Document) templ.Component {
+func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocuments []document.Document, fd helpers.FormData) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
 		templBuffer, templIsBuffer := w.(*bytes.Buffer)
 		if !templIsBuffer {
@@ -178,7 +178,7 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			err = AttachmentsSection(od, userDocuments).Render(ctx, templBuffer)
+			err = AttachmentsSection(od, userDocuments, fd).Render(ctx, templBuffer)
 			if err != nil {
 				return err
 			}

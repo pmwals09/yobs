@@ -2,6 +2,7 @@ package opportunity
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -67,6 +68,10 @@ func (o *Opportunity) WithUser(user *user.User) *Opportunity {
 }
 
 func (o *Opportunity) WithApplicationDateString(applicationDate string) *Opportunity {
+  if applicationDate == "" {
+    o.ApplicationDate = time.Time{}
+    return o
+  }
 	t, err := time.Parse("2006-01-02", applicationDate)
 	if err != nil {
 		fmt.Printf("\nError parsing date: %s\n", err.Error())
@@ -79,6 +84,10 @@ func (o *Opportunity) WithApplicationDateString(applicationDate string) *Opportu
 func (o *Opportunity) WithApplicationDateTime(applicationDate time.Time) *Opportunity {
 	o.ApplicationDate = applicationDate
 	return o
+}
+
+func (o *Opportunity) IsEmpty() bool {
+  return o.CompanyName == "" && o.URL == "" && o.Role == ""
 }
 
 type Repository interface {
@@ -96,6 +105,10 @@ type OpportunityModel struct {
 }
 
 func (g *OpportunityModel) CreateOpportunity(opp *Opportunity) error {
+  if opp.IsEmpty() {
+    return errors.New("Empty opportunity - must have at least one of Role, Company Name, or URL")
+  }
+
 	_, err := g.DB.Exec(`
 		INSERT INTO opportunities (
 			company_name,
@@ -215,6 +228,7 @@ func (g *OpportunityModel) DeleteOpportunity(oppty *Opportunity) error {
 }
 
 func (g *OpportunityModel) AddDocument(oppty *Opportunity, document *document.Document) error {
+  // TODO: Only add it if you haven't already
 	_, err := g.DB.Exec(`
 		INSERT INTO opportunity_documents (
 			opportunity_id,

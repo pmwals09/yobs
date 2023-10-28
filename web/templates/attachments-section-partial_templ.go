@@ -16,7 +16,7 @@ import (
 	"github.com/pmwals09/yobs/internal/models/document"
 )
 
-func AttachmentsSection(od helpers.OpptyDetails, userDocuments []document.Document) templ.Component {
+func AttachmentsSection(od helpers.OpptyDetails, userDocuments []document.Document, f helpers.FormData) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
 		templBuffer, templIsBuffer := w.(*bytes.Buffer)
 		if !templIsBuffer {
@@ -112,6 +112,10 @@ func AttachmentsSection(od helpers.OpptyDetails, userDocuments []document.Docume
 				return err
 			}
 		}
+		err = UnsafeRawHtml(f.Errors["document-table"]).Render(ctx, templBuffer)
+		if err != nil {
+			return err
+		}
 		if userDocuments != nil && len(userDocuments) > 0 {
 			_, err = templBuffer.WriteString("<form method=\"POST\" action=\"")
 			if err != nil {
@@ -138,7 +142,7 @@ func AttachmentsSection(od helpers.OpptyDetails, userDocuments []document.Docume
 			if err != nil {
 				return err
 			}
-			_, err = templBuffer.WriteString("</label><select name=\"existing-attachment\"><option value=\"\">")
+			_, err = templBuffer.WriteString("</label><div><select name=\"existing-attachment\"><option value=\"\">")
 			if err != nil {
 				return err
 			}
@@ -188,7 +192,15 @@ func AttachmentsSection(od helpers.OpptyDetails, userDocuments []document.Docume
 					return err
 				}
 			}
-			_, err = templBuffer.WriteString("</select></section><input type=\"submit\" name=\"attachment-submit\" value=\"Add attached\" class=\"bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer my-3\"></form>")
+			_, err = templBuffer.WriteString("</select>")
+			if err != nil {
+				return err
+			}
+			err = UnsafeRawHtml(f.Errors["existing-attachment"]).Render(ctx, templBuffer)
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("</div></section><input type=\"submit\" name=\"attachment-submit\" value=\"Add attached\" class=\"bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer my-3\"></form>")
 			if err != nil {
 				return err
 			}
@@ -218,7 +230,23 @@ func AttachmentsSection(od helpers.OpptyDetails, userDocuments []document.Docume
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("</label><input type=\"text\" name=\"attachment-name\" value=\"\"><label for=\"attachment-type\">")
+		_, err = templBuffer.WriteString("</label><div><input type=\"text\" name=\"attachment-name\" value=\"")
+		if err != nil {
+			return err
+		}
+		_, err = templBuffer.WriteString(templ.EscapeString(f.Values["attachment-name"]))
+		if err != nil {
+			return err
+		}
+		_, err = templBuffer.WriteString("\">")
+		if err != nil {
+			return err
+		}
+		err = UnsafeRawHtml(f.Errors["attachment-name"]).Render(ctx, templBuffer)
+		if err != nil {
+			return err
+		}
+		_, err = templBuffer.WriteString("</div><label for=\"attachment-type\">")
 		if err != nil {
 			return err
 		}
@@ -227,7 +255,15 @@ func AttachmentsSection(od helpers.OpptyDetails, userDocuments []document.Docume
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("</label><select name=\"attachment-type\"><option value=\"Resume\">")
+		_, err = templBuffer.WriteString("</label><div><select name=\"attachment-type\" value=\"")
+		if err != nil {
+			return err
+		}
+		_, err = templBuffer.WriteString(templ.EscapeString(f.Values["attachment-type"]))
+		if err != nil {
+			return err
+		}
+		_, err = templBuffer.WriteString("\"><option value=\"Resume\">")
 		if err != nil {
 			return err
 		}
@@ -254,7 +290,15 @@ func AttachmentsSection(od helpers.OpptyDetails, userDocuments []document.Docume
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("</option></select><label for=\"attachment-file\">")
+		_, err = templBuffer.WriteString("</option></select>")
+		if err != nil {
+			return err
+		}
+		err = UnsafeRawHtml(f.Errors["attachment-type"]).Render(ctx, templBuffer)
+		if err != nil {
+			return err
+		}
+		_, err = templBuffer.WriteString("</div><label for=\"attachment-file\">")
 		if err != nil {
 			return err
 		}
@@ -263,7 +307,23 @@ func AttachmentsSection(od helpers.OpptyDetails, userDocuments []document.Docume
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("</label><input type=\"file\" name=\"attachment-file\" accept=\".pdf\"></section><input type=\"submit\" name=\"attachment-submit\" value=\"Submit new\" class=\"bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer mt-3\"></form></section>")
+		_, err = templBuffer.WriteString("</label><div><input type=\"file\" name=\"attachment-file\" accept=\".pdf\" value=\"")
+		if err != nil {
+			return err
+		}
+		_, err = templBuffer.WriteString(templ.EscapeString(f.Values["attachment-file"]))
+		if err != nil {
+			return err
+		}
+		_, err = templBuffer.WriteString("\">")
+		if err != nil {
+			return err
+		}
+		err = UnsafeRawHtml(f.Errors["attachment-file"]).Render(ctx, templBuffer)
+		if err != nil {
+			return err
+		}
+		_, err = templBuffer.WriteString("</div></section><input type=\"submit\" name=\"attachment-submit\" value=\"Submit new\" class=\"bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer mt-3\"></form></section>")
 		if err != nil {
 			return err
 		}

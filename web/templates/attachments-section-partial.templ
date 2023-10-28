@@ -7,7 +7,7 @@ import (
 	"github.com/pmwals09/yobs/internal/models/document"
 )
 
-templ AttachmentsSection(od helpers.OpptyDetails, userDocuments []document.Document) {
+templ AttachmentsSection(od helpers.OpptyDetails, userDocuments []document.Document, f helpers.FormData) {
   <section id="attachments-section" class="mb-4">
     <h2 class="text-[1.5em]">Attachments</h2>
     if od.Documents != nil && len(od.Documents) > 0 {
@@ -32,6 +32,7 @@ templ AttachmentsSection(od helpers.OpptyDetails, userDocuments []document.Docum
         </tbody>
       </table>
     }
+    {! UnsafeRawHtml(f.Errors["document-table"])}
     if userDocuments != nil && len(userDocuments) > 0 {
       <form
         method="POST"
@@ -42,12 +43,15 @@ templ AttachmentsSection(od helpers.OpptyDetails, userDocuments []document.Docum
       >
         <section class="grid grid-cols-2 gap-y-2">
           <label for="existing-attachment">Existing Attachments</label>
-          <select name="existing-attachment">
-            <option value="">Select a document...</option>
-            for _, doc := range userDocuments {
-              <option value={strconv.Itoa(int(doc.ID))}>{doc.Title} - {doc.FileName}</option>
-            }
-          </select>
+          <div>
+            <select name="existing-attachment">
+              <option value="">Select a document...</option>
+              for _, doc := range userDocuments {
+                <option value={strconv.Itoa(int(doc.ID))}>{doc.Title} - {doc.FileName}</option>
+              }
+            </select>
+            {! UnsafeRawHtml(f.Errors["existing-attachment"])}
+          </div>
         </section>
         <input
           type="submit"
@@ -67,15 +71,24 @@ templ AttachmentsSection(od helpers.OpptyDetails, userDocuments []document.Docum
     >
       <section class="grid grid-cols-2 gap-y-2">
         <label for="attachment-name">Attachment Name</label>
-        <input type="text" name="attachment-name" value=""/>
+        <div>
+          <input type="text" name="attachment-name" value={f.Values["attachment-name"]}/>
+          {! UnsafeRawHtml(f.Errors["attachment-name"])}
+        </div>
         <label for="attachment-type">Attachment Type</label>
-        <select name="attachment-type">
-          <option value="Resume">Resume</option>
-          <option value="CoverLetter">Cover Letter</option>
-          <option value="Communication">Communication</option>
-        </select>
+        <div>
+          <select name="attachment-type" value={f.Values["attachment-type"]}>
+            <option value="Resume">Resume</option>
+            <option value="CoverLetter">Cover Letter</option>
+            <option value="Communication">Communication</option>
+          </select>
+          {! UnsafeRawHtml(f.Errors["attachment-type"])}
+        </div>
         <label for="attachment-file">PDF Attachment</label>
-        <input type="file" name="attachment-file" accept=".pdf"/>
+        <div>
+          <input type="file" name="attachment-file" accept=".pdf" value={f.Values["attachment-file"]}/>
+          {! UnsafeRawHtml(f.Errors["attachment-file"])}
+        </div>
       </section>
       <input
         type="submit"

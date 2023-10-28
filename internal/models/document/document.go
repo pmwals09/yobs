@@ -3,7 +3,6 @@ package document
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"mime/multipart"
 	"os"
 	"time"
@@ -207,7 +206,7 @@ func (d *DocumentModel) GetDocumentById(id uint, user *user.User) (Document, err
 			file_name,
 			title,
 			type,
-			content_type,
+			content_type
     FROM documents WHERE id = ? AND user_id = ?
   `, id, user.ID)
 

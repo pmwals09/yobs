@@ -6,7 +6,7 @@ import (
 	"github.com/pmwals09/yobs/internal/models/document"
 )
 
-templ OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocuments []document.Document) {
+templ OpportunityDetailsPage( user *user.User, od helpers.OpptyDetails, userDocuments []document.Document, fd helpers.FormData) {
   @base(user) {
     <h1 class="text-center text-[2em]">
       { od.Oppty.CompanyName } - { od.Oppty.Role }
@@ -32,6 +32,6 @@ templ OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocum
     <section class="mb-4">
       <h2 class="text-[1.5em]">Tasks</h2>
     </section>
-    @AttachmentsSection(od, userDocuments)
+    @AttachmentsSection(od, userDocuments, fd)
   }
 }
