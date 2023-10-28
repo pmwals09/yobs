@@ -117,6 +117,7 @@ func authOnly(sessionRepo session.Repository, userRepo user.Repository) func(htt
 
 			now := time.Now()
 			if now.After(session.Expiration) {
+        sessionRepo.DeleteSessionByUUID(session.UUID)
 				http.Redirect(w, r, "/", http.StatusFound)
 				return
 			}
