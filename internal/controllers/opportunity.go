@@ -46,7 +46,7 @@ func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
 	}
 }
 
-func HandleGetOppty(
+func HandleGetOpptyPage(
 	opptyRepo opportunity.Repository,
 	docRepo document.Repository,
 ) http.HandlerFunc {
@@ -132,7 +132,6 @@ func HandleGetOppty(
 	}
 }
 
-// TODO: How to update an existing opportunity?
 
 func HandleUploadToOppty(
 	opptyRepo opportunity.Repository,
@@ -361,6 +360,21 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
     return
 	}
 }
+
+// TODO: How to update an existing opportunity?
+
+func HandleEditOpptyPage(opptyRepo opportunity.Repository, docRepo document.Repository) http.HandlerFunc {
+  return func(w http.ResponseWriter, r *http.Request) {
+    templates.OpportunityEditPage(nil).Render(r.Context(), w)
+    // get the id out of the url
+    // get the opportunity
+    // get the associated documents
+    // populate a form for editing the opportunity
+    // return the form
+  }
+}
+
+// TODO: Update an existing opportunity
 
 func returnAttachmentsSection(
 	w http.ResponseWriter,

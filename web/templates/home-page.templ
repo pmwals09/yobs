@@ -30,8 +30,13 @@ templ HomePage(user *user.User, opportunities []opportunity.Opportunity, f helpe
             <td class="border-b">{ o.URL }</td>
             <td class="border-b">{ string(o.Status) }</td>
             <td class="border-b">{ formatApplicationDate(o.ApplicationDate) }</td>
-            <td class="border-b">
-              <a class="btn" href={insertIDIntoHref("opportunities/{}", o.ID)}>Details</a>
+            <td class="border-b flex gap-2">
+              <a class="btn" href={insertIDIntoHref("opportunities/{}", o.ID)}>
+                Details
+              </a>
+              <a class="btn" href={insertIDIntoHref("opportunities/{}/edit", o.ID)}>
+                Edit
+              </a>
               <!-- <a class="btn" href={ insertIDIntoHref("opportunities/{}/edit", o.ID) }>Edit</a> -->
             </td>
           </tr>

@@ -1,0 +1,13 @@
+package templates
+
+import (
+  "github.com/pmwals09/yobs/internal/models/user"
+)
+
+templ OpportunityEditPage(user *user.User) {
+  @base(user) {
+    <h2>I edit opportunities</h2>
+    <form>
+    </form>
+  }
+}

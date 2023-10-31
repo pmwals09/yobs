@@ -156,7 +156,7 @@ func HomePage(user *user.User, opportunities []opportunity.Opportunity, f helper
 				if err != nil {
 					return err
 				}
-				_, err = templBuffer.WriteString("</td><td class=\"border-b\"><a class=\"btn\" href=\"")
+				_, err = templBuffer.WriteString("</td><td class=\"border-b flex gap-2\"><a class=\"btn\" href=\"")
 				if err != nil {
 					return err
 				}
@@ -174,12 +174,30 @@ func HomePage(user *user.User, opportunities []opportunity.Opportunity, f helper
 				if err != nil {
 					return err
 				}
+				_, err = templBuffer.WriteString("</a><a class=\"btn\" href=\"")
+				if err != nil {
+					return err
+				}
+				var var_18 templ.SafeURL = insertIDIntoHref("opportunities/{}/edit", o.ID)
+				_, err = templBuffer.WriteString(templ.EscapeString(string(var_18)))
+				if err != nil {
+					return err
+				}
+				_, err = templBuffer.WriteString("\">")
+				if err != nil {
+					return err
+				}
+				var_19 := `Edit`
+				_, err = templBuffer.WriteString(var_19)
+				if err != nil {
+					return err
+				}
 				_, err = templBuffer.WriteString("</a><!--")
 				if err != nil {
 					return err
 				}
-				var_18 := ` <a class="btn" href={ insertIDIntoHref("opportunities/{}/edit", o.ID) }>Edit</a> `
-				_, err = templBuffer.WriteString(var_18)
+				var_20 := ` <a class="btn" href={ insertIDIntoHref("opportunities/{}/edit", o.ID) }>Edit</a> `
+				_, err = templBuffer.WriteString(var_20)
 				if err != nil {
 					return err
 				}
@@ -192,8 +210,8 @@ func HomePage(user *user.User, opportunities []opportunity.Opportunity, f helper
 			if err != nil {
 				return err
 			}
-			var_19 := `New Opportunity`
-			_, err = templBuffer.WriteString(var_19)
+			var_21 := `New Opportunity`
+			_, err = templBuffer.WriteString(var_21)
 			if err != nil {
 				return err
 			}
@@ -201,8 +219,8 @@ func HomePage(user *user.User, opportunities []opportunity.Opportunity, f helper
 			if err != nil {
 				return err
 			}
-			var_20 := `Company Name`
-			_, err = templBuffer.WriteString(var_20)
+			var_22 := `Company Name`
+			_, err = templBuffer.WriteString(var_22)
 			if err != nil {
 				return err
 			}
@@ -210,8 +228,8 @@ func HomePage(user *user.User, opportunities []opportunity.Opportunity, f helper
 			if err != nil {
 				return err
 			}
-			var_21 := `Role`
-			_, err = templBuffer.WriteString(var_21)
+			var_23 := `Role`
+			_, err = templBuffer.WriteString(var_23)
 			if err != nil {
 				return err
 			}
@@ -219,8 +237,8 @@ func HomePage(user *user.User, opportunities []opportunity.Opportunity, f helper
 			if err != nil {
 				return err
 			}
-			var_22 := `URL`
-			_, err = templBuffer.WriteString(var_22)
+			var_24 := `URL`
+			_, err = templBuffer.WriteString(var_24)
 			if err != nil {
 				return err
 			}
@@ -228,8 +246,8 @@ func HomePage(user *user.User, opportunities []opportunity.Opportunity, f helper
 			if err != nil {
 				return err
 			}
-			var_23 := `Description`
-			_, err = templBuffer.WriteString(var_23)
+			var_25 := `Description`
+			_, err = templBuffer.WriteString(var_25)
 			if err != nil {
 				return err
 			}
@@ -237,8 +255,8 @@ func HomePage(user *user.User, opportunities []opportunity.Opportunity, f helper
 			if err != nil {
 				return err
 			}
-			var_24 := `Application Date (if applicable)`
-			_, err = templBuffer.WriteString(var_24)
+			var_26 := `Application Date (if applicable)`
+			_, err = templBuffer.WriteString(var_26)
 			if err != nil {
 				return err
 			}
