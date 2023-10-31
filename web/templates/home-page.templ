@@ -9,12 +9,82 @@ import (
 templ HomePage(user *user.User, opportunities []opportunity.Opportunity, f helpers.FormData) {
   @base(user) {
     <h1 class="text-center text-[2em]">Always look ahead</h1>
-    <section class="mb-4">
-      @OpportunityList(opportunities)
+    <section class="mb-4" id="opportunity-list">
+      <h2 class="text-[1.5em]">Opportunities</h2>
+      <table class="table-auto border-collapse w-full" id="main-content">
+        <thead>
+          <tr>
+            <th class="border-b text-left">Company Name</th>
+            <th class="border-b text-left">Role</th>
+            <th class="border-b text-left">URL</th>
+            <th class="border-b text-left">Status</th>
+            <th class="border-b text-left">Application Date</th>
+            <th class="border-b text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        for _, o := range opportunities {
+          <tr class="hover:bg-sky-100">
+            <td class="border-b">{ o.CompanyName }</td>
+            <td class="border-b">{ o.Role }</td>
+            <td class="border-b">{ o.URL }</td>
+            <td class="border-b">{ string(o.Status) }</td>
+            <td class="border-b">{ formatApplicationDate(o.ApplicationDate) }</td>
+            <td class="border-b">
+              <a class="btn" href={insertIDIntoHref("opportunities/{}", o.ID)}>Details</a>
+              <!-- <a class="btn" href={ insertIDIntoHref("opportunities/{}/edit", o.ID) }>Edit</a> -->
+            </td>
+          </tr>
+        }
+        </tbody>
+      </table>
     </section>
     <section class="mb-4">
       <h2 class="text-[1.5em]">New Opportunity</h2>
-      @OpportunityForm(f)
-    </section>
-  }
+      <form
+        method="POST"
+        action="/opportunities"
+        hx-post="/opportunities"
+        hx-target="#opportunity-list"
+        hx-select="#opportunity-list"
+        id="opportunity-form"
+        class="w-1/2"
+      >
+        <section class="grid grid-cols-2 gap-y-2">
+          <label for="opportunity-name">
+            Company Name
+          </label>
+          <input type="text" name="opportunity-name" value=""></input>
+          <label for="opportunity-role">
+            Role
+          </label>
+          <input type="text" name="opportunity-role" value=""></input>
+          <label for="opportunity-url">
+            URL
+          </label>
+          <input type="url" name="opportunity-url" value=""></input>
+          <label for="opportunity-description">
+            Description
+          </label>
+          <textarea
+            rows="3"
+            name="opportunity-description"
+          ></textarea>
+          <label for="opportunity-date">
+            Application Date (if applicable)
+          </label>
+          <input type="date" name="opportunity-date" value=""></input>
+        </section>
+        <section class="my-8">
+          <input
+            type="submit"
+            name="submit"
+            value="Submit"
+            class="bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer"
+          ></input>
+        </section>
+      </form>
+      {! UnsafeRawHtml(f.Errors["overall"])}
+        </section>
+      }
 }

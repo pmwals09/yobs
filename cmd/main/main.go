@@ -70,7 +70,6 @@ func authenticatedRouter(opptyRepo opportunity.Repository, docRepo document.Repo
 	})
 	r.Route("/opportunities", func(r chi.Router) {
 		r.Post("/", controllers.HandlePostOppty(opptyRepo))
-		r.Get("/active", controllers.HandleGetActiveOpptys(opptyRepo))
 		r.Route("/{opportunityId}", func(r chi.Router) {
 			r.Get("/", controllers.HandleGetOppty(opptyRepo, docRepo))
 			r.Post("/upload", controllers.HandleUploadToOppty(opptyRepo, docRepo))

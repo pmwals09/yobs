@@ -23,7 +23,7 @@ func HandleRegisterUser(repo user.Repository) http.HandlerFunc {
 				Errors: errorData,
 				Values: newUserInfo,
 			}
-			templates.RegisterUserForm(data).Render(r.Context(), w)
+			templates.SignupPage(nil, data).Render(r.Context(), w)
 			return
 		}
 
@@ -42,7 +42,7 @@ func HandleRegisterUser(repo user.Repository) http.HandlerFunc {
 				},
 				Values: newUserInfo,
 			}
-			templates.RegisterUserForm(data).Render(r.Context(), w)
+			templates.SignupPage(nil, data).Render(r.Context(), w)
 			return
 		}
 		u.Password = string(pwHash)
@@ -54,7 +54,7 @@ func HandleRegisterUser(repo user.Repository) http.HandlerFunc {
 				},
 				Values: newUserInfo,
 			}
-			templates.RegisterUserForm(data).Render(r.Context(), w)
+			templates.SignupPage(nil, data).Render(r.Context(), w)
 			return
 		}
 
@@ -65,7 +65,7 @@ func HandleRegisterUser(repo user.Repository) http.HandlerFunc {
 			Values: map[string]string{},
 		}
 
-		templates.RegisterUserForm(data).Render(r.Context(), w)
+		templates.SignupPage(nil, data).Render(r.Context(), w)
 		return
 	}
 }
@@ -87,7 +87,7 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository) h
 				Errors: formErrors,
 				Values: newUserInfo,
 			}
-			templates.LoginUserForm(f).Render(r.Context(), w)
+			templates.LoginPage(nil, f).Render(r.Context(), w)
 			return
 		}
 
@@ -102,7 +102,7 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository) h
 					"overall": "<p>Unable to log in - please try again</p>",
 				},
 			}
-			templates.LoginUserForm(f).Render(r.Context(), w)
+			templates.LoginPage(nil, f).Render(r.Context(), w)
 			return
 		}
 
@@ -115,7 +115,7 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository) h
 					"overall": "<p>Unable to log in - please try again</p>",
 				},
 			}
-			templates.LoginUserForm(f).Render(r.Context(), w)
+			templates.LoginPage(nil, f).Render(r.Context(), w)
 			return
 		}
 

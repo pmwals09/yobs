@@ -21,50 +21,28 @@ func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
 			helpers.WriteError(w, err)
 		}
 
-		if err := repo.CreateOpportunity(newOpportunity); err != nil {
-			handleCreateOpptyError(w, r, err)
-			return
-		}
-
 		user := r.Context().Value("user").(*user.User)
 		if user == nil {
 			helpers.WriteError(w, errors.New("No user available"))
 		}
+		f := helpers.FormData{}
+		if err := repo.CreateOpportunity(newOpportunity); err != nil {
+			f.Errors["overall"] = fmt.Sprintf(
+				"<ul><li>An error occurred creating the opportunity: %s</li></ul>",
+				err.Error(),
+			)
+			templates.HomePage(user, []opportunity.Opportunity{}, f).Render(r.Context(), w)
+			return
+		}
+
 		opportunities, opptyErr := repo.GetAllOpportunities(user)
 		if opptyErr != nil {
 			helpers.WriteError(w, opptyErr)
 			return
 		}
 
-		r.Header.Add("HX-Retarget", "#main-content")
-		templates.OpportunityList(opportunities).Render(r.Context(), w)
-	}
-}
-
-func handleCreateOpptyError(w http.ResponseWriter, r *http.Request, err error) {
-	f := helpers.FormData{
-		Errors: map[string]string{
-			"overall": fmt.Sprintf(
-				"<ul><li>An error occurred creating the opportunity: %s</li></ul>",
-				err.Error(),
-			),
-		},
-	}
-	templates.OpportunityForm(f).Render(r.Context(), w)
-}
-
-func HandleGetActiveOpptys(repo opportunity.Repository) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		user := r.Context().Value("user").(*user.User)
-		if user == nil {
-			helpers.WriteError(w, errors.New("No user available"))
-		}
-		opptys, err := repo.GetAllOpportunities(user)
-		if err != nil {
-			helpers.WriteError(w, err)
-			return
-		}
-		templates.OpportunityList(opptys).Render(r.Context(), w)
+		templates.HomePage(user, opportunities, f).Render(r.Context(), w)
+    return
 	}
 }
 
@@ -265,6 +243,7 @@ func HandleUploadToOppty(
 
 		fd := helpers.FormData{}
 		returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
+    return
 	}
 }
 
@@ -379,6 +358,7 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 
 		fd := helpers.FormData{}
 		returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
+    return
 	}
 }
 
@@ -407,5 +387,7 @@ func returnAttachmentsSection(
 		helpers.WriteError(w, err)
 		return
 	}
-	templates.AttachmentsSection(od, userDocs, fd).Render(r.Context(), w)
+
+  templates.OpportunityDetailsPage(user, od, userDocs, fd).Render(r.Context(), w)
+  return
 }

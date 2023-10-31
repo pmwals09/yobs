@@ -42,15 +42,74 @@ func LoginPage(user *user.User, f helpers.FormData) templ.Component {
 			if err != nil {
 				return err
 			}
-			_, err = templBuffer.WriteString("</h1> <section class=\"mb-4 w-1/2\">")
+			_, err = templBuffer.WriteString("</h1> <section class=\"mb-4 w-1/2\"><form action=\"/user/login\" method=\"POST\" class=\"mt-4\" hx-post=\"/user/login\" hx-swap=\"outerHTML\" id=\"login-user-form\" hx-select=\"#login-user-form\"><section class=\"grid grid-cols-2 gap-y-2\"><label for=\"username-or-email\" class=\"self-center\">")
 			if err != nil {
 				return err
 			}
-			err = LoginUserForm(f).Render(ctx, templBuffer)
+			var_4 := `User Name or Email`
+			_, err = templBuffer.WriteString(var_4)
 			if err != nil {
 				return err
 			}
-			_, err = templBuffer.WriteString("</section>")
+			_, err = templBuffer.WriteString("</label><div><input type=\"text\" id=\"username-or-email\" name=\"username-or-email\" value=\"")
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString(templ.EscapeString(f.Values["usernameOrEmail"]))
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("\">")
+			if err != nil {
+				return err
+			}
+			err = UnsafeRawHtml(f.Errors["usernameOrEmail"]).Render(ctx, templBuffer)
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("</div><label for=\"password\" class=\"self-center\">")
+			if err != nil {
+				return err
+			}
+			var_5 := `Password`
+			_, err = templBuffer.WriteString(var_5)
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("</label><div><input type=\"password\" id=\"password\" name=\"password\" value=\"")
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString(templ.EscapeString(f.Values["password"]))
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("\">")
+			if err != nil {
+				return err
+			}
+			err = UnsafeRawHtml(f.Errors["password"]).Render(ctx, templBuffer)
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("</div></section><section class=\"my-4\"><button type=\"submit\" class=\"bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer\">")
+			if err != nil {
+				return err
+			}
+			var_6 := `Submit`
+			_, err = templBuffer.WriteString(var_6)
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("</button></section>")
+			if err != nil {
+				return err
+			}
+			err = UnsafeRawHtml(f.Errors["overall"]).Render(ctx, templBuffer)
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("</form></section>")
 			if err != nil {
 				return err
 			}
