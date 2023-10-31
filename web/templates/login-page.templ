@@ -29,7 +29,7 @@ templ LoginPage(user *user.User, f helpers.FormData) {
               name="username-or-email"
               value={f.Values["usernameOrEmail"]}
             />
-            {! UnsafeRawHtml(f.Errors["usernameOrEmail"])}
+            {! RenderStandardError(f.Errors["usernameOrEmail"])}
           </div>
           <label for="password" class="self-center">
             Password
@@ -41,7 +41,7 @@ templ LoginPage(user *user.User, f helpers.FormData) {
               name="password"
               value={f.Values["password"]}
             />
-            {! UnsafeRawHtml(f.Errors["password"])}
+            {! RenderStandardError(f.Errors["password"])}
           </div>
         </section>
         <section class="my-4">
@@ -51,7 +51,7 @@ templ LoginPage(user *user.User, f helpers.FormData) {
             Submit
           </button>
         </section>
-        {! UnsafeRawHtml(f.Errors["overall"])}
+        {! RenderStandardError(f.Errors["overall"])}
       </form>
   </section>
   }

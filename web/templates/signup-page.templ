@@ -22,43 +22,51 @@ templ SignupPage(user *user.User, f helpers.FormData) {
           <label for="username" class="self-center">
             User Name
           </label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            value={ f.Values["username"] }
-          />
-          {! UnsafeRawHtml(f.Errors["username"])}
+          <div>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              value={ f.Values["username"] }
+            />
+            {! RenderStandardError(f.Errors["username"])}
+          </div>
           <label for="email" class="self-center">
             Email Address
           </label>
-          <input
-            type="text"
-            id="email"
-            name="email"
-            value={ f.Values["email"] }
-          />
-          {! UnsafeRawHtml(f.Errors["email"])}
+          <div>
+            <input
+              type="text"
+              id="email"
+              name="email"
+              value={ f.Values["email"] }
+            />
+            {! RenderStandardError(f.Errors["email"])}
+          </div>
           <label for="password" class="self-center">
             Password
           </label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            value={ f.Values["password"] }
-          />
-          {! UnsafeRawHtml(f.Errors["password"] )}
+          <div>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={ f.Values["password"] }
+            />
+            {! RenderStandardError(f.Errors["password"] )}
+          </div>
           <label for="password-repeat" class="self-center">
             Re-enter Password
           </label>
-          <input
-            type="password"
-            id="password-repeat"
-            name="password-repeat"
-            value={ f.Values["passwordRepeat"] }
-          />
-          {! UnsafeRawHtml(f.Errors["passwordRepeat"] )}
+          <div>
+            <input
+              type="password"
+              id="password-repeat"
+              name="password-repeat"
+              value={ f.Values["passwordRepeat"] }
+            />
+            {! RenderStandardError(f.Errors["passwordRepeat"] )}
+          </div>
         </section>
         <section class="my-4">
           <button
@@ -68,7 +76,7 @@ templ SignupPage(user *user.User, f helpers.FormData) {
             Submit
           </button>
         </section>
-        {! UnsafeRawHtml(f.Errors["overall"])} 
+        {! RenderStandardError(f.Errors["overall"])} 
       </form>
     </section>
   }

@@ -58,7 +58,7 @@ templ OpportunityDetailsPage( user *user.User, od helpers.OpptyDetails, userDocu
           </tbody>
         </table>
       }
-      {! UnsafeRawHtml(fd.Errors["document-table"])}
+      {! RenderStandardError(fd.Errors["document-table"])}
       if userDocuments != nil && len(userDocuments) > 0 {
         <form
           method="POST"
@@ -76,7 +76,7 @@ templ OpportunityDetailsPage( user *user.User, od helpers.OpptyDetails, userDocu
                   <option value={strconv.Itoa(int(doc.ID))}>{doc.Title} - {doc.FileName}</option>
                 }
               </select>
-              {! UnsafeRawHtml(fd.Errors["existing-attachment"])}
+              {! RenderStandardError(fd.Errors["existing-attachment"])}
             </div>
           </section>
           <input
@@ -100,7 +100,7 @@ templ OpportunityDetailsPage( user *user.User, od helpers.OpptyDetails, userDocu
           <label for="attachment-name">Attachment Name</label>
           <div>
             <input type="text" name="attachment-name" value={fd.Values["attachment-name"]}/>
-            {! UnsafeRawHtml(fd.Errors["attachment-name"])}
+            {! RenderStandardError(fd.Errors["attachment-name"])}
           </div>
           <label for="attachment-type">Attachment Type</label>
           <div>
@@ -109,12 +109,12 @@ templ OpportunityDetailsPage( user *user.User, od helpers.OpptyDetails, userDocu
               <option value="CoverLetter">Cover Letter</option>
               <option value="Communication">Communication</option>
             </select>
-            {! UnsafeRawHtml(fd.Errors["attachment-type"])}
+            {! RenderStandardError(fd.Errors["attachment-type"])}
           </div>
           <label for="attachment-file">PDF Attachment</label>
           <div>
             <input type="file" name="attachment-file" accept=".pdf" value={fd.Values["attachment-file"]}/>
-            {! UnsafeRawHtml(fd.Errors["attachment-file"])}
+            {! RenderStandardError(fd.Errors["attachment-file"])}
           </div>
         </section>
         <input

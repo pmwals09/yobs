@@ -28,7 +28,7 @@ func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
 		f := helpers.FormData{}
 		if err := repo.CreateOpportunity(newOpportunity); err != nil {
 			f.Errors["overall"] = fmt.Sprintf(
-				"<ul><li>An error occurred creating the opportunity: %s</li></ul>",
+				"An error occurred creating the opportunity: %s",
 				err.Error(),
 			)
 			templates.HomePage(user, []opportunity.Opportunity{}, f).Render(r.Context(), w)
@@ -75,7 +75,7 @@ func HandleGetOppty(
 		if err != nil {
 			fd := helpers.FormData{
 				Errors: map[string]string{
-					"document-table": "<p class='text-red-600'>Unable to retrieve opportunity documents.</p>",
+					"document-table": "Unable to retrieve opportunity documents.",
 				},
 			}
 			templates.OpportunityDetailsPage(
@@ -92,7 +92,7 @@ func HandleGetOppty(
 			if err != nil {
 				fd := helpers.FormData{
 					Errors: map[string]string{
-						"document-table": "<p class='text-red-600'>Unable to retrieve document URL for download.</p>",
+						"document-table": "Unable to retrieve document URL for download.",
 					},
 				}
 				templates.OpportunityDetailsPage(
@@ -111,7 +111,7 @@ func HandleGetOppty(
 		if err != nil {
 			fd := helpers.FormData{
 				Errors: map[string]string{
-					"existing-attachment": "<p>Unable to retrieve user documents.</p>",
+					"existing-attachment": "Unable to retrieve user documents.",
 				},
 			}
 			templates.OpportunityDetailsPage(
@@ -155,7 +155,7 @@ func HandleUploadToOppty(
 		if err != nil {
 			fd := helpers.FormData{
 				Errors: map[string]string{
-					"overall": "<p class='text-red-600'>Error retrieving opportunity</p>",
+					"overall": "Error retrieving opportunity",
 				},
 			}
 			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
@@ -170,7 +170,7 @@ func HandleUploadToOppty(
 		if err != nil {
 			fd := helpers.FormData{
 				Errors: map[string]string{
-					"attachment-file": "<p class='text-red-600'>Problem parsing file - did you attach one?</p>",
+					"attachment-file": "Problem parsing file - did you attach one?",
 				},
 			}
 			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
@@ -210,7 +210,7 @@ func HandleUploadToOppty(
 		if err = opptyRepo.AddDocument(oppty, d); err != nil {
 			fd := helpers.FormData{
 				Errors: map[string]string{
-					"overall": "<p class='text-red-600'>Unable to add document to the opportunity</p>",
+					"overall": "Unable to add document to the opportunity",
 				},
 			}
 			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
@@ -221,7 +221,7 @@ func HandleUploadToOppty(
 		if err != nil {
 			fd := helpers.FormData{
 				Errors: map[string]string{
-					"overall": "<p class='text-red-600'>Unable to retrieve associated documents after submission.</p>",
+					"overall": "Unable to retrieve associated documents after submission.",
 				},
 			}
 			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
@@ -233,7 +233,7 @@ func HandleUploadToOppty(
 			if err != nil {
 				fd := helpers.FormData{
 					Errors: map[string]string{
-						"document-table": "<p class='text-red-600'>Unable to retrieve document URL for download.</p>",
+						"document-table": "Unable to retrieve document URL for download.",
 					},
 				}
 				returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
@@ -302,7 +302,7 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 		if err != nil {
 			fd := helpers.FormData{
 				Errors: map[string]string{
-					"overall": "<p class='text-red-600'>Unable to retrieve opportunity.</p>",
+					"overall": "Unable to retrieve opportunity.",
 				},
 			}
 			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
@@ -314,7 +314,7 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 		if err != nil {
 			fd := helpers.FormData{
 				Errors: map[string]string{
-					"overall": "<p class='text-red-600'>Unable to parse form.</p>",
+					"overall": "Unable to parse form.",
 				},
 			}
 			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
@@ -325,7 +325,7 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 		if docIdStr == "" {
 			fd := helpers.FormData{
 				Errors: map[string]string{
-					"existing-attachment": "<p class='text-red-600'>Must select a document.</p>",
+					"existing-attachment": "Must select a document.",
 				},
 			}
 			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
@@ -335,7 +335,7 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 		if err != nil {
 			fd := helpers.FormData{
 				Errors: map[string]string{
-					"existing-attachment": "<p class='text-red-600'>Unable to parse document ID.</p>",
+					"existing-attachment": "Unable to parse document ID.",
 				},
 			}
 			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
@@ -349,7 +349,7 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 		if err != nil {
 			fd := helpers.FormData{
 				Errors: map[string]string{
-					"overall": "<p class='text-red-600'>Unable to add document to opportunity.</p>",
+					"overall": "Unable to add document to opportunity.",
 				},
 			}
 			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)

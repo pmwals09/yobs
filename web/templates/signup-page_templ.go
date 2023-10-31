@@ -51,7 +51,7 @@ func SignupPage(user *user.User, f helpers.FormData) templ.Component {
 			if err != nil {
 				return err
 			}
-			_, err = templBuffer.WriteString("</label><input type=\"text\" id=\"username\" name=\"username\" value=\"")
+			_, err = templBuffer.WriteString("</label><div><input type=\"text\" id=\"username\" name=\"username\" value=\"")
 			if err != nil {
 				return err
 			}
@@ -63,11 +63,11 @@ func SignupPage(user *user.User, f helpers.FormData) templ.Component {
 			if err != nil {
 				return err
 			}
-			err = UnsafeRawHtml(f.Errors["username"]).Render(ctx, templBuffer)
+			err = RenderStandardError(f.Errors["username"]).Render(ctx, templBuffer)
 			if err != nil {
 				return err
 			}
-			_, err = templBuffer.WriteString("<label for=\"email\" class=\"self-center\">")
+			_, err = templBuffer.WriteString("</div><label for=\"email\" class=\"self-center\">")
 			if err != nil {
 				return err
 			}
@@ -76,7 +76,7 @@ func SignupPage(user *user.User, f helpers.FormData) templ.Component {
 			if err != nil {
 				return err
 			}
-			_, err = templBuffer.WriteString("</label><input type=\"text\" id=\"email\" name=\"email\" value=\"")
+			_, err = templBuffer.WriteString("</label><div><input type=\"text\" id=\"email\" name=\"email\" value=\"")
 			if err != nil {
 				return err
 			}
@@ -88,11 +88,11 @@ func SignupPage(user *user.User, f helpers.FormData) templ.Component {
 			if err != nil {
 				return err
 			}
-			err = UnsafeRawHtml(f.Errors["email"]).Render(ctx, templBuffer)
+			err = RenderStandardError(f.Errors["email"]).Render(ctx, templBuffer)
 			if err != nil {
 				return err
 			}
-			_, err = templBuffer.WriteString("<label for=\"password\" class=\"self-center\">")
+			_, err = templBuffer.WriteString("</div><label for=\"password\" class=\"self-center\">")
 			if err != nil {
 				return err
 			}
@@ -101,7 +101,7 @@ func SignupPage(user *user.User, f helpers.FormData) templ.Component {
 			if err != nil {
 				return err
 			}
-			_, err = templBuffer.WriteString("</label><input type=\"password\" id=\"password\" name=\"password\" value=\"")
+			_, err = templBuffer.WriteString("</label><div><input type=\"password\" id=\"password\" name=\"password\" value=\"")
 			if err != nil {
 				return err
 			}
@@ -113,11 +113,11 @@ func SignupPage(user *user.User, f helpers.FormData) templ.Component {
 			if err != nil {
 				return err
 			}
-			err = UnsafeRawHtml(f.Errors["password"]).Render(ctx, templBuffer)
+			err = RenderStandardError(f.Errors["password"]).Render(ctx, templBuffer)
 			if err != nil {
 				return err
 			}
-			_, err = templBuffer.WriteString("<label for=\"password-repeat\" class=\"self-center\">")
+			_, err = templBuffer.WriteString("</div><label for=\"password-repeat\" class=\"self-center\">")
 			if err != nil {
 				return err
 			}
@@ -126,7 +126,7 @@ func SignupPage(user *user.User, f helpers.FormData) templ.Component {
 			if err != nil {
 				return err
 			}
-			_, err = templBuffer.WriteString("</label><input type=\"password\" id=\"password-repeat\" name=\"password-repeat\" value=\"")
+			_, err = templBuffer.WriteString("</label><div><input type=\"password\" id=\"password-repeat\" name=\"password-repeat\" value=\"")
 			if err != nil {
 				return err
 			}
@@ -138,11 +138,11 @@ func SignupPage(user *user.User, f helpers.FormData) templ.Component {
 			if err != nil {
 				return err
 			}
-			err = UnsafeRawHtml(f.Errors["passwordRepeat"]).Render(ctx, templBuffer)
+			err = RenderStandardError(f.Errors["passwordRepeat"]).Render(ctx, templBuffer)
 			if err != nil {
 				return err
 			}
-			_, err = templBuffer.WriteString("</section><section class=\"my-4\"><button type=\"submit\" class=\"bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer\">")
+			_, err = templBuffer.WriteString("</div></section><section class=\"my-4\"><button type=\"submit\" class=\"bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer\">")
 			if err != nil {
 				return err
 			}
@@ -155,7 +155,7 @@ func SignupPage(user *user.User, f helpers.FormData) templ.Component {
 			if err != nil {
 				return err
 			}
-			err = UnsafeRawHtml(f.Errors["overall"]).Render(ctx, templBuffer)
+			err = RenderStandardError(f.Errors["overall"]).Render(ctx, templBuffer)
 			if err != nil {
 				return err
 			}

@@ -246,7 +246,7 @@ func HomePage(user *user.User, opportunities []opportunity.Opportunity, f helper
 			if err != nil {
 				return err
 			}
-			err = UnsafeRawHtml(f.Errors["overall"]).Render(ctx, templBuffer)
+			err = RenderStandardError(f.Errors["overall"]).Render(ctx, templBuffer)
 			if err != nil {
 				return err
 			}

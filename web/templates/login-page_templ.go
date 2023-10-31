@@ -63,7 +63,7 @@ func LoginPage(user *user.User, f helpers.FormData) templ.Component {
 			if err != nil {
 				return err
 			}
-			err = UnsafeRawHtml(f.Errors["usernameOrEmail"]).Render(ctx, templBuffer)
+			err = RenderStandardError(f.Errors["usernameOrEmail"]).Render(ctx, templBuffer)
 			if err != nil {
 				return err
 			}
@@ -88,7 +88,7 @@ func LoginPage(user *user.User, f helpers.FormData) templ.Component {
 			if err != nil {
 				return err
 			}
-			err = UnsafeRawHtml(f.Errors["password"]).Render(ctx, templBuffer)
+			err = RenderStandardError(f.Errors["password"]).Render(ctx, templBuffer)
 			if err != nil {
 				return err
 			}
@@ -105,7 +105,7 @@ func LoginPage(user *user.User, f helpers.FormData) templ.Component {
 			if err != nil {
 				return err
 			}
-			err = UnsafeRawHtml(f.Errors["overall"]).Render(ctx, templBuffer)
+			err = RenderStandardError(f.Errors["overall"]).Render(ctx, templBuffer)
 			if err != nil {
 				return err
 			}

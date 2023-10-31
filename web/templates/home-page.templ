@@ -84,7 +84,7 @@ templ HomePage(user *user.User, opportunities []opportunity.Opportunity, f helpe
           ></input>
         </section>
       </form>
-      {! UnsafeRawHtml(f.Errors["overall"])}
+      {! RenderStandardError(f.Errors["overall"])}
         </section>
       }
 }

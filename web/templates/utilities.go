@@ -32,3 +32,11 @@ func UnsafeRawHtml(html string) templ.Component {
 		return err
 	})
 }
+
+func RenderStandardError(html string) templ.Component {
+  if html == "" {
+    return UnsafeRawHtml("")
+  }
+  startTag := "<p class='text-red-600'>"
+  return UnsafeRawHtml(startTag + html + "</p>")
+}

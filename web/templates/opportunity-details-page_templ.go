@@ -259,7 +259,7 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 					return err
 				}
 			}
-			err = UnsafeRawHtml(fd.Errors["document-table"]).Render(ctx, templBuffer)
+			err = RenderStandardError(fd.Errors["document-table"]).Render(ctx, templBuffer)
 			if err != nil {
 				return err
 			}
@@ -343,7 +343,7 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 				if err != nil {
 					return err
 				}
-				err = UnsafeRawHtml(fd.Errors["existing-attachment"]).Render(ctx, templBuffer)
+				err = RenderStandardError(fd.Errors["existing-attachment"]).Render(ctx, templBuffer)
 				if err != nil {
 					return err
 				}
@@ -389,7 +389,7 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			err = UnsafeRawHtml(fd.Errors["attachment-name"]).Render(ctx, templBuffer)
+			err = RenderStandardError(fd.Errors["attachment-name"]).Render(ctx, templBuffer)
 			if err != nil {
 				return err
 			}
@@ -441,7 +441,7 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			err = UnsafeRawHtml(fd.Errors["attachment-type"]).Render(ctx, templBuffer)
+			err = RenderStandardError(fd.Errors["attachment-type"]).Render(ctx, templBuffer)
 			if err != nil {
 				return err
 			}
@@ -466,7 +466,7 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			err = UnsafeRawHtml(fd.Errors["attachment-file"]).Render(ctx, templBuffer)
+			err = RenderStandardError(fd.Errors["attachment-file"]).Render(ctx, templBuffer)
 			if err != nil {
 				return err
 			}
