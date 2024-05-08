@@ -1,15 +1,10 @@
 # Roadmap
 
-## TODO
-
-- [ ] Update auth to use a JWT
-- [x] Update DB services to use goose
-
 ## Skeleton
 
 - [x] Bare response
 - [x] HTML response
-- [ ] As a developer, I want to simplify template management
+- [x] As a developer, I want to simplify template management
 
 ## Opportunity Tracking
 
@@ -18,9 +13,9 @@
 
 ## User Management
 
-- [ ] As a user, I want user management so that I can differentiate my opportunities from others
-- [ ] As a user, I want user management so that I can keep my pursuits private from others
-- [ ] As a user, I want user management so that I have a centralized point from which I can manage my account and profile
+- [x] As a user, I want user management so that I can differentiate my opportunities from others
+- [x] As a user, I want user management so that I can keep my pursuits private from others
+- [x] As a user, I want user management so that I have a centralized point from which I can manage my account and profile
 
 ## Enriched Opportunity
 
