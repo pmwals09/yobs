@@ -51,7 +51,7 @@ templ OpportunityDetailsPage( user *user.User, od helpers.OpptyDetails, userDocu
                 <td class="border-b">{ doc.Title }</td>
                 <td class="border-b">{ string(doc.Type) }</td>
                 <td class="border-b">
-                  <a href="{ doc.URL }">{ doc.FileName }</a>
+                  <a href={ templ.URL(doc.URL) }>{ doc.FileName }</a>
                 </td>
               </tr>
             }
