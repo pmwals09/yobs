@@ -3,7 +3,7 @@
 ## TODO
 
 - [ ] Update auth to use a JWT
-- [ ] Update DB services to use goose, sqlc
+- [x] Update DB services to use goose
 
 ## Skeleton
 
