@@ -42,7 +42,7 @@ func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
 		}
 
 		templates.HomePage(user, opportunities, f).Render(r.Context(), w)
-    return
+		return
 	}
 }
 
@@ -131,7 +131,6 @@ func HandleGetOpptyPage(
 		).Render(r.Context(), w)
 	}
 }
-
 
 func HandleUploadToOppty(
 	opptyRepo opportunity.Repository,
@@ -242,7 +241,7 @@ func HandleUploadToOppty(
 
 		fd := helpers.FormData{}
 		returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
-    return
+		return
 	}
 }
 
@@ -357,21 +356,21 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 
 		fd := helpers.FormData{}
 		returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
-    return
+		return
 	}
 }
 
 // TODO: How to update an existing opportunity?
 
 func HandleEditOpptyPage(opptyRepo opportunity.Repository, docRepo document.Repository) http.HandlerFunc {
-  return func(w http.ResponseWriter, r *http.Request) {
-    templates.OpportunityEditPage(nil).Render(r.Context(), w)
-    // get the id out of the url
-    // get the opportunity
-    // get the associated documents
-    // populate a form for editing the opportunity
-    // return the form
-  }
+	return func(w http.ResponseWriter, r *http.Request) {
+		templates.OpportunityEditPage(nil).Render(r.Context(), w)
+		// get the id out of the url
+		// get the opportunity
+		// get the associated documents
+		// populate a form for editing the opportunity
+		// return the form
+	}
 }
 
 // TODO: Update an existing opportunity
@@ -402,6 +401,6 @@ func returnAttachmentsSection(
 		return
 	}
 
-  templates.OpportunityDetailsPage(user, od, userDocs, fd).Render(r.Context(), w)
-  return
+	templates.OpportunityDetailsPage(user, od, userDocs, fd).Render(r.Context(), w)
+	return
 }

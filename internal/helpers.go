@@ -48,4 +48,5 @@ type ProfileArgs struct {
 type OpptyDetails struct {
 	Oppty     opportunity.Opportunity
 	Documents []document.Document
+	Contacts []contact.Contact
 }
