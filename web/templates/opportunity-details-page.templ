@@ -8,11 +8,7 @@ import (
 	"github.com/pmwals09/yobs/internal/models/document"
 )
 
-templ OpportunityDetailsPage(
-	user *user.User,
-	od helpers.OpptyDetails,
-	userDocuments []document.Document,
-	fd helpers.FormData) {
+templ OpportunityDetailsPage( user *user.User, od helpers.OpptyDetails, userDocuments []document.Document, fd helpers.FormData) {
 	@base(user) {
 		<h1 class="text-center text-[2em]">
 			{ od.Oppty.CompanyName } - { od.Oppty.Role }
@@ -32,7 +28,16 @@ templ OpportunityDetailsPage(
 			</dl>
 		</section>
 		<section class="mb-4">
-			<h2 class="text-[1.5em]">Contacts</h2>
+			<div class="flex gap-2 items-center">
+				<h2 class="text-[1.5em]">Contacts</h2>
+				<button
+					class="bg-gray-400 px-2 py-1 rounded-full block hover:cursor-pointer my-3"
+					hx-get={ insertIDIntoString("/opportunities/{}/contact-modal", od.Oppty.ID) }
+					hx-target="#contact-modal"
+					hx-trigger="click"
+				>Add</button>
+			</div>
+			<div id="contact-modal"></div>
 			if od.Contacts != nil && len(od.Contacts) > 0 {
 				<table class="table-auto border-collapse w-full mb-4">
 					<thead>
@@ -43,7 +48,7 @@ templ OpportunityDetailsPage(
 							<th class="border-b text-left">Phone</th>
 							<th class="border-b text-left">Email</th>
 						</tr>
-                    </thead>
+					</thead>
 					<tbody>
 						for _, contact := range od.Contacts {
 							<tr>
@@ -105,7 +110,9 @@ templ OpportunityDetailsPage(
 							<select name="existing-attachment">
 								<option value="">Select a document...</option>
 								for _, doc := range userDocuments {
-									<option value={ strconv.Itoa(int(doc.ID)) }>{ doc.Title } - { doc.FileName }</option>
+									<option value={ strconv.Itoa(int(doc.ID)) }>
+										{ doc.Title } - { doc.FileName }
+									</option>
 								}
 							</select>
 							@RenderStandardError(fd.Errors["existing-attachment"])

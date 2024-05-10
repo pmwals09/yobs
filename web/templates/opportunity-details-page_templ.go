@@ -149,7 +149,7 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			_, err = templBuffer.WriteString("</dd></dl></section> <section class=\"mb-4\"><h2 class=\"text-[1.5em]\">")
+			_, err = templBuffer.WriteString("</dd></dl></section> <section class=\"mb-4\"><div class=\"flex gap-2 items-center\"><h2 class=\"text-[1.5em]\">")
 			if err != nil {
 				return err
 			}
@@ -158,76 +158,134 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			_, err = templBuffer.WriteString("</h2><table class=\"table-auto border-collapse w-full mb-4\"><thead></thead><tbody>")
+			_, err = templBuffer.WriteString("</h2><button class=\"bg-gray-400 px-2 py-1 rounded-full block hover:cursor-pointer my-3\" hx-get=\"")
 			if err != nil {
 				return err
 			}
-			for _, contact := range od.Contacts {
-				_, err = templBuffer.WriteString("<tr><td class=\"border-b\">")
-				if err != nil {
-					return err
-				}
-				var var_17 string = contact.Name
-				_, err = templBuffer.WriteString(templ.EscapeString(var_17))
-				if err != nil {
-					return err
-				}
-				_, err = templBuffer.WriteString("</td><td class=\"border-b\">")
-				if err != nil {
-					return err
-				}
-				var var_18 string = contact.CompanyName
-				_, err = templBuffer.WriteString(templ.EscapeString(var_18))
-				if err != nil {
-					return err
-				}
-				_, err = templBuffer.WriteString("</td><td class=\"border-b\">")
-				if err != nil {
-					return err
-				}
-				var var_19 string = contact.Title
-				_, err = templBuffer.WriteString(templ.EscapeString(var_19))
-				if err != nil {
-					return err
-				}
-				_, err = templBuffer.WriteString("</td><td class=\"border-b\">")
-				if err != nil {
-					return err
-				}
-				var var_20 string = contact.Phone
-				_, err = templBuffer.WriteString(templ.EscapeString(var_20))
-				if err != nil {
-					return err
-				}
-				_, err = templBuffer.WriteString("</td><td class=\"border-b\">")
-				if err != nil {
-					return err
-				}
-				var var_21 string = contact.Email
-				_, err = templBuffer.WriteString(templ.EscapeString(var_21))
-				if err != nil {
-					return err
-				}
-				_, err = templBuffer.WriteString("</td></tr>")
-				if err != nil {
-					return err
-				}
-			}
-			_, err = templBuffer.WriteString("</tbody></table></section> <section class=\"mb-4\"><h2 class=\"text-[1.5em]\">")
+			_, err = templBuffer.WriteString(templ.EscapeString(insertIDIntoString("/opportunities/{}/contact-modal", od.Oppty.ID)))
 			if err != nil {
 				return err
 			}
-			var_22 := `Job Description`
-			_, err = templBuffer.WriteString(var_22)
+			_, err = templBuffer.WriteString("\" hx-target=\"#contact-modal\" hx-trigger=\"click\">")
 			if err != nil {
 				return err
 			}
-			_, err = templBuffer.WriteString("</h2> ")
+			var_17 := `Add`
+			_, err = templBuffer.WriteString(var_17)
 			if err != nil {
 				return err
 			}
-			var var_23 string = od.Oppty.Description
-			_, err = templBuffer.WriteString(templ.EscapeString(var_23))
+			_, err = templBuffer.WriteString("</button></div><div id=\"contact-modal\"></div>")
+			if err != nil {
+				return err
+			}
+			if od.Contacts != nil && len(od.Contacts) > 0 {
+				_, err = templBuffer.WriteString("<table class=\"table-auto border-collapse w-full mb-4\"><thead><tr><th class=\"border-b text-left\">")
+				if err != nil {
+					return err
+				}
+				var_18 := `Name`
+				_, err = templBuffer.WriteString(var_18)
+				if err != nil {
+					return err
+				}
+				_, err = templBuffer.WriteString("</th><th class=\"border-b text-left\">")
+				if err != nil {
+					return err
+				}
+				var_19 := `Company`
+				_, err = templBuffer.WriteString(var_19)
+				if err != nil {
+					return err
+				}
+				_, err = templBuffer.WriteString("</th><th class=\"border-b text-left\">")
+				if err != nil {
+					return err
+				}
+				var_20 := `Title`
+				_, err = templBuffer.WriteString(var_20)
+				if err != nil {
+					return err
+				}
+				_, err = templBuffer.WriteString("</th><th class=\"border-b text-left\">")
+				if err != nil {
+					return err
+				}
+				var_21 := `Phone`
+				_, err = templBuffer.WriteString(var_21)
+				if err != nil {
+					return err
+				}
+				_, err = templBuffer.WriteString("</th><th class=\"border-b text-left\">")
+				if err != nil {
+					return err
+				}
+				var_22 := `Email`
+				_, err = templBuffer.WriteString(var_22)
+				if err != nil {
+					return err
+				}
+				_, err = templBuffer.WriteString("</th></tr></thead><tbody>")
+				if err != nil {
+					return err
+				}
+				for _, contact := range od.Contacts {
+					_, err = templBuffer.WriteString("<tr><td class=\"border-b\">")
+					if err != nil {
+						return err
+					}
+					var var_23 string = contact.Name
+					_, err = templBuffer.WriteString(templ.EscapeString(var_23))
+					if err != nil {
+						return err
+					}
+					_, err = templBuffer.WriteString("</td><td class=\"border-b\">")
+					if err != nil {
+						return err
+					}
+					var var_24 string = contact.CompanyName
+					_, err = templBuffer.WriteString(templ.EscapeString(var_24))
+					if err != nil {
+						return err
+					}
+					_, err = templBuffer.WriteString("</td><td class=\"border-b\">")
+					if err != nil {
+						return err
+					}
+					var var_25 string = contact.Title
+					_, err = templBuffer.WriteString(templ.EscapeString(var_25))
+					if err != nil {
+						return err
+					}
+					_, err = templBuffer.WriteString("</td><td class=\"border-b\">")
+					if err != nil {
+						return err
+					}
+					var var_26 string = contact.Phone
+					_, err = templBuffer.WriteString(templ.EscapeString(var_26))
+					if err != nil {
+						return err
+					}
+					_, err = templBuffer.WriteString("</td><td class=\"border-b\">")
+					if err != nil {
+						return err
+					}
+					var var_27 string = contact.Email
+					_, err = templBuffer.WriteString(templ.EscapeString(var_27))
+					if err != nil {
+						return err
+					}
+					_, err = templBuffer.WriteString("</td></tr>")
+					if err != nil {
+						return err
+					}
+				}
+				_, err = templBuffer.WriteString("</tbody></table>")
+				if err != nil {
+					return err
+				}
+			}
+			err = RenderStandardError(fd.Errors["contacts"]).Render(ctx, templBuffer)
 			if err != nil {
 				return err
 			}
@@ -235,8 +293,26 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			var_24 := `Tasks`
-			_, err = templBuffer.WriteString(var_24)
+			var_28 := `Job Description`
+			_, err = templBuffer.WriteString(var_28)
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("</h2> ")
+			if err != nil {
+				return err
+			}
+			var var_29 string = od.Oppty.Description
+			_, err = templBuffer.WriteString(templ.EscapeString(var_29))
+			if err != nil {
+				return err
+			}
+			_, err = templBuffer.WriteString("</section> <section class=\"mb-4\"><h2 class=\"text-[1.5em]\">")
+			if err != nil {
+				return err
+			}
+			var_30 := `Tasks`
+			_, err = templBuffer.WriteString(var_30)
 			if err != nil {
 				return err
 			}
@@ -244,8 +320,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			var_25 := `Attachments`
-			_, err = templBuffer.WriteString(var_25)
+			var_31 := `Attachments`
+			_, err = templBuffer.WriteString(var_31)
 			if err != nil {
 				return err
 			}
@@ -258,8 +334,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 				if err != nil {
 					return err
 				}
-				var_26 := `Title`
-				_, err = templBuffer.WriteString(var_26)
+				var_32 := `Title`
+				_, err = templBuffer.WriteString(var_32)
 				if err != nil {
 					return err
 				}
@@ -267,8 +343,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 				if err != nil {
 					return err
 				}
-				var_27 := `Type`
-				_, err = templBuffer.WriteString(var_27)
+				var_33 := `Type`
+				_, err = templBuffer.WriteString(var_33)
 				if err != nil {
 					return err
 				}
@@ -276,8 +352,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 				if err != nil {
 					return err
 				}
-				var_28 := `File Name`
-				_, err = templBuffer.WriteString(var_28)
+				var_34 := `File Name`
+				_, err = templBuffer.WriteString(var_34)
 				if err != nil {
 					return err
 				}
@@ -290,8 +366,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 					if err != nil {
 						return err
 					}
-					var var_29 string = doc.Title
-					_, err = templBuffer.WriteString(templ.EscapeString(var_29))
+					var var_35 string = doc.Title
+					_, err = templBuffer.WriteString(templ.EscapeString(var_35))
 					if err != nil {
 						return err
 					}
@@ -299,8 +375,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 					if err != nil {
 						return err
 					}
-					var var_30 string = string(doc.Type)
-					_, err = templBuffer.WriteString(templ.EscapeString(var_30))
+					var var_36 string = string(doc.Type)
+					_, err = templBuffer.WriteString(templ.EscapeString(var_36))
 					if err != nil {
 						return err
 					}
@@ -308,8 +384,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 					if err != nil {
 						return err
 					}
-					var var_31 templ.SafeURL = templ.URL(doc.URL)
-					_, err = templBuffer.WriteString(templ.EscapeString(string(var_31)))
+					var var_37 templ.SafeURL = templ.URL(doc.URL)
+					_, err = templBuffer.WriteString(templ.EscapeString(string(var_37)))
 					if err != nil {
 						return err
 					}
@@ -317,8 +393,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 					if err != nil {
 						return err
 					}
-					var var_32 string = doc.FileName
-					_, err = templBuffer.WriteString(templ.EscapeString(var_32))
+					var var_38 string = doc.FileName
+					_, err = templBuffer.WriteString(templ.EscapeString(var_38))
 					if err != nil {
 						return err
 					}
@@ -357,8 +433,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 				if err != nil {
 					return err
 				}
-				var_33 := `Existing Attachments`
-				_, err = templBuffer.WriteString(var_33)
+				var_39 := `Existing Attachments`
+				_, err = templBuffer.WriteString(var_39)
 				if err != nil {
 					return err
 				}
@@ -366,8 +442,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 				if err != nil {
 					return err
 				}
-				var_34 := `Select a document...`
-				_, err = templBuffer.WriteString(var_34)
+				var_40 := `Select a document...`
+				_, err = templBuffer.WriteString(var_40)
 				if err != nil {
 					return err
 				}
@@ -388,8 +464,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 					if err != nil {
 						return err
 					}
-					var var_35 string = doc.Title
-					_, err = templBuffer.WriteString(templ.EscapeString(var_35))
+					var var_41 string = doc.Title
+					_, err = templBuffer.WriteString(templ.EscapeString(var_41))
 					if err != nil {
 						return err
 					}
@@ -397,13 +473,13 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 					if err != nil {
 						return err
 					}
-					var_36 := `- `
-					_, err = templBuffer.WriteString(var_36)
+					var_42 := `- `
+					_, err = templBuffer.WriteString(var_42)
 					if err != nil {
 						return err
 					}
-					var var_37 string = doc.FileName
-					_, err = templBuffer.WriteString(templ.EscapeString(var_37))
+					var var_43 string = doc.FileName
+					_, err = templBuffer.WriteString(templ.EscapeString(var_43))
 					if err != nil {
 						return err
 					}
@@ -445,8 +521,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			var_38 := `Attachment Name`
-			_, err = templBuffer.WriteString(var_38)
+			var_44 := `Attachment Name`
+			_, err = templBuffer.WriteString(var_44)
 			if err != nil {
 				return err
 			}
@@ -470,8 +546,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			var_39 := `Attachment Type`
-			_, err = templBuffer.WriteString(var_39)
+			var_45 := `Attachment Type`
+			_, err = templBuffer.WriteString(var_45)
 			if err != nil {
 				return err
 			}
@@ -487,8 +563,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			var_40 := `Resume`
-			_, err = templBuffer.WriteString(var_40)
+			var_46 := `Resume`
+			_, err = templBuffer.WriteString(var_46)
 			if err != nil {
 				return err
 			}
@@ -496,8 +572,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			var_41 := `Cover Letter`
-			_, err = templBuffer.WriteString(var_41)
+			var_47 := `Cover Letter`
+			_, err = templBuffer.WriteString(var_47)
 			if err != nil {
 				return err
 			}
@@ -505,8 +581,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			var_42 := `Communication`
-			_, err = templBuffer.WriteString(var_42)
+			var_48 := `Communication`
+			_, err = templBuffer.WriteString(var_48)
 			if err != nil {
 				return err
 			}
@@ -522,8 +598,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			var_43 := `PDF Attachment`
-			_, err = templBuffer.WriteString(var_43)
+			var_49 := `PDF Attachment`
+			_, err = templBuffer.WriteString(var_49)
 			if err != nil {
 				return err
 			}

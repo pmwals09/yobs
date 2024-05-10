@@ -115,7 +115,7 @@ func HandleGetOpptyPage(
 			if fd.Errors == nil {
 				fd.Errors = map[string]string{}
 			}
-			fd.Errors["contacts"] = "Unable to retrieve opportunity contacts."
+			fd.Errors["contacts"] = fmt.Sprintf("Unable to retrieve opportunity contacts: %s", err.Error())
 
 		} else {
 			od.Contacts = contacts
@@ -354,6 +354,30 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 		fd := helpers.FormData{}
 		returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
 		return
+	}
+}
+
+func HandleContactModal(opptyRepo opportunity.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idParam := chi.URLParam(r, "opportunityId")
+		if idParam == "" {
+			return
+		}
+
+		user := r.Context().Value("user").(*user.User)
+		if user == nil {
+			helpers.WriteError(w, errors.New("No user available"))
+			return
+		}
+
+		id, err := strconv.ParseUint(idParam, 10, 64) // Sqlite id's are 64-bit int
+		if err != nil {
+			helpers.WriteError(w, err)
+			return
+		}
+		oppty, err := opptyRepo.GetOpportuntyById(uint(id), user)
+
+		templates.ContactModal(oppty).Render(r.Context(), w)
 	}
 }
 

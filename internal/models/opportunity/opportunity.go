@@ -291,14 +291,14 @@ func (g *OpportunityModel) GetAllContacts(oppty *Opportunity) ([]contact.Contact
 	var contacts []contact.Contact
 	rows, err := g.DB.Query(`
 		SELECT
-			name,
-			company_name,
-			title,
-			phone,
-			email
+			c.name,
+			c.company_name,
+			c.title,
+			c.phone,
+			c.email
 		FROM contacts c
 		JOIN opportunity_contacts oc ON c.id = oc.contact_id
-		JOIN opporunities o ON o.id = oc.opportunity_id
+		JOIN opportunities o ON o.id = oc.opportunity_id
 		WHERE o.id = ?;
 	`, oppty.ID)
 	if err != nil {
