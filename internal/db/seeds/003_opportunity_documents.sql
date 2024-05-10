@@ -41,7 +41,7 @@ INSERT INTO opportunity_documents (
 ) VALUES (
     6, 2
 );
--- +goose StatementBegin
+-- +goose StatementEnd
 
 -- +goose Down
 DELETE FROM opportunity_documents;

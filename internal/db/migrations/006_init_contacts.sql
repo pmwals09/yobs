@@ -1,12 +1,13 @@
 -- +goose Up
 CREATE TABLE IF NOT EXISTS contacts (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  uuid TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
-  company TEXT,
+  company_name TEXT,
   title TEXT,
   phone TEXT,
-  email TEXT
+  email TEXT,
+  user_id INTEGER NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 -- +goose Down

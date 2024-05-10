@@ -51,7 +51,8 @@ func HandleGetOpptyPage(
 	docRepo document.Repository,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		od := helpers.OpptyDetails{}
+		var od helpers.OpptyDetails
+		var fd helpers.FormData
 
 		idParam := chi.URLParam(r, "opportunityId")
 		id, err := strconv.ParseUint(idParam, 10, 64) // Sqlite id's are 64-bit int
@@ -64,71 +65,67 @@ func HandleGetOpptyPage(
 		if user == nil {
 			helpers.WriteError(w, errors.New("No user available"))
 		}
+
 		opp, err := opptyRepo.GetOpportuntyById(uint(id), user)
 		if err != nil {
 			helpers.WriteError(w, err)
 			return
 		}
-
 		od.Oppty = *opp
+
 		docs, err := opptyRepo.GetAllDocuments(opp, user)
 		if err != nil {
-			fd := helpers.FormData{
-				Errors: map[string]string{
-					"document-table": "Unable to retrieve opportunity documents.",
-				},
+			if fd.Errors == nil {
+				fd.Errors = map[string]string{}
 			}
-			templates.OpportunityDetailsPage(
-				user,
-				od,
-				docs,
-				fd,
-			).Render(r.Context(), w)
-			return
-		}
 
-		for i := range docs {
-			_, err := docs[i].GetPresignedDownloadUrl()
-			if err != nil {
-				fd := helpers.FormData{
-					Errors: map[string]string{
-						"document-table": "Unable to retrieve document URL for download.",
-					},
+			fd.Errors["document-table"] = "Unable to retrieve opportunity documents."
+		} else {
+			for i := range docs {
+				_, err := docs[i].GetPresignedDownloadUrl()
+				if err != nil {
+					fd := helpers.FormData{
+						Errors: map[string]string{
+							"document-table": "Unable to retrieve document URL for download.",
+						},
+					}
+					templates.OpportunityDetailsPage(
+						user,
+						od,
+						docs,
+						fd,
+					).Render(r.Context(), w)
+					return
 				}
-				templates.OpportunityDetailsPage(
-					user,
-					od,
-					docs,
-					fd,
-				).Render(r.Context(), w)
-				return
 			}
-		}
 
-		od.Documents = docs
+			od.Documents = docs
+		}
 
 		userDocuments, err := docRepo.GetAllUserDocuments(user)
 		if err != nil {
-			fd := helpers.FormData{
-				Errors: map[string]string{
-					"existing-attachment": "Unable to retrieve user documents.",
-				},
+			if fd.Errors == nil {
+				fd.Errors = map[string]string{}
 			}
-			templates.OpportunityDetailsPage(
-				user,
-				od,
-				userDocuments,
-				fd,
-			).Render(r.Context(), w)
-			return
+			fd.Errors["existing-attachment"] = "Unable to retrieve user documents."
+		}
+
+		contacts, err := opptyRepo.GetAllContacts(opp)
+		if err != nil {
+			if fd.Errors == nil {
+				fd.Errors = map[string]string{}
+			}
+			fd.Errors["contacts"] = "Unable to retrieve opportunity contacts."
+
+		} else {
+			od.Contacts = contacts
 		}
 
 		templates.OpportunityDetailsPage(
 			user,
 			od,
 			userDocuments,
-			helpers.FormData{},
-		).Render(r.Context(), w)
+			fd).Render(r.Context(), w)
 	}
 }
 

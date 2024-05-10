@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pmwals09/yobs/internal/models/contact"
 	"github.com/pmwals09/yobs/internal/models/document"
 	"github.com/pmwals09/yobs/internal/models/user"
 	// "github.com/pmwals09/yobs/apps/backend/task"
@@ -98,6 +99,8 @@ type Repository interface {
 	DeleteOpportunity(oppty *Opportunity) error
 	AddDocument(oppty *Opportunity, document *document.Document) error
 	GetAllDocuments(oppty *Opportunity, user *user.User) ([]document.Document, error)
+	AddContact(oppty *Opportunity, contact contact.Contact) error
+	GetAllContacts(oppty *Opportunity) ([]contact.Contact, error)
 }
 
 type OpportunityModel struct {
@@ -272,4 +275,48 @@ func (o *OpportunityModel) GetAllDocuments(oppty *Opportunity, user *user.User) 
 	}
 
 	return docs, nil
+}
+
+func (g *OpportunityModel) AddContact(oppty *Opportunity, contact contact.Contact) error {
+	_, err := g.DB.Exec(`
+		INSERT INTO opportunity_contacts (
+			opportunity_id,
+			contact_id
+		) VALUES (?, ?);
+	`, oppty.ID, contact.ID)
+	return err
+}
+
+func (g *OpportunityModel) GetAllContacts(oppty *Opportunity) ([]contact.Contact, error) {
+	var contacts []contact.Contact
+	rows, err := g.DB.Query(`
+		SELECT
+			name,
+			company_name,
+			title,
+			phone,
+			email
+		FROM contacts c
+		JOIN opportunity_contacts oc ON c.id = oc.contact_id
+		JOIN opporunities o ON o.id = oc.opportunity_id
+		WHERE o.id = ?;
+	`, oppty.ID)
+	if err != nil {
+		return contacts, err
+	}
+
+	for rows.Next() {
+		var c contact.Contact
+		err := rows.Scan(
+			&c.Name,
+			&c.CompanyName,
+			&c.Title,
+			&c.Phone,
+			&c.Email)
+		if err != nil {
+			return contacts, err
+		}
+		contacts = append(contacts, c)
+	}
+	return contacts, nil
 }

@@ -191,22 +191,22 @@ func validateUserInfo(userInfo map[string]string, repo user.Repository) (map[str
 	// Confirm that the necessary fields have been filled out
 	if userInfo["username"] == "" {
 		errorMessage := "Must include a username"
-    errorData["username"] = errorMessage
+		errorData["username"] = errorMessage
 		errorMessages = append(errorMessages, errorMessage)
 	}
 	if userInfo["email"] == "" {
 		errorMessage := "Must include an email address"
-    errorData["email"] = errorMessage
+		errorData["email"] = errorMessage
 		errorMessages = append(errorMessages, errorMessage)
 	}
 	if userInfo["password"] == "" {
 		errorMessage := "Must include a password"
-    errorData["password"] = errorMessage
+		errorData["password"] = errorMessage
 		errorMessages = append(errorMessages, errorMessage)
 	}
 	if userInfo["passwordRepeat"] == "" {
 		errorMessage := "Must repeat the password"
-    errorData["passwordRepeat"] = errorMessage
+		errorData["passwordRepeat"] = errorMessage
 		errorMessages = append(errorMessages, errorMessage)
 	}
 
@@ -217,8 +217,8 @@ func validateUserInfo(userInfo map[string]string, repo user.Repository) (map[str
 	// Confirm that the password fields match
 	if userInfo["password"] != userInfo["passwordRepeat"] {
 		errorMessage := "Password fields must match"
-    errorData["passwordRepeat"] = errorMessage
-    errorData["password"] = errorMessage
+		errorData["passwordRepeat"] = errorMessage
+		errorData["password"] = errorMessage
 		errorMessages = append(errorMessages, errorMessage)
 	}
 
@@ -229,15 +229,15 @@ func validateUserInfo(userInfo map[string]string, repo user.Repository) (map[str
 	)
 	if potentialUser.ID != 0 {
 		errorMessage := "Email or username already in use. You can log in <a href='/login'>here.</a>"
-    errorData["email"] = errorMessage
-    errorData["username"] = errorMessage
+		errorData["email"] = errorMessage
+		errorData["username"] = errorMessage
 		errorMessages = append(errorMessages, errorMessage)
 	}
 
 	if err != nil && err != sql.ErrNoRows {
 		errorMessage := "Error validating username and email"
-    errorData["email"] = errorMessage
-    errorData["username"] = errorMessage
+		errorData["email"] = errorMessage
+		errorData["username"] = errorMessage
 		errorMessages = append(errorMessages, errorMessage)
 	}
 

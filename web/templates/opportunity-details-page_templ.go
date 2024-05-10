@@ -176,7 +176,7 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 				if err != nil {
 					return err
 				}
-				var var_18 string = contact.Company
+				var var_18 string = contact.CompanyName
 				_, err = templBuffer.WriteString(templ.EscapeString(var_18))
 				if err != nil {
 					return err

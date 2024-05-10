@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/pmwals09/yobs/internal/models/contact"
 	"github.com/pmwals09/yobs/internal/models/document"
 	"github.com/pmwals09/yobs/internal/models/opportunity"
 )
@@ -48,5 +49,5 @@ type ProfileArgs struct {
 type OpptyDetails struct {
 	Oppty     opportunity.Opportunity
 	Documents []document.Document
-	Contacts []contact.Contact
+	Contacts  []contact.Contact
 }
