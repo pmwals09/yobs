@@ -97,8 +97,9 @@ func authOnly(sessionRepo session.Repository, userRepo user.Repository) func(htt
 
 			for _, c := range cookies {
 				if c.Name == "yobs" {
-					cookie = c
-					break
+					if cookie == nil || c.Expires.After(cookie.Expires) {
+						cookie = c
+					}
 				}
 			}
 
@@ -110,12 +111,14 @@ func authOnly(sessionRepo session.Repository, userRepo user.Repository) func(htt
 			uuid, err := uuid.Parse(cookie.Value)
 			if err != nil {
 				http.Redirect(w, r, "/", http.StatusFound)
+				sessionRepo.DeleteSessionByUUID(uuid)
 				return
 			}
 
 			session, err := sessionRepo.GetSessionByUUID(uuid)
 			if err != nil {
 				http.Redirect(w, r, "/", http.StatusFound)
+				sessionRepo.DeleteSessionByUUID(uuid)
 				return
 			}
 
