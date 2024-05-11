@@ -14,6 +14,7 @@ import (
 
 	"github.com/pmwals09/yobs/internal/controllers"
 	"github.com/pmwals09/yobs/internal/db"
+	"github.com/pmwals09/yobs/internal/models/contact"
 	"github.com/pmwals09/yobs/internal/models/document"
 	"github.com/pmwals09/yobs/internal/models/opportunity"
 	"github.com/pmwals09/yobs/internal/models/session"
@@ -46,6 +47,7 @@ func main() {
 	docRepo := document.DocumentModel{DB: sqlDb}
 	userRepo := user.UserModel{DB: sqlDb}
 	sessionRepo := session.SessionModel{DB: sqlDb}
+	contactRepo := contact.ContactModel{DB: sqlDb}
 
 	r.Get("/", controllers.HandleGetLandingPage())
 	r.Get("/ping", controllers.HandlePing)
@@ -56,12 +58,12 @@ func main() {
 		r.Post("/login", controllers.HandleLogInUser(&userRepo, &sessionRepo))
 		r.Get("/logout", controllers.HandleLogout(&sessionRepo))
 	})
-	r.Mount("/", authenticatedRouter(&opptyRepo, &docRepo, &sessionRepo, &userRepo))
+	r.Mount("/", authenticatedRouter(&opptyRepo, &docRepo, &sessionRepo, &userRepo, &contactRepo))
 
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
 
-func authenticatedRouter(opptyRepo opportunity.Repository, docRepo document.Repository, sessionRepo session.Repository, userRepo user.Repository) http.Handler {
+func authenticatedRouter(opptyRepo opportunity.Repository, docRepo document.Repository, sessionRepo session.Repository, userRepo user.Repository, contactRepo contact.Repository) http.Handler {
 	r := chi.NewRouter()
 	r.Use(authOnly(sessionRepo, userRepo))
 	r.Get("/home", controllers.HandleGetHomepage(opptyRepo))
@@ -73,9 +75,10 @@ func authenticatedRouter(opptyRepo opportunity.Repository, docRepo document.Repo
 		r.Route("/{opportunityId}", func(r chi.Router) {
 			r.Get("/", controllers.HandleGetOpptyPage(opptyRepo, docRepo))
 			r.Get("/edit", controllers.HandleEditOpptyPage(opptyRepo, docRepo))
+			r.Get("/contact-modal", controllers.HandleContactModal(opptyRepo))
 			r.Post("/upload", controllers.HandleUploadToOppty(opptyRepo, docRepo))
 			r.Post("/attach-existing", controllers.HandleAddExistingToOppty(opptyRepo, docRepo))
-			r.Get("/contact-modal", controllers.HandleContactModal(opptyRepo))
+			r.Post("/new-contact", controllers.HandleAddNewContactToOppty(opptyRepo, contactRepo))
 		})
 	})
 	return r

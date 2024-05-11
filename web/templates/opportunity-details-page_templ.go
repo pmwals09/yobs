@@ -180,107 +180,7 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 				return err
 			}
 			if od.Contacts != nil && len(od.Contacts) > 0 {
-				_, err = templBuffer.WriteString("<table class=\"table-auto border-collapse w-full mb-4\"><thead><tr><th class=\"border-b text-left\">")
-				if err != nil {
-					return err
-				}
-				var_18 := `Name`
-				_, err = templBuffer.WriteString(var_18)
-				if err != nil {
-					return err
-				}
-				_, err = templBuffer.WriteString("</th><th class=\"border-b text-left\">")
-				if err != nil {
-					return err
-				}
-				var_19 := `Company`
-				_, err = templBuffer.WriteString(var_19)
-				if err != nil {
-					return err
-				}
-				_, err = templBuffer.WriteString("</th><th class=\"border-b text-left\">")
-				if err != nil {
-					return err
-				}
-				var_20 := `Title`
-				_, err = templBuffer.WriteString(var_20)
-				if err != nil {
-					return err
-				}
-				_, err = templBuffer.WriteString("</th><th class=\"border-b text-left\">")
-				if err != nil {
-					return err
-				}
-				var_21 := `Phone`
-				_, err = templBuffer.WriteString(var_21)
-				if err != nil {
-					return err
-				}
-				_, err = templBuffer.WriteString("</th><th class=\"border-b text-left\">")
-				if err != nil {
-					return err
-				}
-				var_22 := `Email`
-				_, err = templBuffer.WriteString(var_22)
-				if err != nil {
-					return err
-				}
-				_, err = templBuffer.WriteString("</th></tr></thead><tbody>")
-				if err != nil {
-					return err
-				}
-				for _, contact := range od.Contacts {
-					_, err = templBuffer.WriteString("<tr><td class=\"border-b\">")
-					if err != nil {
-						return err
-					}
-					var var_23 string = contact.Name
-					_, err = templBuffer.WriteString(templ.EscapeString(var_23))
-					if err != nil {
-						return err
-					}
-					_, err = templBuffer.WriteString("</td><td class=\"border-b\">")
-					if err != nil {
-						return err
-					}
-					var var_24 string = contact.CompanyName
-					_, err = templBuffer.WriteString(templ.EscapeString(var_24))
-					if err != nil {
-						return err
-					}
-					_, err = templBuffer.WriteString("</td><td class=\"border-b\">")
-					if err != nil {
-						return err
-					}
-					var var_25 string = contact.Title
-					_, err = templBuffer.WriteString(templ.EscapeString(var_25))
-					if err != nil {
-						return err
-					}
-					_, err = templBuffer.WriteString("</td><td class=\"border-b\">")
-					if err != nil {
-						return err
-					}
-					var var_26 string = contact.Phone
-					_, err = templBuffer.WriteString(templ.EscapeString(var_26))
-					if err != nil {
-						return err
-					}
-					_, err = templBuffer.WriteString("</td><td class=\"border-b\">")
-					if err != nil {
-						return err
-					}
-					var var_27 string = contact.Email
-					_, err = templBuffer.WriteString(templ.EscapeString(var_27))
-					if err != nil {
-						return err
-					}
-					_, err = templBuffer.WriteString("</td></tr>")
-					if err != nil {
-						return err
-					}
-				}
-				_, err = templBuffer.WriteString("</tbody></table>")
+				err = ContactsTable(od.Contacts).Render(ctx, templBuffer)
 				if err != nil {
 					return err
 				}
@@ -293,8 +193,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			var_28 := `Job Description`
-			_, err = templBuffer.WriteString(var_28)
+			var_18 := `Job Description`
+			_, err = templBuffer.WriteString(var_18)
 			if err != nil {
 				return err
 			}
@@ -302,8 +202,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			var var_29 string = od.Oppty.Description
-			_, err = templBuffer.WriteString(templ.EscapeString(var_29))
+			var var_19 string = od.Oppty.Description
+			_, err = templBuffer.WriteString(templ.EscapeString(var_19))
 			if err != nil {
 				return err
 			}
@@ -311,8 +211,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			var_30 := `Tasks`
-			_, err = templBuffer.WriteString(var_30)
+			var_20 := `Tasks`
+			_, err = templBuffer.WriteString(var_20)
 			if err != nil {
 				return err
 			}
@@ -320,8 +220,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			var_31 := `Attachments`
-			_, err = templBuffer.WriteString(var_31)
+			var_21 := `Attachments`
+			_, err = templBuffer.WriteString(var_21)
 			if err != nil {
 				return err
 			}
@@ -334,8 +234,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 				if err != nil {
 					return err
 				}
-				var_32 := `Title`
-				_, err = templBuffer.WriteString(var_32)
+				var_22 := `Title`
+				_, err = templBuffer.WriteString(var_22)
 				if err != nil {
 					return err
 				}
@@ -343,8 +243,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 				if err != nil {
 					return err
 				}
-				var_33 := `Type`
-				_, err = templBuffer.WriteString(var_33)
+				var_23 := `Type`
+				_, err = templBuffer.WriteString(var_23)
 				if err != nil {
 					return err
 				}
@@ -352,8 +252,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 				if err != nil {
 					return err
 				}
-				var_34 := `File Name`
-				_, err = templBuffer.WriteString(var_34)
+				var_24 := `File Name`
+				_, err = templBuffer.WriteString(var_24)
 				if err != nil {
 					return err
 				}
@@ -366,8 +266,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 					if err != nil {
 						return err
 					}
-					var var_35 string = doc.Title
-					_, err = templBuffer.WriteString(templ.EscapeString(var_35))
+					var var_25 string = doc.Title
+					_, err = templBuffer.WriteString(templ.EscapeString(var_25))
 					if err != nil {
 						return err
 					}
@@ -375,8 +275,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 					if err != nil {
 						return err
 					}
-					var var_36 string = string(doc.Type)
-					_, err = templBuffer.WriteString(templ.EscapeString(var_36))
+					var var_26 string = string(doc.Type)
+					_, err = templBuffer.WriteString(templ.EscapeString(var_26))
 					if err != nil {
 						return err
 					}
@@ -384,8 +284,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 					if err != nil {
 						return err
 					}
-					var var_37 templ.SafeURL = templ.URL(doc.URL)
-					_, err = templBuffer.WriteString(templ.EscapeString(string(var_37)))
+					var var_27 templ.SafeURL = templ.URL(doc.URL)
+					_, err = templBuffer.WriteString(templ.EscapeString(string(var_27)))
 					if err != nil {
 						return err
 					}
@@ -393,8 +293,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 					if err != nil {
 						return err
 					}
-					var var_38 string = doc.FileName
-					_, err = templBuffer.WriteString(templ.EscapeString(var_38))
+					var var_28 string = doc.FileName
+					_, err = templBuffer.WriteString(templ.EscapeString(var_28))
 					if err != nil {
 						return err
 					}
@@ -433,8 +333,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 				if err != nil {
 					return err
 				}
-				var_39 := `Existing Attachments`
-				_, err = templBuffer.WriteString(var_39)
+				var_29 := `Existing Attachments`
+				_, err = templBuffer.WriteString(var_29)
 				if err != nil {
 					return err
 				}
@@ -442,8 +342,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 				if err != nil {
 					return err
 				}
-				var_40 := `Select a document...`
-				_, err = templBuffer.WriteString(var_40)
+				var_30 := `Select a document...`
+				_, err = templBuffer.WriteString(var_30)
 				if err != nil {
 					return err
 				}
@@ -464,8 +364,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 					if err != nil {
 						return err
 					}
-					var var_41 string = doc.Title
-					_, err = templBuffer.WriteString(templ.EscapeString(var_41))
+					var var_31 string = doc.Title
+					_, err = templBuffer.WriteString(templ.EscapeString(var_31))
 					if err != nil {
 						return err
 					}
@@ -473,13 +373,13 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 					if err != nil {
 						return err
 					}
-					var_42 := `- `
-					_, err = templBuffer.WriteString(var_42)
+					var_32 := `- `
+					_, err = templBuffer.WriteString(var_32)
 					if err != nil {
 						return err
 					}
-					var var_43 string = doc.FileName
-					_, err = templBuffer.WriteString(templ.EscapeString(var_43))
+					var var_33 string = doc.FileName
+					_, err = templBuffer.WriteString(templ.EscapeString(var_33))
 					if err != nil {
 						return err
 					}
@@ -521,8 +421,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			var_44 := `Attachment Name`
-			_, err = templBuffer.WriteString(var_44)
+			var_34 := `Attachment Name`
+			_, err = templBuffer.WriteString(var_34)
 			if err != nil {
 				return err
 			}
@@ -546,8 +446,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			var_45 := `Attachment Type`
-			_, err = templBuffer.WriteString(var_45)
+			var_35 := `Attachment Type`
+			_, err = templBuffer.WriteString(var_35)
 			if err != nil {
 				return err
 			}
@@ -563,8 +463,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			var_46 := `Resume`
-			_, err = templBuffer.WriteString(var_46)
+			var_36 := `Resume`
+			_, err = templBuffer.WriteString(var_36)
 			if err != nil {
 				return err
 			}
@@ -572,8 +472,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			var_47 := `Cover Letter`
-			_, err = templBuffer.WriteString(var_47)
+			var_37 := `Cover Letter`
+			_, err = templBuffer.WriteString(var_37)
 			if err != nil {
 				return err
 			}
@@ -581,8 +481,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			var_48 := `Communication`
-			_, err = templBuffer.WriteString(var_48)
+			var_38 := `Communication`
+			_, err = templBuffer.WriteString(var_38)
 			if err != nil {
 				return err
 			}
@@ -598,8 +498,8 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if err != nil {
 				return err
 			}
-			var_49 := `PDF Attachment`
-			_, err = templBuffer.WriteString(var_49)
+			var_39 := `PDF Attachment`
+			_, err = templBuffer.WriteString(var_39)
 			if err != nil {
 				return err
 			}

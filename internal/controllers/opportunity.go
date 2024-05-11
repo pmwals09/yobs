@@ -8,6 +8,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	helpers "github.com/pmwals09/yobs/internal"
+	"github.com/pmwals09/yobs/internal/models/contact"
 	"github.com/pmwals09/yobs/internal/models/document"
 	"github.com/pmwals09/yobs/internal/models/opportunity"
 	"github.com/pmwals09/yobs/internal/models/user"
@@ -379,6 +380,79 @@ func HandleContactModal(opptyRepo opportunity.Repository) http.HandlerFunc {
 
 		templates.ContactModal(oppty).Render(r.Context(), w)
 	}
+}
+
+func HandleAddNewContactToOppty(opptyRepo opportunity.Repository, contactRepo contact.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		newContact, err := newContactFromRequest(r)
+		if err != nil {
+			helpers.WriteError(w, err)
+			return
+		}
+		
+		user, ok := r.Context().Value("user").(*user.User)
+		if !ok || user == nil {
+			helpers.WriteError(w, errors.New("No user available"))
+			return
+		}
+		
+		err = contactRepo.CreateContact(newContact, *user)
+		if err != nil {
+			helpers.WriteError(w, err)
+			return
+		}
+
+		idParam := chi.URLParam(r, "opportunityId")
+		id, err := strconv.ParseUint(idParam, 10, 64)
+
+		oppty, err := opptyRepo.GetOpportuntyById(uint(id), user)
+		if err != nil {
+			helpers.WriteError(w, err)
+			return
+		}
+
+		err = opptyRepo.AddContact(oppty, *newContact)
+		if err != nil {
+			helpers.WriteError(w, err)
+			return
+		}
+
+		// db stuff done, it's rendering time
+		contacts, err := opptyRepo.GetAllContacts(oppty)
+		if err != nil {
+			helpers.WriteError(w, err)
+			return
+		}
+
+		templates.ContactsTable(contacts).Render(r.Context(), w)
+	}
+}
+
+func newContactFromRequest(r *http.Request) (*contact.Contact, error) {
+	var c contact.Contact
+
+	err := r.ParseForm()
+	if err != nil {
+		return &c, err
+	}
+
+	name := r.PostForm.Get("contact-name")
+	c.Name = name
+	company := r.PostForm.Get("company-name")
+	c.CompanyName = company
+	title := r.PostForm.Get("contact-title")
+	c.Title = title
+	phone := r.PostForm.Get("contact-phone")
+	c.Phone = phone
+	email := r.PostForm.Get("contact-email")
+	c.Email = email
+
+	if c.IsEmpty() {
+		return &c, errors.New("Cannot create a valid contact from the provided information")
+	}
+
+	return &c, nil
+		
 }
 
 // TODO: How to update an existing opportunity?

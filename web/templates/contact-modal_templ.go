@@ -11,9 +11,6 @@ import "bytes"
 
 import "github.com/pmwals09/yobs/internal/models/opportunity"
 
-// TODO: Add a button to close the modal
-// TODO: Write the creation endpoint
-
 func ContactModal(oppty *opportunity.Opportunity) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, w io.Writer) (err error) {
 		templBuffer, templIsBuffer := w.(*bytes.Buffer)
@@ -27,7 +24,7 @@ func ContactModal(oppty *opportunity.Opportunity) templ.Component {
 			var_1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, err = templBuffer.WriteString("<div class=\"relative z-10\"><div class=\"fixed inset-0 bg-gray-500 bg-opacity-75\"></div><div class=\"fixed inset-0 z-10 w-screen overflow-y-auto\" id=\"contact-modal-background\"><div class=\"flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0\"><div class=\"relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg\"><div class=\"relative bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4\"><svg version=\"1.1\" baseProfile=\"full\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:ev=\"http://www.w3.org/2001/xml-events\" width=\"100\" height=\"100\" viewBox=\"0 0 50 50\" class=\"absolute top-2 right-2 w-8 h-8 hover:cursor-pointer\" id=\"modal-close-icon\"><circle stroke=\"black\" cx=\"25\" cy=\"25\" r=\"24\" stroke-width=\"2\" fill=\"none\"></circle><line x1=\"12\" y1=\"12\" x2=\"38\" y2=\"38\" stroke=\"black\" stroke-width=\"2\"></line><line x1=\"38\" y1=\"12\" x2=\"12\" y2=\"38\" stroke=\"black\" stroke-width=\"2\"></line></svg><h2 class=\"text-[1.5em] mb-4\">")
+		_, err = templBuffer.WriteString("<div class=\"relative z-10\"><div class=\"fixed inset-0 bg-gray-500 bg-opacity-75\" id=\"contact-modal-background\"><div class=\"flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0\"><div class=\"relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg\" id=\"contact-modal-body\"><div class=\"relative bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4\"><svg version=\"1.1\" baseProfile=\"full\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:ev=\"http://www.w3.org/2001/xml-events\" width=\"100\" height=\"100\" viewBox=\"0 0 50 50\" class=\"absolute top-2 right-2 w-8 h-8 hover:cursor-pointer\" id=\"modal-close-icon\"><circle stroke=\"black\" cx=\"25\" cy=\"25\" r=\"24\" stroke-width=\"2\" fill=\"none\"></circle><line x1=\"12\" y1=\"12\" x2=\"38\" y2=\"38\" stroke=\"black\" stroke-width=\"2\"></line><line x1=\"38\" y1=\"12\" x2=\"12\" y2=\"38\" stroke=\"black\" stroke-width=\"2\"></line></svg><h2 class=\"text-[1.5em] mb-4\">")
 		if err != nil {
 			return err
 		}
@@ -52,7 +49,7 @@ func ContactModal(oppty *opportunity.Opportunity) templ.Component {
 		if err != nil {
 			return err
 		}
-		_, err = templBuffer.WriteString("\" hx-target=\"\"><section class=\"grid grid-cols-2 gap-y-2\"><label for=\"contact-name\">")
+		_, err = templBuffer.WriteString("\" hx-target=\"#contact-table\" hx-on::after-request=\" if(event.detail.successful) this.reset()\"><section class=\"grid grid-cols-2 gap-y-2\"><label for=\"contact-name\">")
 		if err != nil {
 			return err
 		}
@@ -103,14 +100,22 @@ func ContactModal(oppty *opportunity.Opportunity) templ.Component {
 		}
 		var_8 := `
 	(() => {
-		const bg = document.querySelector("#contact-modal-background")
 		const closeIcon = document.querySelector("#modal-close-icon")
-		bg.addEventListener("click", handleClose)
 		closeIcon.addEventListener("click", handleClose)
 		function handleClose(e) {
-			bg.removeEventListener("click", handleClose)
+			closeIcon.removeEventListener("click", handleClose)
 			const container = document.querySelector("#contact-modal")
 			container.innerHTML = ""
+		}
+
+		document.addEventListener("click", handleBackgroundClose)
+		function handleBackgroundClose(e) {
+			const modalBody = document.querySelector("#contact-modal-body")
+			if (!modalBody.contains(e.target)) {
+				document.removeEventListener("click", handleBackgroundClose)
+				const container = document.querySelector("#contact-modal")
+				container.innerHTML = ""
+			}
 		}
 	})()
 `

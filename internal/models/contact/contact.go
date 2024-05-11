@@ -25,11 +25,11 @@ type ContactModel struct {
 }
 
 type Repository interface {
-	CreateContact(contact *Contact) error
+	CreateContact(contact *Contact, user user.User) error
 	GetContactById(id uint, user user.User) (Contact, error)
 }
 
-func (cm ContactModel) CreateContact(contact *Contact) error {
+func (cm ContactModel) CreateContact(contact *Contact, user user.User) error {
 	if contact.IsEmpty() {
 		return errors.New("Contact is empty")
 	}
@@ -39,14 +39,16 @@ func (cm ContactModel) CreateContact(contact *Contact) error {
             company_name,
             title,
             phone,
-            email
-        ) VALUES (?, ?, ?, ?, ?);
+            email,
+			user_id
+        ) VALUES (?, ?, ?, ?, ?, ?);
 `,
 		contact.Name,
 		contact.CompanyName,
 		contact.Title,
 		contact.Phone,
-		contact.Email)
+		contact.Email,
+		user.ID)
 	if err != nil {
 		return err
 	}
@@ -68,7 +70,9 @@ func (cm ContactModel) GetContactById(id uint, user user.User) (Contact, error) 
             phone,
             email
         FROM contacts WHERE id = ? AND user_id = ?;
-`)
+`,
+		id,
+		user.ID)
 	var contact Contact
 	err := row.Scan(
 		&contact.ID,

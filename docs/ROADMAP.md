@@ -19,7 +19,7 @@
 
 ## Enriched Opportunity
 
-- [ ] As a user, I want to be able to attach a contact to an opportunity to keep track of who I talk to in the application process
+- [x] As a user, I want to be able to attach a contact to an opportunity to keep track of who I talk to in the application process
 - [ ] As a user, I want to be able to attach correspondence to an opportunity to keep track of the process of applying
 
 ## Scheduling/Calendaring
