@@ -12,7 +12,23 @@ templ ContactModal(oppty *opportunity.Opportunity) {
 				<div
 					class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
 				>
-					<div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+					<div class="relative bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+						<svg
+							version="1.1"
+							baseProfile="full"
+							xmlns="http://www.w3.org/2000/svg"
+							xmlns:xlink="http://www.w3.org/1999/xlink"
+							xmlns:ev="http://www.w3.org/2001/xml-events"
+							width="100"
+							height="100"
+							viewBox="0 0 50 50"
+							class="absolute top-2 right-2 w-8 h-8 hover:cursor-pointer"
+							id="modal-close-icon"
+						>
+							<circle stroke="black" cx="25" cy="25" r="24" stroke-width="2" fill="none"></circle>
+							<line x1="12" y1="12" x2="38" y2="38" stroke="black" stroke-width="2"></line>
+							<line x1="38" y1="12" x2="12" y2="38" stroke="black" stroke-width="2"></line>
+						</svg>
 						<h2 class="text-[1.5em] mb-4">Add a Contact</h2>
 						<form
 							method="POST"
@@ -47,7 +63,9 @@ templ ContactModal(oppty *opportunity.Opportunity) {
 	<script type="text/javascript" defer>
 	(() => {
 		const bg = document.querySelector("#contact-modal-background")
+		const closeIcon = document.querySelector("#modal-close-icon")
 		bg.addEventListener("click", handleClose)
+		closeIcon.addEventListener("click", handleClose)
 		function handleClose(e) {
 			bg.removeEventListener("click", handleClose)
 			const container = document.querySelector("#contact-modal")
