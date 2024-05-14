@@ -6,78 +6,78 @@ import (
 )
 
 templ SignupPage(user *user.User, f helpers.FormData) {
-  @base(user) {
-    <h1 class="text-center text-[2em]">Join us!</h1>
-    <section class="mb-4 w-1/2">
-      <form
-        action="/user/register"
-        method="POST"
-        class="mt-4"
-        hx-post="/user/register"
-        hx-swap="outerHTML"
-        hx-select="#register-user-form"
-        id="register-user-form"
-      >
-        <section class="grid grid-cols-2 gap-y-2">
-          <label for="username" class="self-center">
-            User Name
-          </label>
-          <div>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={ f.Values["username"] }
-            />
-            {! RenderStandardError(f.Errors["username"])}
-          </div>
-          <label for="email" class="self-center">
-            Email Address
-          </label>
-          <div>
-            <input
-              type="text"
-              id="email"
-              name="email"
-              value={ f.Values["email"] }
-            />
-            {! RenderStandardError(f.Errors["email"])}
-          </div>
-          <label for="password" class="self-center">
-            Password
-          </label>
-          <div>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={ f.Values["password"] }
-            />
-            {! RenderStandardError(f.Errors["password"] )}
-          </div>
-          <label for="password-repeat" class="self-center">
-            Re-enter Password
-          </label>
-          <div>
-            <input
-              type="password"
-              id="password-repeat"
-              name="password-repeat"
-              value={ f.Values["passwordRepeat"] }
-            />
-            {! RenderStandardError(f.Errors["passwordRepeat"] )}
-          </div>
-        </section>
-        <section class="my-4">
-          <button
-            type="submit"
-            class="bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer"
-          >
-            Submit
-          </button>
-        </section>
-        {! RenderStandardError(f.Errors["overall"])} 
-      </form>
-    </section>
-  }
+	@base(user) {
+		<h1 class="text-center text-[2em]">Join us!</h1>
+		<section class="mb-4 w-1/2">
+			<form
+				action="/user/register"
+				method="POST"
+				class="mt-4"
+				hx-post="/user/register"
+				hx-swap="outerHTML"
+				hx-select="#register-user-form"
+				id="register-user-form"
+			>
+				<section class="grid grid-cols-2 gap-y-2">
+					<label for="username" class="self-center">
+						User Name
+					</label>
+					<div>
+						<input
+							type="text"
+							id="username"
+							name="username"
+							value={ f.Values["username"] }
+						/>
+						@RenderStandardError(f.Errors["username"])
+					</div>
+					<label for="email" class="self-center">
+						Email Address
+					</label>
+					<div>
+						<input
+							type="text"
+							id="email"
+							name="email"
+							value={ f.Values["email"] }
+						/>
+						@RenderStandardError(f.Errors["email"])
+					</div>
+					<label for="password" class="self-center">
+						Password
+					</label>
+					<div>
+						<input
+							type="password"
+							id="password"
+							name="password"
+							value={ f.Values["password"] }
+						/>
+						@RenderStandardError(f.Errors["password"] )
+					</div>
+					<label for="password-repeat" class="self-center">
+						Re-enter Password
+					</label>
+					<div>
+						<input
+							type="password"
+							id="password-repeat"
+							name="password-repeat"
+							value={ f.Values["passwordRepeat"] }
+						/>
+						@RenderStandardError(f.Errors["passwordRepeat"] )
+					</div>
+				</section>
+				<section class="my-4">
+					<button
+						type="submit"
+						class="bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer"
+					>
+						Submit
+					</button>
+				</section>
+				@RenderStandardError(f.Errors["overall"])
+			</form>
+		</section>
+	}
 }

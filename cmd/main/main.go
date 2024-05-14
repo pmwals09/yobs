@@ -76,6 +76,7 @@ func authenticatedRouter(opptyRepo opportunity.Repository, docRepo document.Repo
 			r.Get("/", controllers.HandleGetOpptyPage(opptyRepo, docRepo))
 			r.Get("/edit", controllers.HandleEditOpptyPage(opptyRepo, docRepo))
 			r.Get("/contact-modal", controllers.HandleContactModal(opptyRepo))
+			r.Get("/attachment-modal", controllers.HandleAttachmentModal(opptyRepo, docRepo))
 			r.Post("/upload", controllers.HandleUploadToOppty(opptyRepo, docRepo))
 			r.Post("/attach-existing", controllers.HandleAddExistingToOppty(opptyRepo, docRepo))
 			r.Post("/new-contact", controllers.HandleAddNewContactToOppty(opptyRepo, contactRepo))

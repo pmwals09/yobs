@@ -1,14 +1,13 @@
 package templates
 
 import (
-	"strconv"
 
 	helpers "github.com/pmwals09/yobs/internal"
 	"github.com/pmwals09/yobs/internal/models/user"
 	"github.com/pmwals09/yobs/internal/models/document"
 )
 
-templ OpportunityDetailsPage( user *user.User, od helpers.OpptyDetails, userDocuments []document.Document, fd helpers.FormData) {
+templ OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocuments []document.Document, fd helpers.FormData) {
 	@base(user) {
 		<h1 class="text-center text-[2em]">
 			{ od.Oppty.CompanyName } - { od.Oppty.Role }
@@ -51,97 +50,20 @@ templ OpportunityDetailsPage( user *user.User, od helpers.OpptyDetails, userDocu
 			<h2 class="text-[1.5em]">Tasks</h2>
 		</section>
 		<section id="attachments-section" class="mb-4">
-			<h2 class="text-[1.5em]">Attachments</h2>
+			<div class="flex gap-2 items-center">
+				<h2 class="text-[1.5em]">Attachments</h2>
+				<button
+					class="bg-gray-400 px-2 py-1 rounded-full block hover:cursor-pointer my-3"
+					hx-get={ insertIDIntoString("/opportunities/{}/attachment-modal", od.Oppty.ID) }
+					hx-target="#attachment-modal"
+					hx-trigger="click"
+				>Add</button>
+			</div>
+			<div id="attachment-modal"></div>
 			if od.Documents != nil && len(od.Documents) > 0 {
-				<table class="table-auto border-collapse w-full mb-4">
-					<thead>
-						<tr>
-							<th class="border-b text-left">Title</th>
-							<th class="border-b text-left">Type</th>
-							<th class="border-b text-left">File Name</th>
-						</tr>
-					</thead>
-					<tbody>
-						for _, doc := range od.Documents {
-							<tr class="hover:bg-sky-100">
-								<td class="border-b">{ doc.Title }</td>
-								<td class="border-b">{ string(doc.Type) }</td>
-								<td class="border-b">
-									<a href={ templ.URL(doc.URL) }>{ doc.FileName }</a>
-								</td>
-							</tr>
-						}
-					</tbody>
-				</table>
+				@AttachmentsTable(od.Documents)
 			}
 			@RenderStandardError(fd.Errors["document-table"])
-			if userDocuments != nil && len(userDocuments) > 0 {
-				<form
-					method="POST"
-					action={ insertIDIntoString("/opportunities/{}/attach-existing", od.Oppty.ID) }
-					hx-post={ insertIDIntoString("/opportunities/{}/attach-existing", od.Oppty.ID) }
-					hx-target="#attachments-section"
-					class="w-1/2"
-				>
-					<section class="grid grid-cols-2 gap-y-2">
-						<label for="existing-attachment">Existing Attachments</label>
-						<div>
-							<select name="existing-attachment">
-								<option value="">Select a document...</option>
-								for _, doc := range userDocuments {
-									<option value={ strconv.Itoa(int(doc.ID)) }>
-										{ doc.Title } - { doc.FileName }
-									</option>
-								}
-							</select>
-							@RenderStandardError(fd.Errors["existing-attachment"])
-						</div>
-					</section>
-					<input
-						type="submit"
-						name="attachment-submit"
-						value="Add attached"
-						class="bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer my-3"
-					/>
-				</form>
-			}
-			<form
-				method="POST"
-				action={ insertIDIntoString("/opportunities/{}/upload", od.Oppty.ID) }
-				hx-post={ insertIDIntoString("/opportunities/{}/upload", od.Oppty.ID) }
-				hx-target="#attachments-section"
-				hx-select="#attachments-section"
-				enctype="multipart/form-data"
-				class="w-1/2"
-			>
-				<section class="grid grid-cols-2 gap-y-2">
-					<label for="attachment-name">Attachment Name</label>
-					<div>
-						<input type="text" name="attachment-name" value={ fd.Values["attachment-name"] }/>
-						@RenderStandardError(fd.Errors["attachment-name"])
-					</div>
-					<label for="attachment-type">Attachment Type</label>
-					<div>
-						<select name="attachment-type" value={ fd.Values["attachment-type"] }>
-							<option value="Resume">Resume</option>
-							<option value="CoverLetter">Cover Letter</option>
-							<option value="Communication">Communication</option>
-						</select>
-						@RenderStandardError(fd.Errors["attachment-type"])
-					</div>
-					<label for="attachment-file">PDF Attachment</label>
-					<div>
-						<input type="file" name="attachment-file" accept=".pdf" value={ fd.Values["attachment-file"] }/>
-						@RenderStandardError(fd.Errors["attachment-file"])
-					</div>
-				</section>
-				<input
-					type="submit"
-					name="attachment-submit"
-					value="Submit new"
-					class="bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer mt-3"
-				/>
-			</form>
 		</section>
 	}
 }

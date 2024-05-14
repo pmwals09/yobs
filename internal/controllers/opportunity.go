@@ -149,12 +149,14 @@ func HandleUploadToOppty(
 		}
 		oppty, err := opptyRepo.GetOpportuntyById(uint(id), user)
 		if err != nil {
-			fd := helpers.FormData{
-				Errors: map[string]string{
-					"overall": "Error retrieving opportunity",
-				},
-			}
-			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
+			// fd := helpers.FormData{
+			// 	Errors: map[string]string{
+			// 		"overall": "Error retrieving opportunity",
+			// 	},
+			// }
+			// TODO: What's the appropriate response?
+			// should it use HX-Retarget: attachment-modal?
+			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
 			return
 		}
 
@@ -164,12 +166,14 @@ func HandleUploadToOppty(
 			defer file.Close()
 		}
 		if err != nil {
-			fd := helpers.FormData{
-				Errors: map[string]string{
-					"attachment-file": "Problem parsing file - did you attach one?",
-				},
-			}
-			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
+			// fd := helpers.FormData{
+			// 	Errors: map[string]string{
+			// 		"attachment-file": "Problem parsing file - did you attach one?",
+			// 	},
+			// }
+			// TODO: What's the appropriate response?
+			// should it use HX-Retarget: attachment-modal?
+			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
 			return
 		}
 
@@ -204,41 +208,49 @@ func HandleUploadToOppty(
 		}
 
 		if err = opptyRepo.AddDocument(oppty, d); err != nil {
-			fd := helpers.FormData{
-				Errors: map[string]string{
-					"overall": "Unable to add document to the opportunity",
-				},
-			}
-			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
+			// fd := helpers.FormData{
+			// 	Errors: map[string]string{
+			// 		"overall": "Unable to add document to the opportunity",
+			// 	},
+			// }
+			// TODO: What's the appropriate response?
+			// should it use HX-Retarget: attachment-modal?
+			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
 			return
 		}
 
 		docs, err := opptyRepo.GetAllDocuments(oppty, user)
 		if err != nil {
-			fd := helpers.FormData{
-				Errors: map[string]string{
-					"overall": "Unable to retrieve associated documents after submission.",
-				},
-			}
-			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
+			// fd := helpers.FormData{
+			// 	Errors: map[string]string{
+			// 		"overall": "Unable to retrieve associated documents after submission.",
+			// 	},
+			// }
+			// TODO: What's the appropriate response?
+			// should it use HX-Retarget: attachment-modal?
+			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
 			return
 		}
 
 		for i := range docs {
 			_, err := docs[i].GetPresignedDownloadUrl()
 			if err != nil {
-				fd := helpers.FormData{
-					Errors: map[string]string{
-						"document-table": "Unable to retrieve document URL for download.",
-					},
-				}
-				returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
+				// fd := helpers.FormData{
+				// 	Errors: map[string]string{
+				// 		"document-table": "Unable to retrieve document URL for download.",
+				// 	},
+				// }
+				// TODO: What's the appropriate response?
+				// should it use HX-Retarget: attachment-modal?
+				returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
 				return
 			}
 		}
 
-		fd := helpers.FormData{}
-		returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
+		// fd := helpers.FormData{}
+		// TODO: What's the appropriate response?
+		// should it use HX-Retarget: attachment-modal?
+		returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
 		return
 	}
 }
@@ -296,45 +308,45 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 		}
 		oppty, err := opptyRepo.GetOpportuntyById(uint(id), user)
 		if err != nil {
-			fd := helpers.FormData{
-				Errors: map[string]string{
-					"overall": "Unable to retrieve opportunity.",
-				},
-			}
-			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
+			// fd := helpers.FormData{
+			// 	Errors: map[string]string{
+			// 		"overall": "Unable to retrieve opportunity.",
+			// 	},
+			// }
+			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
 			return
 		}
 
 		// Get the selected document from the formdata
 		err = r.ParseForm()
 		if err != nil {
-			fd := helpers.FormData{
-				Errors: map[string]string{
-					"overall": "Unable to parse form.",
-				},
-			}
-			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
+			// fd := helpers.FormData{
+			// 	Errors: map[string]string{
+			// 		"overall": "Unable to parse form.",
+			// 	},
+			// }
+			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
 			return
 		}
 
 		docIdStr := r.PostForm.Get("existing-attachment")
 		if docIdStr == "" {
-			fd := helpers.FormData{
-				Errors: map[string]string{
-					"existing-attachment": "Must select a document.",
-				},
-			}
-			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
+			// fd := helpers.FormData{
+			// 	Errors: map[string]string{
+			// 		"existing-attachment": "Must select a document.",
+			// 	},
+			// }
+			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
 			return
 		}
 		docId, err := strconv.ParseUint(docIdStr, 10, 64)
 		if err != nil {
-			fd := helpers.FormData{
-				Errors: map[string]string{
-					"existing-attachment": "Unable to parse document ID.",
-				},
-			}
-			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
+			// fd := helpers.FormData{
+			// 	Errors: map[string]string{
+			// 		"existing-attachment": "Unable to parse document ID.",
+			// 	},
+			// }
+			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
 			return
 		}
 
@@ -343,17 +355,17 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 		// Associate the existing document with this opportunity
 		err = opptyRepo.AddDocument(oppty, &doc)
 		if err != nil {
-			fd := helpers.FormData{
-				Errors: map[string]string{
-					"overall": "Unable to add document to opportunity.",
-				},
-			}
-			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
+			// fd := helpers.FormData{
+			// 	Errors: map[string]string{
+			// 		"overall": "Unable to add document to opportunity.",
+			// 	},
+			// }
+			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
 			return
 		}
 
-		fd := helpers.FormData{}
-		returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo, fd)
+		// fd := helpers.FormData{}
+		returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
 		return
 	}
 }
@@ -382,6 +394,39 @@ func HandleContactModal(opptyRepo opportunity.Repository) http.HandlerFunc {
 	}
 }
 
+func HandleAttachmentModal(opptyRepo opportunity.Repository, docRepo document.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idParam := chi.URLParam(r, "opportunityId")
+		if idParam == "" {
+			return
+		}
+		id, err := strconv.ParseUint(idParam, 10, 64) // Sqlite id's are 64-bit int
+		if err != nil {
+			return
+		}
+
+		u, ok := r.Context().Value("user").(*user.User)
+		if !ok {
+			helpers.WriteError(w, errors.New("Invalid user"))
+			return
+		}
+		var fd helpers.FormData
+
+		oppty, err := opptyRepo.GetOpportuntyById(uint(id), u)
+		if err != nil {
+			helpers.WriteError(w, err)
+			return
+		}
+
+		userDocs, err := docRepo.GetAllUserDocuments(u)
+		if err != nil {
+			helpers.WriteError(w, err)
+			return
+		}
+		templates.AttachmentModal(*oppty, userDocs, fd).Render(r.Context(), w)
+	}
+}
+
 func HandleAddNewContactToOppty(opptyRepo opportunity.Repository, contactRepo contact.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		newContact, err := newContactFromRequest(r)
@@ -389,13 +434,13 @@ func HandleAddNewContactToOppty(opptyRepo opportunity.Repository, contactRepo co
 			helpers.WriteError(w, err)
 			return
 		}
-		
+
 		user, ok := r.Context().Value("user").(*user.User)
 		if !ok || user == nil {
 			helpers.WriteError(w, errors.New("No user available"))
 			return
 		}
-		
+
 		err = contactRepo.CreateContact(newContact, *user)
 		if err != nil {
 			helpers.WriteError(w, err)
@@ -452,7 +497,7 @@ func newContactFromRequest(r *http.Request) (*contact.Contact, error) {
 	}
 
 	return &c, nil
-		
+
 }
 
 // TODO: How to update an existing opportunity?
@@ -477,7 +522,6 @@ func returnAttachmentsSection(
 	oppty *opportunity.Opportunity,
 	docRepo document.Repository,
 	opptyRepo opportunity.Repository,
-	fd helpers.FormData,
 ) {
 	docs, err := opptyRepo.GetAllDocuments(oppty, user)
 	if err != nil {
@@ -485,17 +529,6 @@ func returnAttachmentsSection(
 		return
 	}
 
-	od := helpers.OpptyDetails{
-		Oppty:     *oppty,
-		Documents: docs,
-	}
-
-	userDocs, err := docRepo.GetAllUserDocuments(user)
-	if err != nil {
-		helpers.WriteError(w, err)
-		return
-	}
-
-	templates.OpportunityDetailsPage(user, od, userDocs, fd).Render(r.Context(), w)
+	templates.AttachmentsTable(docs).Render(r.Context(), w)
 	return
 }
