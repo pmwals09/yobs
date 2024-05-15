@@ -37,9 +37,7 @@ templ OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocum
 				>Add</button>
 			</div>
 			<div id="contact-modal"></div>
-			if od.Contacts != nil && len(od.Contacts) > 0 {
-				@ContactsTable(od.Contacts)
-			}
+			@ContactsTable(od.Contacts)
 			@RenderStandardError(fd.Errors["contacts"])
 		</section>
 		<section class="mb-4">

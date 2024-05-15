@@ -3,26 +3,30 @@ package templates
 import "github.com/pmwals09/yobs/internal/models/contact"
 
 templ ContactsTable(contacts []contact.Contact) {
-	<table class="table-auto border-collapse w-full mb-4" id="contact-table">
-		<thead>
-			<tr>
-				<th class="border-b text-left">Name</th>
-				<th class="border-b text-left">Company</th>
-				<th class="border-b text-left">Title</th>
-				<th class="border-b text-left">Phone</th>
-				<th class="border-b text-left">Email</th>
-			</tr>
-		</thead>
-		<tbody>
-			for _, contact := range contacts {
+	if len(contacts) > 0 {
+		<table class="table-auto border-collapse w-full mb-4" id="contact-table">
+			<thead>
 				<tr>
-					<td class="border-b">{ contact.Name }</td>
-					<td class="border-b">{ contact.CompanyName }</td>
-					<td class="border-b">{ contact.Title }</td>
-					<td class="border-b">{ contact.Phone }</td>
-					<td class="border-b">{ contact.Email }</td>
+					<th class="border-b text-left">Name</th>
+					<th class="border-b text-left">Company</th>
+					<th class="border-b text-left">Title</th>
+					<th class="border-b text-left">Phone</th>
+					<th class="border-b text-left">Email</th>
 				</tr>
-			}
-		</tbody>
-	</table>
+			</thead>
+			<tbody>
+				for _, contact := range contacts {
+					<tr>
+						<td class="border-b">{ contact.Name }</td>
+						<td class="border-b">{ contact.CompanyName }</td>
+						<td class="border-b">{ contact.Title }</td>
+						<td class="border-b">{ contact.Phone }</td>
+						<td class="border-b">{ contact.Email }</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	} else {
+		<table id="contact-table"></table>
+	}
 }

@@ -40,6 +40,13 @@ type FormData struct {
 	Values map[string]string
 }
 
+func (fd *FormData) AddError(key, val string) {
+	if fd.Errors == nil {
+		fd.Errors = make(map[string]string)
+	}
+	fd.Errors[key] = val
+}
+
 type ProfileArgs struct {
 	Username string
 	Email    string

@@ -22,16 +22,15 @@ func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
 			helpers.WriteError(w, err)
 		}
 
-		user := r.Context().Value("user").(*user.User)
-		if user == nil {
+		user, err := userFromRequest(r)
+		if err != nil {
 			helpers.WriteError(w, errors.New("No user available"))
 		}
 		f := helpers.FormData{}
 		if err := repo.CreateOpportunity(newOpportunity); err != nil {
-			f.Errors["overall"] = fmt.Sprintf(
+			f.AddError("overall", fmt.Sprintf(
 				"An error occurred creating the opportunity: %s",
-				err.Error(),
-			)
+				err.Error()))
 			templates.HomePage(user, []opportunity.Opportunity{}, f).Render(r.Context(), w)
 			return
 		}
@@ -55,19 +54,12 @@ func HandleGetOpptyPage(
 		var od helpers.OpptyDetails
 		var fd helpers.FormData
 
-		idParam := chi.URLParam(r, "opportunityId")
-		id, err := strconv.ParseUint(idParam, 10, 64) // Sqlite id's are 64-bit int
+		user, err := userFromRequest(r)
 		if err != nil {
 			helpers.WriteError(w, err)
 			return
 		}
-
-		user := r.Context().Value("user").(*user.User)
-		if user == nil {
-			helpers.WriteError(w, errors.New("No user available"))
-		}
-
-		opp, err := opptyRepo.GetOpportuntyById(uint(id), user)
+		opp, err := opptyFromRequest(r, opptyRepo, user)
 		if err != nil {
 			helpers.WriteError(w, err)
 			return
@@ -76,20 +68,12 @@ func HandleGetOpptyPage(
 
 		docs, err := opptyRepo.GetAllDocuments(opp, user)
 		if err != nil {
-			if fd.Errors == nil {
-				fd.Errors = map[string]string{}
-			}
-
-			fd.Errors["document-table"] = "Unable to retrieve opportunity documents."
+			fd.AddError("document-table", "Unable to retrieve opportunity documents.")
 		} else {
 			for i := range docs {
 				_, err := docs[i].GetPresignedDownloadUrl()
 				if err != nil {
-					fd := helpers.FormData{
-						Errors: map[string]string{
-							"document-table": "Unable to retrieve document URL for download.",
-						},
-					}
+					fd.AddError("document-table", "Unable to retrieve document URL for download.")
 					templates.OpportunityDetailsPage(
 						user,
 						od,
@@ -105,19 +89,12 @@ func HandleGetOpptyPage(
 
 		userDocuments, err := docRepo.GetAllUserDocuments(user)
 		if err != nil {
-			if fd.Errors == nil {
-				fd.Errors = map[string]string{}
-			}
-			fd.Errors["existing-attachment"] = "Unable to retrieve user documents."
+			fd.AddError("existing-attachment", "Unable to retrieve user documents.")
 		}
 
 		contacts, err := opptyRepo.GetAllContacts(opp)
 		if err != nil {
-			if fd.Errors == nil {
-				fd.Errors = map[string]string{}
-			}
-			fd.Errors["contacts"] = fmt.Sprintf("Unable to retrieve opportunity contacts: %s", err.Error())
-
+			fd.AddError("contacts", fmt.Sprintf("Unable to retrieve opportunity contacts: %s", err.Error()))
 		} else {
 			od.Contacts = contacts
 		}
@@ -135,28 +112,26 @@ func HandleUploadToOppty(
 	docRepo document.Repository,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user := r.Context().Value("user").(*user.User)
-		if user == nil {
-			helpers.WriteError(w, errors.New("No user available"))
+		var fd helpers.FormData
+		user, err := userFromRequest(r)
+		if err != nil {
+			fd.AddError("overall", "Error retrieving user")
+			docs, err := docRepo.GetAllUserDocuments(user)
+			if err != nil {
+				fd.AddError("existing-attachment", "Error retrieving user documents")
+			}
+			var oppty opportunity.Opportunity
+			retargetAttachmentModal(w, r, oppty, docs, fd)
 			return
 		}
-
-		idParam := chi.URLParam(r, "opportunityId")
-		id, err := strconv.ParseUint(idParam, 10, 64) // Sqlite id's are 64-bit int
+		oppty, err := opptyFromRequest(r, opptyRepo, user)
 		if err != nil {
-			helpers.WriteError(w, err)
-			return
-		}
-		oppty, err := opptyRepo.GetOpportuntyById(uint(id), user)
-		if err != nil {
-			// fd := helpers.FormData{
-			// 	Errors: map[string]string{
-			// 		"overall": "Error retrieving opportunity",
-			// 	},
-			// }
-			// TODO: What's the appropriate response?
-			// should it use HX-Retarget: attachment-modal?
-			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
+			fd.AddError("overall", "Error retrieving opportunity")
+			docs, err := docRepo.GetAllUserDocuments(user)
+			if err != nil {
+				fd.AddError("existing-attachment", "Error retrieving user documents")
+			}
+			retargetAttachmentModal(w, r, *oppty, docs, fd)
 			return
 		}
 
@@ -166,14 +141,12 @@ func HandleUploadToOppty(
 			defer file.Close()
 		}
 		if err != nil {
-			// fd := helpers.FormData{
-			// 	Errors: map[string]string{
-			// 		"attachment-file": "Problem parsing file - did you attach one?",
-			// 	},
-			// }
-			// TODO: What's the appropriate response?
-			// should it use HX-Retarget: attachment-modal?
-			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
+			fd.AddError("attachment-file", "Problem parsing file - did you attach one?")
+			docs, err := docRepo.GetAllUserDocuments(user)
+			if err != nil {
+				fd.AddError("existing-attachment", "Error retrieving user documents")
+			}
+			retargetAttachmentModal(w, r, *oppty, docs, fd)
 			return
 		}
 
@@ -208,56 +181,39 @@ func HandleUploadToOppty(
 		}
 
 		if err = opptyRepo.AddDocument(oppty, d); err != nil {
-			// fd := helpers.FormData{
-			// 	Errors: map[string]string{
-			// 		"overall": "Unable to add document to the opportunity",
-			// 	},
-			// }
-			// TODO: What's the appropriate response?
-			// should it use HX-Retarget: attachment-modal?
-			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
+			fd.AddError("overall", "Unable to add document to the opportunity")
+			docs, err := docRepo.GetAllUserDocuments(user)
+			if err != nil {
+				fd.AddError("existing-attachment", "Error retrieving user documents")
+			}
+			retargetAttachmentModal(w, r, *oppty, docs, fd)
 			return
 		}
 
 		docs, err := opptyRepo.GetAllDocuments(oppty, user)
 		if err != nil {
-			// fd := helpers.FormData{
-			// 	Errors: map[string]string{
-			// 		"overall": "Unable to retrieve associated documents after submission.",
-			// 	},
-			// }
-			// TODO: What's the appropriate response?
-			// should it use HX-Retarget: attachment-modal?
-			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
+			fd.Errors["overall"] = "Unable to retrieve associated documents after submission."
+			retargetAttachmentModal(w, r, *oppty, docs, fd)
 			return
 		}
 
 		for i := range docs {
 			_, err := docs[i].GetPresignedDownloadUrl()
 			if err != nil {
-				// fd := helpers.FormData{
-				// 	Errors: map[string]string{
-				// 		"document-table": "Unable to retrieve document URL for download.",
-				// 	},
-				// }
-				// TODO: What's the appropriate response?
-				// should it use HX-Retarget: attachment-modal?
-				returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
+				w.Header().Add("HX-Retarget", "attachment-modal")
+				fd.AddError("document-table", "Unable to retrieve document URL for download.")
+				retargetAttachmentModal(w, r, *oppty, docs, fd)
 				return
 			}
 		}
 
-		// fd := helpers.FormData{}
-		// TODO: What's the appropriate response?
-		// should it use HX-Retarget: attachment-modal?
-		returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
+		returnAttachmentsSection(w, r, user, oppty, opptyRepo)
 		return
 	}
 }
 
 func newOpportunityFromRequest(r *http.Request) (*opportunity.Opportunity, error) {
 	o := opportunity.New()
-
 	err := r.ParseForm()
 	if err != nil {
 		return o, err
@@ -272,81 +228,65 @@ func newOpportunityFromRequest(r *http.Request) (*opportunity.Opportunity, error
 		WithDescription(description).
 		WithURL(url).
 		WithApplicationDateString(date)
-
 	if o.ApplicationDate.IsZero() {
 		o.Status = opportunity.None
 	} else {
 		o.Status = opportunity.Applied
 	}
-
-	user := r.Context().Value("user").(*user.User)
+	user, err := userFromRequest(r)
 	if user == nil {
 		return o, errors.New("No user available to associate with opportunity")
 	}
 	o.WithUser(user)
-
 	return o, nil
 }
 
 func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		idParam := chi.URLParam(r, "opportunityId")
-		if idParam == "" {
-			return
-		}
-
-		user := r.Context().Value("user").(*user.User)
-		if user == nil {
+		user, err := userFromRequest(r)
+		if err == nil {
 			helpers.WriteError(w, errors.New("No user available"))
 			return
 		}
-
-		id, err := strconv.ParseUint(idParam, 10, 64) // Sqlite id's are 64-bit int
+		oppty, err := opptyFromRequest(r, opptyRepo, user)
+		var fd helpers.FormData
 		if err != nil {
-			helpers.WriteError(w, err)
-			return
-		}
-		oppty, err := opptyRepo.GetOpportuntyById(uint(id), user)
-		if err != nil {
-			// fd := helpers.FormData{
-			// 	Errors: map[string]string{
-			// 		"overall": "Unable to retrieve opportunity.",
-			// 	},
-			// }
-			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
+			fd.AddError("overall", "Unable to retrieve opportunity.")
+			docs, err := docRepo.GetAllUserDocuments(user)
+			if err != nil {
+				fd.AddError("existing-attachment", "Unable to retrieve user docs")
+			}
+			retargetAttachmentModal(w, r, *oppty, docs, fd)
 			return
 		}
 
 		// Get the selected document from the formdata
 		err = r.ParseForm()
 		if err != nil {
-			// fd := helpers.FormData{
-			// 	Errors: map[string]string{
-			// 		"overall": "Unable to parse form.",
-			// 	},
-			// }
-			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
+			fd.AddError("overall", "Unable to parse form")
+			docs, _ := docRepo.GetAllUserDocuments(user)
+			retargetAttachmentModal(w, r, *oppty, docs, fd)
 			return
 		}
 
 		docIdStr := r.PostForm.Get("existing-attachment")
 		if docIdStr == "" {
-			// fd := helpers.FormData{
-			// 	Errors: map[string]string{
-			// 		"existing-attachment": "Must select a document.",
-			// 	},
-			// }
-			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
+			fd.AddError("existing-attachment", "Must select a document")
+			docs, err := docRepo.GetAllUserDocuments(user)
+			if err != nil {
+				fd.AddError("overall", "Unable to retrieve user docs")
+			}
+			retargetAttachmentModal(w, r, *oppty, docs, fd)
 			return
 		}
 		docId, err := strconv.ParseUint(docIdStr, 10, 64)
 		if err != nil {
-			// fd := helpers.FormData{
-			// 	Errors: map[string]string{
-			// 		"existing-attachment": "Unable to parse document ID.",
-			// 	},
-			// }
-			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
+			fd.AddError("existing-attachment", "Unable to parse document ID.")
+			docs, err := docRepo.GetAllUserDocuments(user)
+			if err != nil {
+				fd.AddError("overall", "Unable to retrieve user docs")
+			}
+			retargetAttachmentModal(w, r, *oppty, docs, fd)
 			return
 		}
 
@@ -355,40 +295,33 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 		// Associate the existing document with this opportunity
 		err = opptyRepo.AddDocument(oppty, &doc)
 		if err != nil {
-			// fd := helpers.FormData{
-			// 	Errors: map[string]string{
-			// 		"overall": "Unable to add document to opportunity.",
-			// 	},
-			// }
-			returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
+			fd.AddError("existing-attachment", "Unable to add document to opportunity.")
+			docs, err := docRepo.GetAllUserDocuments(user)
+			if err != nil {
+				fd.AddError("overall", "Unable to retrieve user docs")
+			}
+			retargetAttachmentModal(w, r, *oppty, docs, fd)
 			return
 		}
 
-		// fd := helpers.FormData{}
-		returnAttachmentsSection(w, r, user, oppty, docRepo, opptyRepo)
+		returnAttachmentsSection(w, r, user, oppty, opptyRepo)
 		return
 	}
 }
 
 func HandleContactModal(opptyRepo opportunity.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		idParam := chi.URLParam(r, "opportunityId")
-		if idParam == "" {
-			return
-		}
-
-		user := r.Context().Value("user").(*user.User)
-		if user == nil {
+		user, err := userFromRequest(r)
+		if err != nil {
 			helpers.WriteError(w, errors.New("No user available"))
 			return
 		}
 
-		id, err := strconv.ParseUint(idParam, 10, 64) // Sqlite id's are 64-bit int
+		oppty, err := opptyFromRequest(r, opptyRepo, user)
 		if err != nil {
-			helpers.WriteError(w, err)
+			helpers.WriteError(w, errors.New("No opportunity available"))
 			return
 		}
-		oppty, err := opptyRepo.GetOpportuntyById(uint(id), user)
 
 		templates.ContactModal(oppty).Render(r.Context(), w)
 	}
@@ -396,23 +329,14 @@ func HandleContactModal(opptyRepo opportunity.Repository) http.HandlerFunc {
 
 func HandleAttachmentModal(opptyRepo opportunity.Repository, docRepo document.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		idParam := chi.URLParam(r, "opportunityId")
-		if idParam == "" {
-			return
-		}
-		id, err := strconv.ParseUint(idParam, 10, 64) // Sqlite id's are 64-bit int
+		u, err := userFromRequest(r)
 		if err != nil {
-			return
-		}
-
-		u, ok := r.Context().Value("user").(*user.User)
-		if !ok {
 			helpers.WriteError(w, errors.New("Invalid user"))
 			return
 		}
 		var fd helpers.FormData
 
-		oppty, err := opptyRepo.GetOpportuntyById(uint(id), u)
+		oppty, err := opptyFromRequest(r, opptyRepo, u)
 		if err != nil {
 			helpers.WriteError(w, err)
 			return
@@ -435,8 +359,8 @@ func HandleAddNewContactToOppty(opptyRepo opportunity.Repository, contactRepo co
 			return
 		}
 
-		user, ok := r.Context().Value("user").(*user.User)
-		if !ok || user == nil {
+		user, err := userFromRequest(r)
+		if err != nil {
 			helpers.WriteError(w, errors.New("No user available"))
 			return
 		}
@@ -447,10 +371,7 @@ func HandleAddNewContactToOppty(opptyRepo opportunity.Repository, contactRepo co
 			return
 		}
 
-		idParam := chi.URLParam(r, "opportunityId")
-		id, err := strconv.ParseUint(idParam, 10, 64)
-
-		oppty, err := opptyRepo.GetOpportuntyById(uint(id), user)
+		oppty, err := opptyFromRequest(r, opptyRepo, user)
 		if err != nil {
 			helpers.WriteError(w, err)
 			return
@@ -471,6 +392,27 @@ func HandleAddNewContactToOppty(opptyRepo opportunity.Repository, contactRepo co
 
 		templates.ContactsTable(contacts).Render(r.Context(), w)
 	}
+}
+
+func userFromRequest(r *http.Request) (*user.User, error) {
+	if u, ok := r.Context().Value("user").(*user.User); !ok {
+		return u, errors.New("Unable to retrieve user from context.")
+	} else if u == nil {
+		return u, errors.New("No user available")
+	} else {
+		return u, nil
+	}
+}
+
+func opptyFromRequest(r *http.Request, opptyRepo opportunity.Repository, u *user.User) (*opportunity.Opportunity, error) {
+	idParam := chi.URLParam(r, "opportunityId")
+	id, err := strconv.ParseUint(idParam, 10, 64) // Sqlite id's are 64-bit int
+	if err != nil {
+		var o opportunity.Opportunity
+		return &o, err
+	}
+	o, err := opptyRepo.GetOpportuntyById(uint(id), u)
+	return o, err
 }
 
 func newContactFromRequest(r *http.Request) (*contact.Contact, error) {
@@ -520,7 +462,6 @@ func returnAttachmentsSection(
 	r *http.Request,
 	user *user.User,
 	oppty *opportunity.Opportunity,
-	docRepo document.Repository,
 	opptyRepo opportunity.Repository,
 ) {
 	docs, err := opptyRepo.GetAllDocuments(oppty, user)
@@ -531,4 +472,14 @@ func returnAttachmentsSection(
 
 	templates.AttachmentsTable(docs).Render(r.Context(), w)
 	return
+}
+
+func retargetAttachmentModal(
+	w http.ResponseWriter,
+	r *http.Request,
+	oppty opportunity.Opportunity,
+	docs []document.Document,
+	fd helpers.FormData) {
+	w.Header().Add("HX-Retarget", "#attachment-modal")
+	templates.AttachmentModal(oppty, docs, fd).Render(r.Context(), w)
 }

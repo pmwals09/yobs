@@ -143,11 +143,9 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if od.Contacts != nil && len(od.Contacts) > 0 {
-				templ_7745c5c3_Err = ContactsTable(od.Contacts).Render(ctx, templ_7745c5c3_Buffer)
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
+			templ_7745c5c3_Err = ContactsTable(od.Contacts).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
 			}
 			templ_7745c5c3_Err = RenderStandardError(fd.Errors["contacts"]).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
@@ -160,7 +158,7 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(od.Oppty.Description)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 47, Col: 25}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 45, Col: 25}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -173,7 +171,7 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(insertIDIntoString("/opportunities/{}/attachment-modal", od.Oppty.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 57, Col: 83}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 55, Col: 83}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
