@@ -48,7 +48,10 @@ container.innerHTML = ""
 document.addEventListener("click", handleBackgroundClose)
 function handleBackgroundClose(e) {
 const modalBody = document.querySelector("#modal-body")
-if (!modalBody.contains(e.target)) {
+if (!modalBody) {
+document.removeEventListener("click", handleBackgroundClose)
+}
+if (modalBody && !modalBody.contains(e.target)) {
 document.removeEventListener("click", handleBackgroundClose)
 const container = document.querySelector(`#${containerID}`)
 container.innerHTML = ""

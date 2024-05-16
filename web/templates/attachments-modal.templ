@@ -10,6 +10,7 @@ import (
 
 templ AttachmentModal(oppty opportunity.Opportunity, userDocuments []document.Document, fd helpers.FormData) {
 	@Modal("attachment-modal") {
+		<h2 class="text-[1.5em] mb-4">Add an Attachment</h2>
 		if userDocuments != nil && len(userDocuments) > 0 {
 			<form
 				method="POST"
@@ -45,7 +46,6 @@ templ AttachmentModal(oppty opportunity.Opportunity, userDocuments []document.Do
 			action={ templ.SafeURL(insertIDIntoString("/opportunities/{}/upload", oppty.ID)) }
 			hx-post={ insertIDIntoString("/opportunities/{}/upload", oppty.ID) }
 			hx-target="#attachments-section"
-			hx-select="#attachments-section"
 			enctype="multipart/form-data"
 			class="w-1/2"
 		>

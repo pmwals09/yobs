@@ -48,8 +48,8 @@ func Modal(containerID string) templ.Component {
 
 func modalListeners(containerID string) templ.ComponentScript {
 	return templ.ComponentScript{
-		Name: `__templ_modalListeners_40da`,
-		Function: `function __templ_modalListeners_40da(containerID){(() => {
+		Name: `__templ_modalListeners_5324`,
+		Function: `function __templ_modalListeners_5324(containerID){(() => {
 const closeIcon = document.querySelector("#modal-close-icon")
 closeIcon.addEventListener("click", handleClose)
 function handleClose(e) {
@@ -62,7 +62,10 @@ container.innerHTML = ""
 document.addEventListener("click", handleBackgroundClose)
 function handleBackgroundClose(e) {
 const modalBody = document.querySelector("#modal-body")
-if (!modalBody.contains(e.target)) {
+if (!modalBody) {
+document.removeEventListener("click", handleBackgroundClose)
+}
+if (modalBody && !modalBody.contains(e.target)) {
 document.removeEventListener("click", handleBackgroundClose)
 const container = document.querySelector(` + "`" + `#${containerID}` + "`" + `)
 container.innerHTML = ""
@@ -70,7 +73,7 @@ container.innerHTML = ""
 }
 })()
 }`,
-		Call:       templ.SafeScript(`__templ_modalListeners_40da`, containerID),
-		CallInline: templ.SafeScriptInline(`__templ_modalListeners_40da`, containerID),
+		Call:       templ.SafeScript(`__templ_modalListeners_5324`, containerID),
+		CallInline: templ.SafeScriptInline(`__templ_modalListeners_5324`, containerID),
 	}
 }

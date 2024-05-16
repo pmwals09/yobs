@@ -37,6 +37,10 @@ func AttachmentModal(oppty opportunity.Opportunity, userDocuments []document.Doc
 				templ_7745c5c3_Buffer = templ.GetBuffer()
 				defer templ.ReleaseBuffer(templ_7745c5c3_Buffer)
 			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<h2 class=\"text-[1.5em] mb-4\">Add an Attachment</h2>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 			if userDocuments != nil && len(userDocuments) > 0 {
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form method=\"POST\" action=\"")
 				if templ_7745c5c3_Err != nil {
@@ -54,7 +58,7 @@ func AttachmentModal(oppty opportunity.Opportunity, userDocuments []document.Doc
 				var templ_7745c5c3_Var4 string
 				templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(insertIDIntoString("/opportunities/{}/attach-existing", oppty.ID))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/attachments-modal.templ`, Line: 17, Col: 79}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/attachments-modal.templ`, Line: 18, Col: 79}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 				if templ_7745c5c3_Err != nil {
@@ -72,7 +76,7 @@ func AttachmentModal(oppty opportunity.Opportunity, userDocuments []document.Doc
 					var templ_7745c5c3_Var5 string
 					templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(int(doc.ID)))
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/attachments-modal.templ`, Line: 27, Col: 49}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/attachments-modal.templ`, Line: 28, Col: 49}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 					if templ_7745c5c3_Err != nil {
@@ -85,7 +89,7 @@ func AttachmentModal(oppty opportunity.Opportunity, userDocuments []document.Doc
 					var templ_7745c5c3_Var6 string
 					templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(doc.Title)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/attachments-modal.templ`, Line: 28, Col: 20}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/attachments-modal.templ`, Line: 29, Col: 20}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 					if templ_7745c5c3_Err != nil {
@@ -98,7 +102,7 @@ func AttachmentModal(oppty opportunity.Opportunity, userDocuments []document.Doc
 					var templ_7745c5c3_Var7 string
 					templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(doc.FileName)
 					if templ_7745c5c3_Err != nil {
-						return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/attachments-modal.templ`, Line: 28, Col: 39}
+						return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/attachments-modal.templ`, Line: 29, Col: 39}
 					}
 					_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 					if templ_7745c5c3_Err != nil {
@@ -138,13 +142,13 @@ func AttachmentModal(oppty opportunity.Opportunity, userDocuments []document.Doc
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(insertIDIntoString("/opportunities/{}/upload", oppty.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/attachments-modal.templ`, Line: 46, Col: 69}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/attachments-modal.templ`, Line: 47, Col: 69}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-target=\"#attachments-section\" hx-select=\"#attachments-section\" enctype=\"multipart/form-data\" class=\"w-1/2\"><section class=\"grid grid-cols-2 gap-y-2\"><label for=\"attachment-name\">Attachment Name</label><div><input type=\"text\" name=\"attachment-name\" value=\"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-target=\"#attachments-section\" enctype=\"multipart/form-data\" class=\"w-1/2\"><section class=\"grid grid-cols-2 gap-y-2\"><label for=\"attachment-name\">Attachment Name</label><div><input type=\"text\" name=\"attachment-name\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
