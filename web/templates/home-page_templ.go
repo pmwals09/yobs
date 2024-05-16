@@ -84,9 +84,9 @@ func HomePage(user *user.User, opportunities []opportunity.Opportunity, f helper
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var6 string
-				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(string(o.Status))
+				templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(string(o.Statuses[0].Name))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/home-page.templ`, Line: 31, Col: 46}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/home-page.templ`, Line: 31, Col: 56}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 				if templ_7745c5c3_Err != nil {
@@ -97,9 +97,9 @@ func HomePage(user *user.User, opportunities []opportunity.Opportunity, f helper
 					return templ_7745c5c3_Err
 				}
 				var templ_7745c5c3_Var7 string
-				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(formatApplicationDate(o.ApplicationDate))
+				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(formatApplicationDate(o.Statuses[0].Date))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/home-page.templ`, Line: 32, Col: 70}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/home-page.templ`, Line: 32, Col: 71}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 				if templ_7745c5c3_Err != nil {

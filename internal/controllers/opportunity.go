@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	helpers "github.com/pmwals09/yobs/internal"
 	"github.com/pmwals09/yobs/internal/models/contact"
 	"github.com/pmwals09/yobs/internal/models/document"
 	"github.com/pmwals09/yobs/internal/models/opportunity"
+	"github.com/pmwals09/yobs/internal/models/status"
 	"github.com/pmwals09/yobs/internal/models/user"
 	"github.com/pmwals09/yobs/web/templates"
 )
@@ -226,13 +228,18 @@ func newOpportunityFromRequest(r *http.Request) (*opportunity.Opportunity, error
 	o.WithCompanyName(name).
 		WithRole(role).
 		WithDescription(description).
-		WithURL(url).
-		WithApplicationDateString(date)
-	if o.ApplicationDate.IsZero() {
-		o.Status = opportunity.None
+		WithURL(url)
+	var initialStatus status.Status
+	if date == "" {
+		initialStatus.Name = status.None
 	} else {
-		o.Status = opportunity.Applied
+		initialStatus.Name = status.Applied
+		t, err := time.Parse(time.DateOnly, date)
+		if err == nil {
+			initialStatus.Date = t
+		}
 	}
+	o.Statuses = []status.Status{ initialStatus }
 	user, err := userFromRequest(r)
 	if user == nil {
 		return o, errors.New("No user available to associate with opportunity")

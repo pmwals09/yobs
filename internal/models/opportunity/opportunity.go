@@ -1,38 +1,26 @@
 package opportunity
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/pmwals09/yobs/internal/models/contact"
 	"github.com/pmwals09/yobs/internal/models/document"
+	"github.com/pmwals09/yobs/internal/models/status"
 	"github.com/pmwals09/yobs/internal/models/user"
 	// "github.com/pmwals09/yobs/apps/backend/task"
 )
 
-type Status string
-
-const (
-	None          Status = "None"
-	Applied              = "Applied"
-	Rejected             = "Rejected"
-	FollowedUp           = "Followed Up"
-	Pending              = "Pending"
-	Offer                = "Offer"
-	AcceptedOffer        = "Accepted Offer"
-)
-
 type Opportunity struct {
-	ID              uint       `json:"id"`
-	CompanyName     string     `json:"companyName"`
-	Role            string     `json:"role"`
-	Description     string     `json:"description"`
-	URL             string     `json:"url"`
-	ApplicationDate time.Time  `json:"applicationDate"`
-	Status          Status     `json:"status"`
-	User            *user.User `json:"user"`
+	ID          uint            `json:"id"`
+	CompanyName string          `json:"companyName"`
+	Role        string          `json:"role"`
+	Description string          `json:"description"`
+	URL         string          `json:"url"`
+	Statuses    []status.Status `json:"statuses"`
+	User        *user.User      `json:"user"`
 	// Tasks           []task.Task `json:"tasks"`
 	// Documents       []document.Document `json:"documents"`
 	// Tasks
@@ -68,25 +56,6 @@ func (o *Opportunity) WithUser(user *user.User) *Opportunity {
 	return o
 }
 
-func (o *Opportunity) WithApplicationDateString(applicationDate string) *Opportunity {
-	if applicationDate == "" {
-		o.ApplicationDate = time.Time{}
-		return o
-	}
-	t, err := time.Parse("2006-01-02", applicationDate)
-	if err != nil {
-		fmt.Printf("\nError parsing date: %s\n", err.Error())
-		return o
-	}
-	o.ApplicationDate = t
-	return o
-}
-
-func (o *Opportunity) WithApplicationDateTime(applicationDate time.Time) *Opportunity {
-	o.ApplicationDate = applicationDate
-	return o
-}
-
 func (o *Opportunity) IsEmpty() bool {
 	return o.CompanyName == "" && o.URL == "" && o.Role == ""
 }
@@ -107,93 +76,152 @@ type OpportunityModel struct {
 	DB *sql.DB
 }
 
+// Create an opportunity and it's associated initial status entry
 func (g *OpportunityModel) CreateOpportunity(opp *Opportunity) error {
 	if opp.IsEmpty() {
 		return errors.New("Empty opportunity - must have at least one of Role, Company Name, or URL")
 	}
 
-	_, err := g.DB.Exec(`
+	ctx := context.Background()
+	tx, err := g.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	res, err := tx.Exec(
+		`
 		INSERT INTO opportunities (
 			company_name,
 			role,
 			description,
 			url,
-			application_date,
-			status,
-      user_id
-		) VALUES (?, ?, ?, ?, ?, ?, ?);
+			user_id
+		) VALUES (?, ?, ?, ?, ?, ?);
 	`,
 		opp.CompanyName,
 		opp.Role,
 		opp.Description,
 		opp.URL,
-		opp.ApplicationDate,
-		opp.Status,
-		opp.User.ID,
-	)
+		opp.User.ID)
+	if err != nil {
+		return txError(tx, err)
+	}
+	id, err := res.LastInsertId()
+	if err != nil {
+		return txError(tx, err)
+	}
+	_, err = tx.Exec(`
+		INSERT INTO statuses (
+			name,
+			note,
+			date,
+			opportunity_id
+		) VALUES (?, ?, ?, ?);
+`,
+		opp.Statuses[0].Name,
+		opp.Statuses[0].Note,
+		opp.Statuses[0].Date,
+		id)
+	err = tx.Commit()
+	if err != nil {
+		return txError(tx, err)
+	}
 
+	return err
+}
+
+func txError(tx *sql.Tx, err error) error {
+	rbErr := tx.Rollback()
+	if rbErr != nil {
+		err = errors.Join(err, rbErr)
+		return err
+	}
 	return err
 }
 
 func (g *OpportunityModel) GetOpportuntyById(opptyId uint, user *user.User) (*Opportunity, error) {
 	var oppty Opportunity
-	res := g.DB.QueryRow(`
+	res, err := g.DB.Query(`
 		SELECT
-			id,
+			o.id,
 			company_name,
 			role,
 			description,
 			url,
-			application_date,
-			status
-		FROM opportunities WHERE id = ? AND user_id = ?;
+			name,
+			note,
+			date
+		FROM opportunities o INNER JOIN statuses s ON o.id = s.opportunity_id
+		WHERE o.id = ? AND user_id = ?
+		ORDER BY date;
 	`, opptyId, user.ID)
-	err := res.Scan(
-		&oppty.ID,
-		&oppty.CompanyName,
-		&oppty.Role,
-		&oppty.Description,
-		&oppty.URL,
-		&oppty.ApplicationDate,
-		&oppty.Status,
-	)
+	if err != nil {
+		return &oppty, err
+	}
+	for res.Next() {
+		var status status.Status
+		err := res.Scan(
+			&oppty.ID,
+			&oppty.CompanyName,
+			&oppty.Role,
+			&oppty.Description,
+			&oppty.URL,
+			&status.Name,
+			&status.Note,
+			&status.Date)
+		if err != nil {
+			return &oppty, err
+		}
+		oppty.Statuses = append(oppty.Statuses, status)
+	}
 	oppty.User = user
 
-	return &oppty, err
+	return &oppty, nil
 }
 
 func (g *OpportunityModel) GetAllOpportunities(user *user.User) ([]Opportunity, error) {
 	var opptys []Opportunity
 	rows, err := g.DB.Query(`
 		SELECT
-			id,
+			o.id,
 			company_name,
 			role,
 			description,
 			url,
-			application_date,
-			status
-		FROM opportunities WHERE user_id = ?;
+			name,
+			note,
+			date
+		FROM opportunities o INNER JOIN statuses s ON o.id = s.opportunity_id
+		WHERE user_id = ?
+		ORDER BY date;
 	`, user.ID)
 
 	if err != nil {
 		return opptys, err
 	}
+	opptyMap := make(map[uint]Opportunity)
 	for rows.Next() {
-		oppty := Opportunity{}
+		var oppty Opportunity
+		var status status.Status
 		err := rows.Scan(
 			&oppty.ID,
 			&oppty.CompanyName,
 			&oppty.Role,
 			&oppty.Description,
 			&oppty.URL,
-			&oppty.ApplicationDate,
-			&oppty.Status,
-		)
+			&status.Name,
+			&status.Note,
+			&status.Date)
 		if err != nil {
 			return opptys, err
 		}
-		oppty.User = user
+		if val, ok := opptyMap[oppty.ID]; ok {
+			val.Statuses = append(val.Statuses, status)
+			opptyMap[oppty.ID] = val
+		} else {
+			oppty.Statuses = append(oppty.Statuses, status)
+			oppty.User = user
+			opptyMap[oppty.ID] = oppty
+		}
 		opptys = append(opptys, oppty)
 	}
 	return opptys, nil
@@ -207,16 +235,12 @@ func (g *OpportunityModel) UpdateOpportunity(opp *Opportunity) error {
 			role = ?,
 			description = ?,
 			url = ?,
-			application_date = ?,
-			status = ?
 		WHERE id = ? AND user_id = ?;
 	`,
 		opp.CompanyName,
 		opp.Role,
 		opp.Description,
 		opp.URL,
-		opp.ApplicationDate,
-		opp.Status,
 		opp.ID,
 		opp.User.ID,
 	)

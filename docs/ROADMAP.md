@@ -23,7 +23,13 @@
 
 - [x] As a user, I want to be able to attach a contact to an opportunity to keep track of who I talk to in the application process
 - [ ] As a user, I want to be able to add status updates to an opportunity to keep track of the state of an application process
+  - Allow the user to name their own statuses, but provide defaults
 - [ ] As a user, I want to be able to attach correspondence to an opportunity to keep track of the process of applying
+- [ ] As a user, I want to be able to edit an existing opportunity, in case I make a typo or something
+
+## v1.1
+
+- [ ] Testing
 
 ## v2.0
 

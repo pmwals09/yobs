@@ -20,11 +20,32 @@ templ OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocum
 				<dd>{ od.Oppty.Role }</dd>
 				<dt class="font-bold whitespace-nowrap">URL:</dt>
 				<dd>{ od.Oppty.URL }</dd>
-				<dt class="font-bold whitespace-nowrap">Status:</dt>
-				<dd>{ string(od.Oppty.Status) }</dd>
+				<dt class="font-bold whitespace-nowrap">Latest Status:</dt>
+				<dd>{ string(od.Oppty.Statuses[0].Name) }</dd>
 				<dt class="font-bold whitespace-nowrap">Application Date:</dt>
-				<dd>{ formatApplicationDate(od.Oppty.ApplicationDate) }</dd>
+				<dd>{ formatApplicationDate(od.Oppty.Statuses[0].Date) }</dd>
 			</dl>
+		</section>
+		<section class="mb-4">
+			<h2 class="text-[1.5em]">Status</h2>
+				<table class="table-auto border-collapse w-full mb-4" id="attachments-table">
+					<thead>
+						<tr>
+							<th class="border-b text-left">Status</th>
+							<th class="border-b text-left">Date</th>
+							<th class="border-b text-left">Note</th>
+						</tr>
+					</thead>
+					<tbody>
+						for _, status := range od.Oppty.Statuses {
+							<tr>
+								<td class="border-b">{ status.Name }</td>
+								<td class="border-b">{ formatApplicationDate(status.Date) }</td>
+								<td class="border-b">{ status.Note }</td>
+							</tr>
+						}
+					</tbody>
+				</table>
 		</section>
 		<section class="mb-4">
 			<div class="flex gap-2 items-center">

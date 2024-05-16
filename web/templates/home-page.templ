@@ -28,8 +28,8 @@ templ HomePage(user *user.User, opportunities []opportunity.Opportunity, f helpe
 							<td class="border-b">{ o.CompanyName }</td>
 							<td class="border-b">{ o.Role }</td>
 							<td class="border-b">{ o.URL }</td>
-							<td class="border-b">{ string(o.Status) }</td>
-							<td class="border-b">{ formatApplicationDate(o.ApplicationDate) }</td>
+							<td class="border-b">{ string(o.Statuses[0].Name) }</td>
+							<td class="border-b">{ formatApplicationDate(o.Statuses[0].Date) }</td>
 							<td class="border-b flex gap-2">
 								<a class="btn" href={ insertIDIntoHref("opportunities/{}", o.ID) }>
 									Details

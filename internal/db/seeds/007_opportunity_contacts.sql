@@ -1,4 +1,5 @@
 -- +goose Up
+-- +goose StatementBegin
 INSERT INTO opportunity_contacts (
   opportunity_id,
   contact_id
@@ -20,5 +21,6 @@ INSERT INTO opportunity_contacts (
   1,
   3
 );
+-- +goose StatementEnd
 -- +goose Down
 DELETE FROM opportunity_contacts;
