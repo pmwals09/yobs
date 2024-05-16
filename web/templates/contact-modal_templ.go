@@ -11,8 +11,9 @@ import "io"
 import "bytes"
 
 import "github.com/pmwals09/yobs/internal/models/opportunity"
+import "github.com/pmwals09/yobs/internal"
 
-func ContactModal(oppty *opportunity.Opportunity) templ.Component {
+func ContactModal(oppty *opportunity.Opportunity, fd helpers.FormData) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -47,13 +48,21 @@ func ContactModal(oppty *opportunity.Opportunity) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(insertIDIntoString("/opportunities/{}/new-contact", oppty.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/contact-modal.templ`, Line: 11, Col: 74}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/contact-modal.templ`, Line: 12, Col: 74}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-target=\"#contact-table\" hx-swap=\"outerHTML\" hx-on::after-request=\" if(event.detail.successful) this.reset()\"><section class=\"grid grid-cols-2 gap-y-2\"><label for=\"contact-name\">Name</label> <input type=\"text\" name=\"contact-name\" value=\"\"> <label for=\"company-name\">Company Name</label> <input type=\"text\" name=\"company-name\" value=\"\"> <label for=\"contact-title\">Title</label> <input type=\"text\" name=\"contact-title\" value=\"\"> <label for=\"contact-phone\">Phone</label> <input type=\"text\" name=\"contact-phone\" value=\"\"> <label for=\"contact-email\">Email</label> <input type=\"text\" name=\"contact-email\" value=\"\"></section><input type=\"submit\" name=\"contact-submit\" value=\"Create Contact\" class=\"bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer my-3\"></form>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-target=\"#contact-table\" hx-on::after-request=\" if(event.detail.successful) this.reset()\"><section class=\"grid grid-cols-2 gap-y-2\"><label for=\"contact-name\">Name</label> <input type=\"text\" name=\"contact-name\" value=\"\"> <label for=\"company-name\">Company Name</label> <input type=\"text\" name=\"company-name\" value=\"\"> <label for=\"contact-title\">Title</label> <input type=\"text\" name=\"contact-title\" value=\"\"> <label for=\"contact-phone\">Phone</label> <input type=\"text\" name=\"contact-phone\" value=\"\"> <label for=\"contact-email\">Email</label> <input type=\"text\" name=\"contact-email\" value=\"\"></section>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = RenderStandardError(fd.Errors["overall"]).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<input type=\"submit\" name=\"contact-submit\" value=\"Create Contact\" class=\"bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer my-3\"></form>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -312,18 +312,26 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 func HandleContactModal(opptyRepo opportunity.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, err := userFromRequest(r)
+		var fd helpers.FormData
 		if err != nil {
-			helpers.WriteError(w, errors.New("No user available"))
+			allErrors := err
+			oppty, err := opptyFromRequest(r, opptyRepo, user)
+			if err != nil {
+				allErrors = errors.Join(allErrors, err)
+			}
+			fd.AddError("overall", allErrors.Error())
+			retargetContactModal(w, r, *oppty, fd)
 			return
 		}
 
 		oppty, err := opptyFromRequest(r, opptyRepo, user)
 		if err != nil {
-			helpers.WriteError(w, errors.New("No opportunity available"))
+			fd.AddError("overall", err.Error())
+			retargetContactModal(w, r, *oppty, fd)
 			return
 		}
 
-		templates.ContactModal(oppty).Render(r.Context(), w)
+		templates.ContactModal(oppty, fd).Render(r.Context(), w)
 	}
 }
 
@@ -354,39 +362,65 @@ func HandleAttachmentModal(opptyRepo opportunity.Repository, docRepo document.Re
 func HandleAddNewContactToOppty(opptyRepo opportunity.Repository, contactRepo contact.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		newContact, err := newContactFromRequest(r)
+		var fd helpers.FormData
 		if err != nil {
-			helpers.WriteError(w, err)
+			allErrors := err
+			user, err := userFromRequest(r)
+			if err != nil {
+				allErrors = errors.Join(allErrors, err)
+			}
+			oppty, err := opptyFromRequest(r, opptyRepo, user)
+			if err != nil {
+				allErrors = errors.Join(allErrors, err)
+			}
+			fd.AddError("overall", allErrors.Error())
+			retargetContactModal(w, r, *oppty, fd)
 			return
 		}
 
 		user, err := userFromRequest(r)
 		if err != nil {
-			helpers.WriteError(w, errors.New("No user available"))
+			allErrors := err
+			oppty, err := opptyFromRequest(r, opptyRepo, user)
+			if err != nil {
+				allErrors = errors.Join(allErrors, err)
+			}
+			fd.AddError("overall", allErrors.Error())
+			retargetContactModal(w, r, *oppty, fd)
 			return
 		}
 
 		err = contactRepo.CreateContact(newContact, *user)
 		if err != nil {
-			helpers.WriteError(w, err)
+			allErrors := err
+			oppty, err := opptyFromRequest(r, opptyRepo, user)
+			if err != nil {
+				allErrors = errors.Join(allErrors, err)
+			}
+			fd.AddError("overall", allErrors.Error())
+			retargetContactModal(w, r, *oppty, fd)
 			return
 		}
 
 		oppty, err := opptyFromRequest(r, opptyRepo, user)
 		if err != nil {
-			helpers.WriteError(w, err)
+			fd.AddError("overall", err.Error())
+			retargetContactModal(w, r, *oppty, fd)
 			return
 		}
 
 		err = opptyRepo.AddContact(oppty, *newContact)
 		if err != nil {
-			helpers.WriteError(w, err)
+			fd.AddError("overall", err.Error())
+			retargetContactModal(w, r, *oppty, fd)
 			return
 		}
 
 		// db stuff done, it's rendering time
 		contacts, err := opptyRepo.GetAllContacts(oppty)
 		if err != nil {
-			helpers.WriteError(w, err)
+			fd.AddError("overall", err.Error())
+			retargetContactModal(w, r, *oppty, fd)
 			return
 		}
 
@@ -482,4 +516,13 @@ func retargetAttachmentModal(
 	fd helpers.FormData) {
 	w.Header().Add("HX-Retarget", "#attachment-modal")
 	templates.AttachmentModal(oppty, docs, fd).Render(r.Context(), w)
+}
+
+func retargetContactModal(
+	w http.ResponseWriter,
+	r *http.Request,
+	oppty opportunity.Opportunity,
+	fd helpers.FormData) {
+	w.Header().Add("HX-Retarget", "#contact-modal")
+	templates.ContactModal(&oppty, fd).Render(r.Context(), w)
 }
