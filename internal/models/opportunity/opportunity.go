@@ -70,6 +70,7 @@ type Repository interface {
 	GetAllDocuments(oppty *Opportunity, user *user.User) ([]document.Document, error)
 	AddContact(oppty *Opportunity, contact contact.Contact) error
 	GetAllContacts(oppty *Opportunity) ([]contact.Contact, error)
+	UpdateStatus(oppty *Opportunity, status status.Status) error
 }
 
 type OpportunityModel struct {
@@ -343,4 +344,20 @@ func (g *OpportunityModel) GetAllContacts(oppty *Opportunity) ([]contact.Contact
 		contacts = append(contacts, c)
 	}
 	return contacts, nil
+}
+
+func (g *OpportunityModel) UpdateStatus(oppty *Opportunity, status status.Status) error {
+	_, err := g.DB.Exec(`
+		INSERT INTO statuses (
+			name,
+			note,
+			date,
+			opportunity_id
+		) VALUES ( ?, ?, ?, ? );
+`,
+		status.Name,
+		status.Note,
+		status.Date,
+		oppty.ID)
+	return err
 }

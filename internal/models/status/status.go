@@ -1,21 +1,28 @@
 package status
 
 import (
-    "time"
+	"time"
 )
 
 const (
 	None          = "None"
 	Applied       = "Applied"
-	Rejected      = "Rejected"
 	FollowedUp    = "Followed Up"
+	Interview     = "Interview"
 	Pending       = "Pending"
-	Offer         = "Offer"
-	AcceptedOffer = "Accepted Offer"
+	OfferExtended = "Offer Extended"
+	OfferAccepted = "Offer Accepted"
+	Rejected      = "Rejected"
+	Closed        = "Closed"
+	Archived      = "Archived"
 )
 
 type Status struct {
 	Name string
 	Note string
-    Date time.Time
+	Date time.Time
+}
+
+func (s Status) IsEmpty() bool {
+	return s.Name == "" || s.Date.IsZero()
 }

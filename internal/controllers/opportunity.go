@@ -239,7 +239,7 @@ func newOpportunityFromRequest(r *http.Request) (*opportunity.Opportunity, error
 			initialStatus.Date = t
 		}
 	}
-	o.Statuses = []status.Status{ initialStatus }
+	o.Statuses = []status.Status{initialStatus}
 	user, err := userFromRequest(r)
 	if user == nil {
 		return o, errors.New("No user available to associate with opportunity")
@@ -435,6 +435,74 @@ func HandleAddNewContactToOppty(opptyRepo opportunity.Repository, contactRepo co
 	}
 }
 
+func HandleStatusModal(opptyRepo opportunity.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user, err := userFromRequest(r)
+		var fd helpers.FormData
+		if err != nil {
+			fd.AddError("overall", err.Error())
+			oppty, err := opptyFromRequest(r, opptyRepo, user)
+			if err != nil {
+				fd.AddError("overall", err.Error())
+			}
+			retargetStatusModal(w, r, *oppty, fd)
+			return
+		}
+		oppty, err := opptyFromRequest(r, opptyRepo, user)
+		if err != nil {
+			fd.AddError("overall", err.Error())
+			retargetStatusModal(w, r, *oppty, fd)
+			return
+		}
+		templates.StatusModal(*oppty, fd).Render(r.Context(), w)
+		return
+	}
+}
+
+func HandleUpdateStatus(opptyRepo opportunity.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var fd helpers.FormData
+		status, err := newStatusFromRequest(r)
+		if status.IsEmpty() {
+			fd.AddError("overall", "Unable to update status with provided data")
+			user, err := userFromRequest(r)
+			if err != nil {
+				fd.AddError("overall", err.Error())
+			}
+			oppty, err := opptyFromRequest(r, opptyRepo, user)
+			if err != nil {
+				fd.AddError("overall", err.Error())
+			}
+			retargetStatusModal(w, r, *oppty, fd)
+			return
+		}
+		user, err := userFromRequest(r)
+		if err != nil {
+			oppty, err := opptyFromRequest(r, opptyRepo, user)
+			if err != nil {
+				fd.AddError("overall", err.Error())
+			}
+			retargetStatusModal(w, r, *oppty, fd)
+			return
+		}
+		oppty, err := opptyFromRequest(r, opptyRepo, user)
+		if err != nil {
+			fd.AddError("overall", err.Error())
+			retargetStatusModal(w, r, *oppty, fd)
+			return
+		}
+		err = opptyRepo.UpdateStatus(oppty, *status)
+		if err != nil {
+			fd.AddError("overall", err.Error())
+			retargetStatusModal(w, r, *oppty, fd)
+			return
+		}
+
+		oppty.Statuses = append(oppty.Statuses, *status)
+		templates.StatusTable(oppty.Statuses).Render(r.Context(), w)
+	}
+}
+
 func userFromRequest(r *http.Request) (*user.User, error) {
 	if u, ok := r.Context().Value("user").(*user.User); !ok {
 		return u, errors.New("Unable to retrieve user from context.")
@@ -480,7 +548,26 @@ func newContactFromRequest(r *http.Request) (*contact.Contact, error) {
 	}
 
 	return &c, nil
+}
 
+func newStatusFromRequest(r *http.Request) (*status.Status, error) {
+	var s status.Status
+
+	err := r.ParseForm()
+	if err != nil {
+		return &s, err
+	}
+
+	s.Name = r.PostForm.Get("status-name")
+	date := r.PostForm.Get("status-date")
+	fmt.Println(date)
+	t, err := time.Parse(time.DateOnly, date)
+	if err != nil {
+		return &s, err
+	}
+	s.Date = t
+	s.Note = r.PostForm.Get("status-note")
+	return &s, nil
 }
 
 // TODO: How to update an existing opportunity?
@@ -532,4 +619,13 @@ func retargetContactModal(
 	fd helpers.FormData) {
 	w.Header().Add("HX-Retarget", "#contact-modal")
 	templates.ContactModal(&oppty, fd).Render(r.Context(), w)
+}
+
+func retargetStatusModal(
+	w http.ResponseWriter,
+	r *http.Request,
+	oppty opportunity.Opportunity,
+	fd helpers.FormData) {
+	w.Header().Add("HX-Retarget", "#status-modal")
+	templates.StatusModal(oppty, fd).Render(r.Context(), w)
 }

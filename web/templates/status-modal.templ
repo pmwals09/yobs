@@ -1,0 +1,40 @@
+package templates
+
+import (
+	"github.com/pmwals09/yobs/internal/models/opportunity"
+	"github.com/pmwals09/yobs/internal"
+)
+
+templ StatusModal(oppty opportunity.Opportunity, fd helpers.FormData) {
+@Modal("status-modal") {
+<h2 class="text=[1.5em] mb-4">Add a Status Update</h2>
+<form method="POST" action={ templ.SafeURL(insertIDIntoString("/opportunities/{}/update-status", oppty.ID)) } hx-post={
+	insertIDIntoString("/opportunities/{}/update-status", oppty.ID) } hx-target="#status-table">
+	<section class="grid grid-cols-2 gap-y-2">
+		<label for="status-name">Status Name</label>
+		<div>
+			<input name="status-name" type="text" list="available-statuses" />
+			<datalist id="available-statuses">
+				<option>None</option>
+				<option>Applied</option>
+				<option>Followed Up</option>
+				<option>Interview</option>
+				<option>Pending</option>
+				<option>Offer Extended</option>
+				<option>Offer Accepted</option>
+				<option>Rejected</option>
+				<option>Closed</option>
+				<option>Archived</option>
+			</datalist>
+		</div>
+		<label for="status-date">Status Update Date</label>
+		<input type="date" name="status-date" value="2024-05-16" />
+		<label for="status-note">Status Update Notes</label>
+		<textarea name="status-note"></textarea>
+	</section>
+	<input type="submit" name="status-submit" value="Update Status"
+		class="bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer my-3" />
+</form>
+@RenderStandardError(fd.Errors["overall"])
+}
+}

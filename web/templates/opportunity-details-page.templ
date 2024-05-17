@@ -1,7 +1,6 @@
 package templates
 
 import (
-
 	helpers "github.com/pmwals09/yobs/internal"
 	"github.com/pmwals09/yobs/internal/models/user"
 	"github.com/pmwals09/yobs/internal/models/document"
@@ -27,25 +26,23 @@ templ OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocum
 			</dl>
 		</section>
 		<section class="mb-4">
-			<h2 class="text-[1.5em]">Status</h2>
-				<table class="table-auto border-collapse w-full mb-4" id="attachments-table">
-					<thead>
-						<tr>
-							<th class="border-b text-left">Status</th>
-							<th class="border-b text-left">Date</th>
-							<th class="border-b text-left">Note</th>
-						</tr>
-					</thead>
-					<tbody>
-						for _, status := range od.Oppty.Statuses {
-							<tr>
-								<td class="border-b">{ status.Name }</td>
-								<td class="border-b">{ formatApplicationDate(status.Date) }</td>
-								<td class="border-b">{ status.Note }</td>
-							</tr>
-						}
-					</tbody>
-				</table>
+			<h2 class="text-[1.5em]">Job Description</h2>
+			{ od.Oppty.Description }
+		</section>
+		<section class="mb-4">
+			<div class="flex gap-2 items-center">
+				<h2 class="text-[1.5em]">Status</h2>
+				<button
+					class="bg-gray-400 px-2 py-1 rounded-full block hover:cursor-pointer my-3"
+					hx-get={ insertIDIntoString("/opportunities/{}/status-modal", od.Oppty.ID) }
+					hx-target="#status-modal"
+					hx-trigger="click"
+				>
+					Add
+				</button>
+			</div>
+			@StatusTable(od.Oppty.Statuses)
+			<div id="status-modal"></div>
 		</section>
 		<section class="mb-4">
 			<div class="flex gap-2 items-center">
@@ -60,10 +57,6 @@ templ OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocum
 			<div id="contact-modal"></div>
 			@ContactsTable(od.Contacts)
 			@RenderStandardError(fd.Errors["contacts"])
-		</section>
-		<section class="mb-4">
-			<h2 class="text-[1.5em]">Job Description</h2>
-			{ od.Oppty.Description }
 		</section>
 		<section class="mb-4">
 			<h2 class="text-[1.5em]">Tasks</h2>
