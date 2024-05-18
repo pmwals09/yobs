@@ -235,7 +235,7 @@ func (g *OpportunityModel) UpdateOpportunity(opp *Opportunity) error {
 			company_name = ?,
 			role = ?,
 			description = ?,
-			url = ?,
+			url = ?
 		WHERE id = ? AND user_id = ?;
 	`,
 		opp.CompanyName,

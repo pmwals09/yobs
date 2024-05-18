@@ -35,36 +35,25 @@ func HandleRegisterUser(repo user.Repository) http.HandlerFunc {
 			14,
 		)
 		if err != nil {
-			data := helpers.FormData{
-				Errors: map[string]string{
-					"password":       "Invalid password - please try another",
-					"passwordRepeat": "Invalid password - please try another",
-				},
-				Values: newUserInfo,
-			}
+			var data helpers.FormData
+			data.AddError("password", "Invalid password - please try another")
+			data.AddError("passwordRepeat", "Invalid password - please try another")
+			data.Values = newUserInfo
 			templates.SignupPage(nil, data).Render(r.Context(), w)
 			return
 		}
 		u.Password = string(pwHash)
 
 		if err = repo.CreateUser(u); err != nil {
-			data := helpers.FormData{
-				Errors: map[string]string{
-					"overall": "Error creating user",
-				},
-				Values: newUserInfo,
-			}
+			var data helpers.FormData
+			data.AddError("overall", "Error creating user")
+			data.Values = newUserInfo
 			templates.SignupPage(nil, data).Render(r.Context(), w)
 			return
 		}
 
-		data := helpers.FormData{
-			Errors: map[string]string{
-				"overall": "You're registered! <a href='/login'>Login</a> using these credentials.",
-			},
-			Values: map[string]string{},
-		}
-
+		var data helpers.FormData
+		data.AddError("overall", "You're registered! <a href='/login'>Login</a> using these credentials.")
 		templates.SignupPage(nil, data).Render(r.Context(), w)
 		return
 	}
@@ -76,12 +65,12 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository) h
 		newUserInfo := newUserFromRequest(r)
 
 		if newUserInfo["usernameOrEmail"] == "" || newUserInfo["password"] == "" {
-			formErrors := map[string]string{}
+			formErrors := make(map[string][]string)
 			if newUserInfo["usernameOrEmail"] == "" {
-				formErrors["usernameOrEmail"] = "Must include username"
+				formErrors["usernameOrEmail"] = []string{"Must include username"}
 			}
 			if newUserInfo["password"] == "" {
-				formErrors["password"] = "Must include password"
+				formErrors["password"] = []string{"Must include password"}
 			}
 			f := helpers.FormData{
 				Errors: formErrors,
@@ -97,11 +86,8 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository) h
 		)
 
 		if err != nil {
-			f := helpers.FormData{
-				Errors: map[string]string{
-					"overall": "Unable to log in - please try again",
-				},
-			}
+			var f helpers.FormData
+			f.AddError("overall", "Unable to log in - please try again")
 			templates.LoginPage(nil, f).Render(r.Context(), w)
 			return
 		}
@@ -110,11 +96,8 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository) h
 			[]byte(user.Password),
 			[]byte(newUserInfo["password"]),
 		); err != nil {
-			f := helpers.FormData{
-				Errors: map[string]string{
-					"overall": "Unable to log in - please try again",
-				},
-			}
+			var f helpers.FormData
+			f.AddError("overall", "Unable to log in - please try again")
 			templates.LoginPage(nil, f).Render(r.Context(), w)
 			return
 		}
@@ -184,29 +167,29 @@ func newUserFromRequest(r *http.Request) map[string]string {
 	return newUserInfo
 }
 
-func validateUserInfo(userInfo map[string]string, repo user.Repository) (map[string]string, error) {
-	errorData := map[string]string{}
+func validateUserInfo(userInfo map[string]string, repo user.Repository) (map[string][]string, error) {
+	errorData := make(map[string][]string)
 	errorMessages := []string{}
 
 	// Confirm that the necessary fields have been filled out
 	if userInfo["username"] == "" {
 		errorMessage := "Must include a username"
-		errorData["username"] = errorMessage
+		errorData["username"] = []string{errorMessage}
 		errorMessages = append(errorMessages, errorMessage)
 	}
 	if userInfo["email"] == "" {
 		errorMessage := "Must include an email address"
-		errorData["email"] = errorMessage
+		errorData["email"] = []string{errorMessage}
 		errorMessages = append(errorMessages, errorMessage)
 	}
 	if userInfo["password"] == "" {
 		errorMessage := "Must include a password"
-		errorData["password"] = errorMessage
+		errorData["password"] = []string{errorMessage}
 		errorMessages = append(errorMessages, errorMessage)
 	}
 	if userInfo["passwordRepeat"] == "" {
 		errorMessage := "Must repeat the password"
-		errorData["passwordRepeat"] = errorMessage
+		errorData["passwordRepeat"] = []string{errorMessage}
 		errorMessages = append(errorMessages, errorMessage)
 	}
 
@@ -217,8 +200,8 @@ func validateUserInfo(userInfo map[string]string, repo user.Repository) (map[str
 	// Confirm that the password fields match
 	if userInfo["password"] != userInfo["passwordRepeat"] {
 		errorMessage := "Password fields must match"
-		errorData["passwordRepeat"] = errorMessage
-		errorData["password"] = errorMessage
+		errorData["passwordRepeat"] = []string{errorMessage}
+		errorData["password"] = []string{errorMessage}
 		errorMessages = append(errorMessages, errorMessage)
 	}
 
@@ -229,15 +212,15 @@ func validateUserInfo(userInfo map[string]string, repo user.Repository) (map[str
 	)
 	if potentialUser.ID != 0 {
 		errorMessage := "Email or username already in use. You can log in <a href='/login'>here.</a>"
-		errorData["email"] = errorMessage
-		errorData["username"] = errorMessage
+		errorData["email"] = []string{errorMessage}
+		errorData["username"] = []string{errorMessage}
 		errorMessages = append(errorMessages, errorMessage)
 	}
 
 	if err != nil && err != sql.ErrNoRows {
 		errorMessage := "Error validating username and email"
-		errorData["email"] = errorMessage
-		errorData["username"] = errorMessage
+		errorData["email"] = []string{errorMessage}
+		errorData["username"] = []string{errorMessage}
 		errorMessages = append(errorMessages, errorMessage)
 	}
 

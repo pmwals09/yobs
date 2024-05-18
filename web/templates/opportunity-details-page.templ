@@ -1,81 +1,82 @@
 package templates
 
 import (
-	helpers "github.com/pmwals09/yobs/internal"
-	"github.com/pmwals09/yobs/internal/models/user"
-	"github.com/pmwals09/yobs/internal/models/document"
+helpers "github.com/pmwals09/yobs/internal"
+"github.com/pmwals09/yobs/internal/models/user"
+"github.com/pmwals09/yobs/internal/models/document"
 )
 
 templ OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocuments []document.Document, fd helpers.FormData) {
-	@base(user) {
-		<h1 class="text-center text-[2em]">
-			{ od.Oppty.CompanyName } - { od.Oppty.Role }
-		</h1>
-		<section class="mb-4">
-			<dl class="grid grid-cols-[min-content_auto] gap-x-4">
-				<dt class="font-bold whitespace-nowrap">Company Name:</dt>
-				<dd>{ od.Oppty.CompanyName }</dd>
-				<dt class="font-bold whitespace-nowrap">Role:</dt>
-				<dd>{ od.Oppty.Role }</dd>
-				<dt class="font-bold whitespace-nowrap">URL:</dt>
-				<dd>{ od.Oppty.URL }</dd>
-				<dt class="font-bold whitespace-nowrap">Latest Status:</dt>
-				<dd>{ string(od.Oppty.Statuses[0].Name) }</dd>
-				<dt class="font-bold whitespace-nowrap">Application Date:</dt>
-				<dd>{ formatApplicationDate(od.Oppty.Statuses[0].Date) }</dd>
-			</dl>
-		</section>
-		<section class="mb-4">
-			<h2 class="text-[1.5em]">Job Description</h2>
-			{ od.Oppty.Description }
-		</section>
-		<section class="mb-4">
-			<div class="flex gap-2 items-center">
-				<h2 class="text-[1.5em]">Status</h2>
-				<button
-					class="bg-gray-400 px-2 py-1 rounded-full block hover:cursor-pointer my-3"
-					hx-get={ insertIDIntoString("/opportunities/{}/status-modal", od.Oppty.ID) }
-					hx-target="#status-modal"
-					hx-trigger="click"
-				>
-					Add
-				</button>
-			</div>
-			@StatusTable(od.Oppty.Statuses)
-			<div id="status-modal"></div>
-		</section>
-		<section class="mb-4">
-			<div class="flex gap-2 items-center">
-				<h2 class="text-[1.5em]">Contacts</h2>
-				<button
-					class="bg-gray-400 px-2 py-1 rounded-full block hover:cursor-pointer my-3"
-					hx-get={ insertIDIntoString("/opportunities/{}/contact-modal", od.Oppty.ID) }
-					hx-target="#contact-modal"
-					hx-trigger="click"
-				>Add</button>
-			</div>
-			<div id="contact-modal"></div>
-			@ContactsTable(od.Contacts)
-			@RenderStandardError(fd.Errors["contacts"])
-		</section>
-		<section class="mb-4">
-			<h2 class="text-[1.5em]">Tasks</h2>
-		</section>
-		<section id="attachments-section" class="mb-4">
-			<div class="flex gap-2 items-center">
-				<h2 class="text-[1.5em]">Attachments</h2>
-				<button
-					class="bg-gray-400 px-2 py-1 rounded-full block hover:cursor-pointer my-3"
-					hx-get={ insertIDIntoString("/opportunities/{}/attachment-modal", od.Oppty.ID) }
-					hx-target="#attachment-modal"
-					hx-trigger="click"
-				>Add</button>
-			</div>
-			<div id="attachment-modal"></div>
-			if od.Documents != nil && len(od.Documents) > 0 {
-				@AttachmentsTable(od.Documents)
-			}
-			@RenderStandardError(fd.Errors["document-table"])
-		</section>
+@base(user) {
+<h1 class="text-center text-[2em]">
+	{ od.Oppty.CompanyName } - { od.Oppty.Role }
+</h1>
+<section class="mb-4">
+	<div class="flex gap-y-2">
+		<h2 class="text-[1.5em]">Details</h2>
+		<button
+			class="bg-gray-400 px-2 py-1 rounded-full block hover:cursor-pointer my-3"
+			hx-get={ insertIDIntoString("/opportunities/{}/edit-details", od.Oppty.ID) }
+			hx-target="#opportunity-detail-def-list"
+			hx-trigger="click"
+		>
+			Edit
+		</button>
+	</div>
+	<dl class="grid grid-cols-[min-content_auto] gap-x-4" id="opportunity-detail-def-list">
+		<dt class="font-bold whitespace-nowrap">Company Name:</dt>
+		<dd>{ od.Oppty.CompanyName }</dd>
+		<dt class="font-bold whitespace-nowrap">Role:</dt>
+		<dd>{ od.Oppty.Role }</dd>
+		<dt class="font-bold whitespace-nowrap">URL:</dt>
+		<dd>{ od.Oppty.URL }</dd>
+		<dt class="font-bold whitespace-nowrap">Latest Status:</dt>
+		<dd>{ string(od.Oppty.Statuses[0].Name) }</dd>
+		<dt class="font-bold whitespace-nowrap">Application Date:</dt>
+		<dd>{ formatApplicationDate(od.Oppty.Statuses[0].Date) }</dd>
+		<dt class="font-bold whitespace-nowrap">Job Description</dt>
+		<dd>{ od.Oppty.Description }</dd>
+	</dl>
+</section>
+<section class="mb-4">
+	<div class="flex gap-2 items-center">
+		<h2 class="text-[1.5em]">Status</h2>
+		<button class="bg-gray-400 px-2 py-1 rounded-full block hover:cursor-pointer my-3" hx-get={
+			insertIDIntoString("/opportunities/{}/status-modal", od.Oppty.ID) } hx-target="#status-modal"
+			hx-trigger="click">
+			Add
+		</button>
+	</div>
+	@StatusTable(od.Oppty.Statuses)
+	<div id="status-modal"></div>
+</section>
+<section class="mb-4">
+	<div class="flex gap-2 items-center">
+		<h2 class="text-[1.5em]">Contacts</h2>
+		<button class="bg-gray-400 px-2 py-1 rounded-full block hover:cursor-pointer my-3" hx-get={
+			insertIDIntoString("/opportunities/{}/contact-modal", od.Oppty.ID) } hx-target="#contact-modal"
+			hx-trigger="click">Add</button>
+	</div>
+	<div id="contact-modal"></div>
+	@ContactsTable(od.Contacts)
+	@RenderStandardError(fd.Errors["contacts"])
+</section>
+<section class="mb-4">
+	<h2 class="text-[1.5em]">Tasks</h2>
+</section>
+<section id="attachments-section" class="mb-4">
+	<div class="flex gap-2 items-center">
+		<h2 class="text-[1.5em]">Attachments</h2>
+		<button class="bg-gray-400 px-2 py-1 rounded-full block hover:cursor-pointer my-3" hx-get={
+			insertIDIntoString("/opportunities/{}/attachment-modal", od.Oppty.ID) } hx-target="#attachment-modal"
+			hx-trigger="click">Add</button>
+	</div>
+	<div id="attachment-modal"></div>
+	if od.Documents != nil && len(od.Documents) > 0 {
+	@AttachmentsTable(od.Documents)
 	}
+	@RenderStandardError(fd.Errors["document-table"])
+</section>
+	@RenderStandardError(fd.Errors["overall"])
+}
 }

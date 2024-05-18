@@ -24,7 +24,7 @@
 - [x] As a user, I want to be able to attach a contact to an opportunity to keep track of who I talk to in the application process
 - [x] As a user, I want to be able to add status updates to an opportunity to keep track of the state of an application process
   - [x] Allow the user to name their own statuses, but provide defaults
-- [ ] As a user, I want to be able to attach correspondence to an opportunity to keep track of the process of applying
+- [x] As a user, I want to be able to attach correspondence to an opportunity to keep track of the process of applying
 - [ ] As a user, I want to be able to edit an existing opportunity, in case I make a typo or something
 - [ ] As a user, I want to be able to edit my profile, in case I make a typo or something
 
@@ -48,3 +48,9 @@
 - [ ] As a user, I want to be able to see all of the documents I've attached to my many applications, so I can manage my materials better
 - [ ] As a user, I want to see all of the contacts that I've used in my job search, so I can better plan follow-up communications in the future
 - [ ] As a user, I want to see a status of my applications
+
+## v2.1
+
+### Functionality Improvements
+
+- [ ] As a user, I would like to return to an opportunity immediately instead of a redirect, so I don't experience an irritating UI hiccup

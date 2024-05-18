@@ -194,7 +194,7 @@ func HandleUploadToOppty(
 
 		docs, err := opptyRepo.GetAllDocuments(oppty, user)
 		if err != nil {
-			fd.Errors["overall"] = "Unable to retrieve associated documents after submission."
+			fd.AddError("overall", "Unable to retrieve associated documents after submission.")
 			retargetAttachmentModal(w, r, *oppty, docs, fd)
 			return
 		}
@@ -503,6 +503,88 @@ func HandleUpdateStatus(opptyRepo opportunity.Repository) http.HandlerFunc {
 	}
 }
 
+func HandleGetEditDetailsForm(opptyRepo opportunity.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var fd helpers.FormData
+		u, err := userFromRequest(r)
+		if err != nil {
+			fd.AddError("overall", err.Error())
+		}
+		oppty, err := opptyFromRequest(r, opptyRepo, u)
+		if err != nil {
+			fd.AddError("overall", err.Error())
+		}
+		templates.OpportunityDetailForm(*oppty, fd).Render(r.Context(), w)
+	}
+}
+
+func HandleUpdate(opptyRepo opportunity.Repository, docRepo document.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var fd helpers.FormData
+		var od helpers.OpptyDetails
+		u, err := userFromRequest(r)
+		if err != nil {
+			fd.AddError("overall", err.Error())
+		}
+		oppty, err := opptyFromRequest(r, opptyRepo, u)
+		if err != nil {
+			fd.AddError("overall", err.Error())
+		}
+		err = updateOpptyFromRequest(r, oppty)
+		if err != nil {
+			fd.AddError("overall", err.Error())
+			// NOTE: If we've got this far, we shouldn't error out here when we
+			// run this query again
+			oppty, _ := opptyFromRequest(r, opptyRepo, u)
+			od.Oppty = *oppty
+			docs, err := opptyRepo.GetAllDocuments(oppty, u)
+			if err != nil {
+				fd.AddError("overall", err.Error())
+			}
+			templates.OpportunityDetailsPage(u, od, docs, fd).Render(r.Context(), w)
+			return
+		}
+
+		err = opptyRepo.UpdateOpportunity(oppty)
+		if err != nil {
+			fd.AddError("overall", err.Error())
+			// NOTE: If we've got this far, we shouldn't error out here when we
+			// run this query again
+			oppty, _ := opptyFromRequest(r, opptyRepo, u)
+			od.Oppty = *oppty
+			docs, err := opptyRepo.GetAllDocuments(oppty, u)
+			if err != nil {
+				fd.AddError("overall", err.Error())
+			}
+			templates.OpportunityDetailsPage(u, od, docs, fd).Render(r.Context(), w)
+			return
+		}
+		helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%d", oppty.ID), http.StatusFound)
+		return
+	}
+}
+
+func updateOpptyFromRequest(r *http.Request, oppty *opportunity.Opportunity) error {
+	err := r.ParseForm()
+	if err != nil {
+		return err
+	}
+
+	company := r.PostForm.Get("company-name")
+	oppty.CompanyName = company
+	role := r.PostForm.Get("company-role")
+	oppty.Role = role
+	url := r.PostForm.Get("role-url")
+	oppty.URL = url
+	description := r.PostForm.Get("job-description")
+	oppty.Description = description
+
+	if oppty.IsEmpty() {
+		return errors.New("Insufficient data to update opportunity.")
+	}
+	return nil
+}
+
 func userFromRequest(r *http.Request) (*user.User, error) {
 	if u, ok := r.Context().Value("user").(*user.User); !ok {
 		return u, errors.New("Unable to retrieve user from context.")
@@ -568,19 +650,6 @@ func newStatusFromRequest(r *http.Request) (*status.Status, error) {
 	s.Date = t
 	s.Note = r.PostForm.Get("status-note")
 	return &s, nil
-}
-
-// TODO: How to update an existing opportunity?
-
-func HandleEditOpptyPage(opptyRepo opportunity.Repository, docRepo document.Repository) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		templates.OpportunityEditPage(nil).Render(r.Context(), w)
-		// get the id out of the url
-		// get the opportunity
-		// get the associated documents
-		// populate a form for editing the opportunity
-		// return the form
-	}
 }
 
 // TODO: Update an existing opportunity

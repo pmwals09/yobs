@@ -33,10 +33,10 @@ func UnsafeRawHtml(html string) templ.Component {
 	})
 }
 
-func RenderStandardError(html string) templ.Component {
-	if html == "" {
+func RenderStandardError(html []string) templ.Component {
+	if len(html) == 0 {
 		return UnsafeRawHtml("")
 	}
 	startTag := "<p class='text-red-600'>"
-	return UnsafeRawHtml(startTag + html + "</p>")
+	return UnsafeRawHtml(startTag + strings.Join(html, "\n") + "</p>")
 }

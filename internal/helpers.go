@@ -36,15 +36,18 @@ func GetListFuncMap() template.FuncMap {
 }
 
 type FormData struct {
-	Errors map[string]string
+	Errors map[string][]string
 	Values map[string]string
 }
 
 func (fd *FormData) AddError(key, val string) {
 	if fd.Errors == nil {
-		fd.Errors = make(map[string]string)
+		fd.Errors = make(map[string][]string)
 	}
-	fd.Errors[key] = val
+	if fd.Errors[key] == nil {
+		fd.Errors[key] = make([]string, 0)
+	}
+	fd.Errors[key] = append(fd.Errors[key], val)
 }
 
 type ProfileArgs struct {
