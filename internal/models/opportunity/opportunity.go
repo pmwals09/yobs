@@ -77,6 +77,25 @@ type OpportunityModel struct {
 	DB *sql.DB
 }
 
+type NullableStatus struct {
+	ID   sql.NullInt64
+	Name sql.NullString
+	Note sql.NullString
+	Date sql.NullTime
+}
+
+func (n NullableStatus) ToStatus() (status.Status, bool) {
+	var out status.Status
+	if !n.ID.Valid {
+		return out, false
+	}
+	out.ID = uint(n.ID.Int64)
+	out.Name = n.Name.String
+	out.Note = n.Note.String
+	out.Date = n.Date.Time
+	return out, true
+}
+
 // Create an opportunity and it's associated initial status entry
 func (g *OpportunityModel) CreateOpportunity(opp *Opportunity) error {
 	if opp.IsEmpty() {
@@ -148,31 +167,35 @@ func (g *OpportunityModel) GetOpportuntyById(opptyId uint, user *user.User) (*Op
 			role,
 			description,
 			url,
+			s.id,
 			name,
 			note,
 			date
-		FROM opportunities o INNER JOIN statuses s ON o.id = s.opportunity_id
+		FROM opportunities o FULL OUTER JOIN statuses s ON o.id = s.opportunity_id
 		WHERE o.id = ? AND user_id = ?
-		ORDER BY date;
+		ORDER BY date DESC;
 	`, opptyId, user.ID)
 	if err != nil {
 		return &oppty, err
 	}
 	for res.Next() {
-		var status status.Status
+		var nStatus NullableStatus
 		err := res.Scan(
 			&oppty.ID,
 			&oppty.CompanyName,
 			&oppty.Role,
 			&oppty.Description,
 			&oppty.URL,
-			&status.Name,
-			&status.Note,
-			&status.Date)
+			&nStatus.ID,
+			&nStatus.Name,
+			&nStatus.Note,
+			&nStatus.Date)
 		if err != nil {
 			return &oppty, err
 		}
-		oppty.Statuses = append(oppty.Statuses, status)
+		if status, ok := nStatus.ToStatus(); ok {
+			oppty.Statuses = append(oppty.Statuses, status)
+		}
 	}
 	oppty.User = user
 
@@ -188,12 +211,13 @@ func (g *OpportunityModel) GetAllOpportunities(user *user.User) ([]Opportunity, 
 			role,
 			description,
 			url,
+			s.id,
 			name,
 			note,
 			date
-		FROM opportunities o INNER JOIN statuses s ON o.id = s.opportunity_id
+		FROM opportunities o FULL OUTER JOIN statuses s ON o.id = s.opportunity_id
 		WHERE user_id = ?
-		ORDER BY date;
+		ORDER BY date DESC;
 	`, user.ID)
 
 	if err != nil {
@@ -202,24 +226,29 @@ func (g *OpportunityModel) GetAllOpportunities(user *user.User) ([]Opportunity, 
 	opptyMap := make(map[uint]Opportunity)
 	for rows.Next() {
 		var oppty Opportunity
-		var status status.Status
+		var nStatus NullableStatus
 		err := rows.Scan(
 			&oppty.ID,
 			&oppty.CompanyName,
 			&oppty.Role,
 			&oppty.Description,
 			&oppty.URL,
-			&status.Name,
-			&status.Note,
-			&status.Date)
+			&nStatus.ID,
+			&nStatus.Name,
+			&nStatus.Note,
+			&nStatus.Date)
 		if err != nil {
 			return opptys, err
 		}
 		if val, ok := opptyMap[oppty.ID]; ok {
-			val.Statuses = append(val.Statuses, status)
+			if status, sOk := nStatus.ToStatus(); sOk {
+				val.Statuses = append(val.Statuses, status)
+			}
 			opptyMap[oppty.ID] = val
 		} else {
-			oppty.Statuses = append(oppty.Statuses, status)
+			if status, sOk := nStatus.ToStatus(); sOk {
+				oppty.Statuses = append(oppty.Statuses, status)
+			}
 			oppty.User = user
 			opptyMap[oppty.ID] = oppty
 		}

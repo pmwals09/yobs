@@ -42,7 +42,7 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(od.Oppty.CompanyName)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 12, Col: 23}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 12, Col: 25}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -55,114 +55,43 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(od.Oppty.Role)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 12, Col: 43}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 12, Col: 45}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</h1><section class=\"mb-4\"><div class=\"flex gap-y-2\"><h2 class=\"text-[1.5em]\">Details</h2><button class=\"bg-gray-400 px-2 py-1 rounded-full block hover:cursor-pointer my-3\" hx-get=\"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</h1><section class=\"mb-4\"><div class=\"flex items-center gap-2\"><h2 class=\"text-[1.5em]\">Details</h2><button class=\"bg-gray-400 px-2 py-1 rounded-full block hover:cursor-pointer my-3\" hx-get=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(insertIDIntoString("/opportunities/{}/edit-details", od.Oppty.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 19, Col: 77}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 19, Col: 79}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-target=\"#opportunity-detail-def-list\" hx-trigger=\"click\">Edit</button></div><dl class=\"grid grid-cols-[min-content_auto] gap-x-4\" id=\"opportunity-detail-def-list\"><dt class=\"font-bold whitespace-nowrap\">Company Name:</dt><dd>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-target=\"#opportunity-detail-def-list\" hx-trigger=\"click\">Edit</button></div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = OpptyDetailGrid(od.Oppty, false).Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</section><section class=\"mb-4\"><div class=\"flex gap-2 items-center\"><h2 class=\"text-[1.5em]\">Status</h2><button class=\"bg-gray-400 px-2 py-1 rounded-full block hover:cursor-pointer my-3\" hx-get=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var6 string
-			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(od.Oppty.CompanyName)
+			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(insertIDIntoString("/opportunities/{}/status-modal", od.Oppty.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 28, Col: 28}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 33, Col: 79}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</dd><dt class=\"font-bold whitespace-nowrap\">Role:</dt><dd>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var7 string
-			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(od.Oppty.Role)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 30, Col: 21}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</dd><dt class=\"font-bold whitespace-nowrap\">URL:</dt><dd>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var8 string
-			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(od.Oppty.URL)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 32, Col: 20}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</dd><dt class=\"font-bold whitespace-nowrap\">Latest Status:</dt><dd>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var9 string
-			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(string(od.Oppty.Statuses[0].Name))
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 34, Col: 41}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</dd><dt class=\"font-bold whitespace-nowrap\">Application Date:</dt><dd>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var10 string
-			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(formatApplicationDate(od.Oppty.Statuses[0].Date))
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 36, Col: 56}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</dd><dt class=\"font-bold whitespace-nowrap\">Job Description</dt><dd>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var11 string
-			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(od.Oppty.Description)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 38, Col: 28}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</dd></dl></section><section class=\"mb-4\"><div class=\"flex gap-2 items-center\"><h2 class=\"text-[1.5em]\">Status</h2><button class=\"bg-gray-400 px-2 py-1 rounded-full block hover:cursor-pointer my-3\" hx-get=\"")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var12 string
-			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(
-				insertIDIntoString("/opportunities/{}/status-modal", od.Oppty.ID))
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 45, Col: 68}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -170,7 +99,7 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = StatusTable(od.Oppty.Statuses).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = StatusTable(od.Oppty.ID, od.Oppty.Statuses).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -178,13 +107,12 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var13 string
-			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(
-				insertIDIntoString("/opportunities/{}/contact-modal", od.Oppty.ID))
+			var templ_7745c5c3_Var7 string
+			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(insertIDIntoString("/opportunities/{}/contact-modal", od.Oppty.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 57, Col: 69}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 48, Col: 80}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -204,13 +132,12 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var14 string
-			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(
-				insertIDIntoString("/opportunities/{}/attachment-modal", od.Oppty.ID))
+			var templ_7745c5c3_Var8 string
+			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(insertIDIntoString("/opportunities/{}/attachment-modal", od.Oppty.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 71, Col: 72}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/templates/opportunity-details-page.templ`, Line: 65, Col: 83}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

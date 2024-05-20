@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 	"strconv"
 	"time"
 
@@ -462,8 +464,8 @@ func HandleStatusModal(opptyRepo opportunity.Repository) http.HandlerFunc {
 func HandleUpdateStatus(opptyRepo opportunity.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var fd helpers.FormData
-		status, err := newStatusFromRequest(r)
-		if status.IsEmpty() {
+		s, err := newStatusFromRequest(r)
+		if s.IsEmpty() {
 			fd.AddError("overall", "Unable to update status with provided data")
 			user, err := userFromRequest(r)
 			if err != nil {
@@ -491,15 +493,29 @@ func HandleUpdateStatus(opptyRepo opportunity.Repository) http.HandlerFunc {
 			retargetStatusModal(w, r, *oppty, fd)
 			return
 		}
-		err = opptyRepo.UpdateStatus(oppty, *status)
+		err = opptyRepo.UpdateStatus(oppty, *s)
 		if err != nil {
 			fd.AddError("overall", err.Error())
 			retargetStatusModal(w, r, *oppty, fd)
 			return
 		}
 
-		oppty.Statuses = append(oppty.Statuses, *status)
-		templates.StatusTable(oppty.Statuses).Render(r.Context(), w)
+		oppty.Statuses = append(oppty.Statuses, *s)
+		slices.SortFunc(oppty.Statuses, func(a, b status.Status) int {
+			if a.Date.Equal(b.Date) {
+				return 0
+			}
+			if a.Date.After(b.Date) {
+				return -1
+			}
+			return 1
+		})
+		buf := new(bytes.Buffer)
+		templates.StatusTable(oppty.ID, oppty.Statuses).Render(r.Context(), buf)
+		templates.OpptyDetailGrid(*oppty, true).Render(r.Context(), buf)
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(buf.String()))
+		
 	}
 }
 
@@ -560,6 +576,21 @@ func HandleUpdate(opptyRepo opportunity.Repository, docRepo document.Repository)
 			return
 		}
 		helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%d", oppty.ID), http.StatusFound)
+		return
+	}
+}
+
+func HandleDeleteStatus(statusRepo status.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		statusId := chi.URLParam(r, "statusID")
+		opptyId := chi.URLParam(r, "opportunityId")
+		fmt.Println("opptyId", opptyId)
+
+		sId, err := strconv.ParseUint(statusId, 10, 64)
+		err = statusRepo.DeleteStatusByID(uint(sId))
+		if err != nil {
+		}
+		helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%s", opptyId), http.StatusFound)
 		return
 	}
 }

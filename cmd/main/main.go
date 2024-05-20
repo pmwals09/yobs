@@ -19,6 +19,7 @@ import (
 	"github.com/pmwals09/yobs/internal/models/opportunity"
 	"github.com/pmwals09/yobs/internal/models/session"
 	"github.com/pmwals09/yobs/internal/models/user"
+	"github.com/pmwals09/yobs/internal/models/status"
 )
 
 func main() {
@@ -48,6 +49,7 @@ func main() {
 	userRepo := user.UserModel{DB: sqlDb}
 	sessionRepo := session.SessionModel{DB: sqlDb}
 	contactRepo := contact.ContactModel{DB: sqlDb}
+	statusRepo := status.StatusModel{DB: sqlDb}
 
 	r.Get("/", controllers.HandleGetLandingPage())
 	r.Get("/ping", controllers.HandlePing)
@@ -58,12 +60,12 @@ func main() {
 		r.Post("/login", controllers.HandleLogInUser(&userRepo, &sessionRepo))
 		r.Get("/logout", controllers.HandleLogout(&sessionRepo))
 	})
-	r.Mount("/", authenticatedRouter(&opptyRepo, &docRepo, &sessionRepo, &userRepo, &contactRepo))
+	r.Mount("/", authenticatedRouter(&opptyRepo, &docRepo, &sessionRepo, &userRepo, &contactRepo, &statusRepo))
 
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
 
-func authenticatedRouter(opptyRepo opportunity.Repository, docRepo document.Repository, sessionRepo session.Repository, userRepo user.Repository, contactRepo contact.Repository) http.Handler {
+func authenticatedRouter(opptyRepo opportunity.Repository, docRepo document.Repository, sessionRepo session.Repository, userRepo user.Repository, contactRepo contact.Repository, statusRepo status.Repository) http.Handler {
 	r := chi.NewRouter()
 	r.Use(authOnly(sessionRepo, userRepo))
 	r.Get("/home", controllers.HandleGetHomepage(opptyRepo))
@@ -83,6 +85,9 @@ func authenticatedRouter(opptyRepo opportunity.Repository, docRepo document.Repo
 			r.Post("/new-contact", controllers.HandleAddNewContactToOppty(opptyRepo, contactRepo))
 			r.Post("/update-status", controllers.HandleUpdateStatus(opptyRepo))
 			r.Put("/edit", controllers.HandleUpdate(opptyRepo, docRepo))
+			r.Route("/statuses", func(r chi.Router) {
+				r.Delete("/{statusID}", controllers.HandleDeleteStatus(statusRepo))
+			})
 		})
 	})
 	return r
