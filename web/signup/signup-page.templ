@@ -1,0 +1,85 @@
+package signuppage
+
+import (
+	helpers "github.com/pmwals09/yobs/internal"
+	"github.com/pmwals09/yobs/internal/models/user"
+	"github.com/pmwals09/yobs/web/components"
+	"github.com/pmwals09/yobs/web"
+)
+
+templ SignupPage(user *user.User, f helpers.FormData) {
+	@components.Base(user) {
+		<h1 class="text-center text-[2em]">Join us!</h1>
+		<section class="mb-4 w-1/2">
+			<form
+				action="/user/register"
+				method="POST"
+				class="mt-4"
+				hx-post="/user/register"
+				hx-swap="outerHTML"
+				hx-select="#register-user-form"
+				id="register-user-form"
+			>
+				<section class="grid grid-cols-2 gap-y-2">
+					<label for="username" class="self-center">
+						User Name
+					</label>
+					<div>
+						<input
+							type="text"
+							id="username"
+							name="username"
+							value={ f.Values["username"] }
+						/>
+						@templates.RenderStandardError(f.Errors["username"])
+					</div>
+					<label for="email" class="self-center">
+						Email Address
+					</label>
+					<div>
+						<input
+							type="text"
+							id="email"
+							name="email"
+							value={ f.Values["email"] }
+						/>
+						@templates.RenderStandardError(f.Errors["email"])
+					</div>
+					<label for="password" class="self-center">
+						Password
+					</label>
+					<div>
+						<input
+							type="password"
+							id="password"
+							name="password"
+							value={ f.Values["password"] }
+						/>
+						@templates.RenderStandardError(f.Errors["password"] )
+					</div>
+					<label for="password-repeat" class="self-center">
+						Re-enter Password
+					</label>
+					<div>
+						<input
+							type="password"
+							id="password-repeat"
+							name="password-repeat"
+							value={ f.Values["passwordRepeat"] }
+						/>
+						@templates.RenderStandardError(f.Errors["passwordRepeat"] )
+					</div>
+				</section>
+				<section class="my-4">
+					<button
+						type="submit"
+						class="bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer"
+					>
+						Submit
+					</button>
+				</section>
+				@templates.RenderStandardError(f.Errors["overall"])
+			</form>
+		</section>
+	}
+}

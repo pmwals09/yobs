@@ -10,7 +10,8 @@ import (
 	helpers "github.com/pmwals09/yobs/internal"
 	"github.com/pmwals09/yobs/internal/models/session"
 	"github.com/pmwals09/yobs/internal/models/user"
-	"github.com/pmwals09/yobs/web/templates"
+	loginpage "github.com/pmwals09/yobs/web/login"
+	signuppage "github.com/pmwals09/yobs/web/signup"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -23,7 +24,7 @@ func HandleRegisterUser(repo user.Repository) http.HandlerFunc {
 				Errors: errorData,
 				Values: newUserInfo,
 			}
-			templates.SignupPage(nil, data).Render(r.Context(), w)
+			signuppage.SignupPage(nil, data).Render(r.Context(), w)
 			return
 		}
 
@@ -39,7 +40,7 @@ func HandleRegisterUser(repo user.Repository) http.HandlerFunc {
 			data.AddError("password", "Invalid password - please try another")
 			data.AddError("passwordRepeat", "Invalid password - please try another")
 			data.Values = newUserInfo
-			templates.SignupPage(nil, data).Render(r.Context(), w)
+			signuppage.SignupPage(nil, data).Render(r.Context(), w)
 			return
 		}
 		u.Password = string(pwHash)
@@ -48,13 +49,13 @@ func HandleRegisterUser(repo user.Repository) http.HandlerFunc {
 			var data helpers.FormData
 			data.AddError("overall", "Error creating user")
 			data.Values = newUserInfo
-			templates.SignupPage(nil, data).Render(r.Context(), w)
+			signuppage.SignupPage(nil, data).Render(r.Context(), w)
 			return
 		}
 
 		var data helpers.FormData
 		data.AddError("overall", "You're registered! <a href='/login'>Login</a> using these credentials.")
-		templates.SignupPage(nil, data).Render(r.Context(), w)
+		signuppage.SignupPage(nil, data).Render(r.Context(), w)
 		return
 	}
 }
@@ -76,7 +77,7 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository) h
 				Errors: formErrors,
 				Values: newUserInfo,
 			}
-			templates.LoginPage(nil, f).Render(r.Context(), w)
+			loginpage.LoginPage(nil, f).Render(r.Context(), w)
 			return
 		}
 
@@ -88,7 +89,7 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository) h
 		if err != nil {
 			var f helpers.FormData
 			f.AddError("overall", "Unable to log in - please try again")
-			templates.LoginPage(nil, f).Render(r.Context(), w)
+			loginpage.LoginPage(nil, f).Render(r.Context(), w)
 			return
 		}
 
@@ -98,7 +99,7 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository) h
 		); err != nil {
 			var f helpers.FormData
 			f.AddError("overall", "Unable to log in - please try again")
-			templates.LoginPage(nil, f).Render(r.Context(), w)
+			loginpage.LoginPage(nil, f).Render(r.Context(), w)
 			return
 		}
 

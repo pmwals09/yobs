@@ -1,0 +1,34 @@
+package opportunitydetailspage
+
+import (
+	"fmt"
+
+	"github.com/pmwals09/yobs/internal/models/status"
+	helpers "github.com/pmwals09/yobs/internal"
+	templates "github.com/pmwals09/yobs/web"
+)
+
+templ StatusTableRowForm(opptyId uint, s status.Status, fd helpers.FormData) {
+	<tr>
+		<td class="border-b">
+			@AvailableStatusesCombo(fd.Values["status-name"], fd.Errors["status-name"])
+		</td>
+		<td class="border-b">
+			<input name="status-date" value={ fd.Values["status-date"] } type="date"/>
+			@templates.RenderStandardError(fd.Errors["status-date"])
+		</td>
+		<td class="border-b">
+			<textarea value={ fd.Values["status-note"] }></textarea>
+			@templates.RenderStandardError(fd.Errors["status-note"])
+		</td>
+		<td class="border-b">
+			<button
+				hx-put={ fmt.Sprintf("/opportunities/%d/statuses/%d", opptyId, s.ID) }
+				hx-include="closest tr"
+				hx-target="#status-table"
+			>
+				Save
+			</button>
+		</td>
+	</tr>
+}

@@ -50,6 +50,13 @@ func (fd *FormData) AddError(key, val string) {
 	fd.Errors[key] = append(fd.Errors[key], val)
 }
 
+func (fd *FormData) AddValue(key, val string) {
+	if fd.Values == nil {
+		fd.Values = make(map[string]string)
+	}
+	fd.Values[key] = val
+}
+
 type ProfileArgs struct {
 	Username string
 	Email    string

@@ -10,7 +10,10 @@ import (
 	"github.com/pmwals09/yobs/internal/models/opportunity"
 	"github.com/pmwals09/yobs/internal/models/session"
 	"github.com/pmwals09/yobs/internal/models/user"
-	"github.com/pmwals09/yobs/web/templates"
+	homepage "github.com/pmwals09/yobs/web/home"
+	indexpage "github.com/pmwals09/yobs/web/index"
+	loginpage "github.com/pmwals09/yobs/web/login"
+	signuppage "github.com/pmwals09/yobs/web/signup"
 )
 
 func HandleGetHomepage(opptyRepo opportunity.Repository) http.HandlerFunc {
@@ -27,7 +30,7 @@ func HandleGetHomepage(opptyRepo opportunity.Repository) http.HandlerFunc {
 				return
 			}
 
-			templates.HomePage(user, opptys, helpers.FormData{}).Render(r.Context(), w)
+			homepage.HomePage(user, opptys, helpers.FormData{}).Render(r.Context(), w)
 		} else {
 			helpers.WriteError(w, errors.New("No user available"))
 			return
@@ -38,9 +41,9 @@ func HandleGetHomepage(opptyRepo opportunity.Repository) http.HandlerFunc {
 func HandleGetLandingPage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if user, ok := r.Context().Value("user").(*user.User); ok {
-			templates.IndexPage(user).Render(r.Context(), w)
+			indexpage.IndexPage(user).Render(r.Context(), w)
 		} else {
-			templates.IndexPage(nil).Render(r.Context(), w)
+			indexpage.IndexPage(nil).Render(r.Context(), w)
 		}
 	}
 }
@@ -48,9 +51,9 @@ func HandleGetLandingPage() http.HandlerFunc {
 func HandleGetLoginPage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if user, ok := r.Context().Value("user").(*user.User); ok {
-			templates.LoginPage(user, helpers.FormData{}).Render(r.Context(), w)
+			loginpage.LoginPage(user, helpers.FormData{}).Render(r.Context(), w)
 		} else {
-			templates.LoginPage(nil, helpers.FormData{}).Render(r.Context(), w)
+			loginpage.LoginPage(nil, helpers.FormData{}).Render(r.Context(), w)
 		}
 	}
 }
@@ -58,9 +61,9 @@ func HandleGetLoginPage() http.HandlerFunc {
 func HandleGetSignUpPage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if user, ok := r.Context().Value("user").(*user.User); ok {
-			templates.SignupPage(user, helpers.FormData{}).Render(r.Context(), w)
+			signuppage.SignupPage(user, helpers.FormData{}).Render(r.Context(), w)
 		} else {
-			templates.SignupPage(nil, helpers.FormData{}).Render(r.Context(), w)
+			signuppage.SignupPage(nil, helpers.FormData{}).Render(r.Context(), w)
 		}
 	}
 }

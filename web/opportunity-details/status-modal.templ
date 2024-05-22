@@ -1,0 +1,28 @@
+package opportunitydetailspage
+
+import (
+	"github.com/pmwals09/yobs/internal/models/opportunity"
+	"github.com/pmwals09/yobs/internal"
+	"github.com/pmwals09/yobs/web/components"
+	"github.com/pmwals09/yobs/web"
+)
+
+templ StatusModal(oppty opportunity.Opportunity, fd helpers.FormData) {
+@components.Modal("status-modal") {
+<h2 class="text=[1.5em] mb-4">Add a Status Update</h2>
+<form method="POST" action={ templates.InsertIDIntoHref("/opportunities/{}/update-status", oppty.ID) } hx-post={
+	templates.InsertIDIntoString("/opportunities/{}/update-status", oppty.ID) } hx-target="#status-table">
+	<section class="grid grid-cols-2 gap-y-2">
+		<label for="status-name">Status Name</label>
+		@AvailableStatusesCombo("", fd.Errors["status-name"])
+		<label for="status-date">Status Update Date</label>
+		<input type="date" name="status-date" value="2024-05-16" />
+		<label for="status-note">Status Update Notes</label>
+		<textarea name="status-note"></textarea>
+	</section>
+	<input type="submit" name="status-submit" value="Update Status"
+		class="bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer my-3" />
+</form>
+@templates.RenderStandardError(fd.Errors["overall"])
+}
+}

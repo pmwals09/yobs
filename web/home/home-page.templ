@@ -1,0 +1,91 @@
+package homepage
+
+import (
+"github.com/pmwals09/yobs/internal/models/opportunity"
+"github.com/pmwals09/yobs/internal/models/user"
+"github.com/pmwals09/yobs/web/components"
+"github.com/pmwals09/yobs/web"
+helpers "github.com/pmwals09/yobs/internal"
+)
+
+templ HomePage(user *user.User, opportunities []opportunity.Opportunity, f helpers.FormData) {
+@components.Base(user) {
+<h1 class="text-center text-[2em]">Always look ahead</h1>
+<section class="mb-4" id="opportunity-list">
+	<h2 class="text-[1.5em]">Opportunities</h2>
+	<table class="table-auto border-collapse w-full" id="main-content">
+		<thead>
+			<tr>
+				<th class="border-b text-left">Company Name</th>
+				<th class="border-b text-left">Role</th>
+				<th class="border-b text-left">URL</th>
+				<th class="border-b text-left">Status</th>
+				<th class="border-b text-left">Application Date</th>
+				<th class="border-b text-left">Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, o := range opportunities {
+			<tr class="hover:bg-sky-100">
+				<td class="border-b">{ o.CompanyName }</td>
+				<td class="border-b">{ o.Role }</td>
+				<td class="border-b">{ o.URL }</td>
+				if o.Statuses != nil && len(o.Statuses) > 0 {
+				<td class="border-b">{ string(o.Statuses[0].Name) }</td>
+				} else {
+				<td class="border-b"></td>
+				}
+				if o.Statuses != nil && len(o.Statuses) > 0 {
+				<td class="border-b">{ templates.FormatApplicationDate(o.Statuses[0].Date) }</td>
+				} else {
+				<td class="border-b"></td>
+				}
+				<td class="border-b flex gap-2">
+					<a class="btn" href={ templates.InsertIDIntoHref("opportunities/{}", o.ID) }>
+						Details
+					</a>
+					<a class="btn" href={ templates.InsertIDIntoHref("opportunities/{}/edit", o.ID) }>
+						Edit
+					</a>
+					<!-- <a class="btn" href={ insertIDIntoHref("opportunities/{}/edit", o.ID) }>Edit</a> -->
+				</td>
+			</tr>
+			}
+		</tbody>
+	</table>
+</section>
+<section class="mb-4">
+	<h2 class="text-[1.5em]">New Opportunity</h2>
+	<form method="POST" action="/opportunities" hx-post="/opportunities" hx-target="#opportunity-list"
+		hx-select="#opportunity-list" id="opportunity-form" class="w-1/2">
+		<section class="grid grid-cols-2 gap-y-2">
+			<label for="opportunity-name">
+				Company Name
+			</label>
+			<input type="text" name="opportunity-name" value="" />
+			<label for="opportunity-role">
+				Role
+			</label>
+			<input type="text" name="opportunity-role" value="" />
+			<label for="opportunity-url">
+				URL
+			</label>
+			<input type="url" name="opportunity-url" value="" />
+			<label for="opportunity-description">
+				Description
+			</label>
+			<textarea rows="3" name="opportunity-description"></textarea>
+			<label for="opportunity-date">
+				Application Date (if applicable)
+			</label>
+			<input type="date" name="opportunity-date" value="" />
+		</section>
+		<section class="my-8">
+			<input type="submit" name="submit" value="Submit"
+				class="bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer" />
+		</section>
+	</form>
+	@templates.RenderStandardError(f.Errors["overall"])
+</section>
+}
+}

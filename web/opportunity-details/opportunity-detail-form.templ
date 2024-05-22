@@ -1,0 +1,35 @@
+package opportunitydetailspage
+
+import (
+	"github.com/pmwals09/yobs/internal/models/opportunity"
+	"github.com/pmwals09/yobs/internal"
+	"github.com/pmwals09/yobs/web"
+)
+
+templ OpportunityDetailForm(oppty opportunity.Opportunity, fd helpers.FormData) {
+	<form
+		method="PUT"
+		action={ templates.InsertIDIntoHref("/opportunities/{}/edit", oppty.ID) }
+		hx-put={ templates.InsertIDIntoString("/opportunities/{}/edit", oppty.ID) }
+	>
+		<dl class="grid grid-cols-[min-content_auto] gap-x-4" id="opportunity-detail-def-list">
+			<dt class="font-bold whitespace-nowrap flex self-center" for="company-name">Company Name:</dt>
+			<dd><input value={ oppty.CompanyName } name="company-name"/></dd>
+			<dt class="font-bold whitespace-nowrap flex self-center" for="company-role">Role:</dt>
+			<dd><input value={ oppty.Role } name="company-role"/></dd>
+			<dt class="font-bold whitespace-nowrap flex self-center" for="role-url">URL:</dt>
+			<dd><input value={ oppty.URL } name="role-url"/></dd>
+			<dt class="font-bold whitespace-nowrap flex self-center">Latest Status:</dt>
+			<dd>{ string(oppty.Statuses[0].Name) }</dd>
+			<dt class="font-bold whitespace-nowrap flex-self-center">Application Date:</dt>
+			<dd>{ templates.FormatApplicationDate(oppty.Statuses[0].Date) }</dd>
+			<dt class="font-bold whitespace-nowrap flex self-center" for="job-description">Job Description</dt>
+			<dd><input value={ oppty.Description } name="job-description"/></dd>
+		</dl>
+		<input
+			type="submit"
+			value="Update"
+			class="bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer my-3"
+		/>
+	</form>
+}

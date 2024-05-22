@@ -1,0 +1,26 @@
+package opportunitydetailspage
+
+import "github.com/pmwals09/yobs/internal/models/document"
+
+templ AttachmentsTable(documents []document.Document) {
+<table class="table-auto border-collapse w-full mb-4" id="attachments-table">
+	<thead>
+		<tr>
+			<th class="border-b text-left">Title</th>
+			<th class="border-b text-left">Type</th>
+			<th class="border-b text-left">File Name</th>
+		</tr>
+	</thead>
+	<tbody>
+		for _, doc := range documents {
+		<tr class="hover:bg-sky-100">
+			<td class="border-b">{ doc.Title }</td>
+			<td class="border-b">{ string(doc.Type) }</td>
+			<td class="border-b">
+				<a href={ templ.URL(doc.URL) }>{ doc.FileName }</a>
+			</td>
+		</tr>
+		}
+	</tbody>
+</table>
+}

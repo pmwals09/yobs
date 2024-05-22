@@ -1,0 +1,25 @@
+package opportunitydetailspage
+
+import (
+	"github.com/pmwals09/yobs/internal/models/status"
+)
+
+templ StatusTable(opptyID uint, statuses []status.Status) {
+	<table class="table-auto border-collapse w-full mb-4" id="status-table">
+		<thead>
+			<tr>
+				<th class="border-b text-left">Status</th>
+				<th class="border-b text-left">Date</th>
+				<th class="border-b text-left">Note</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			if statuses != nil && len(statuses) > 0 {
+				for _, status := range statuses {
+					@StatusTableRow(opptyID, status)
+				}
+			}
+		</tbody>
+	</table>
+}

@@ -16,7 +16,8 @@ import (
 	"github.com/pmwals09/yobs/internal/models/opportunity"
 	"github.com/pmwals09/yobs/internal/models/status"
 	"github.com/pmwals09/yobs/internal/models/user"
-	"github.com/pmwals09/yobs/web/templates"
+	opptydetailspage "github.com/pmwals09/yobs/web/opportunity-details"
+	homepage "github.com/pmwals09/yobs/web/home"
 )
 
 func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
@@ -35,7 +36,7 @@ func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
 			f.AddError("overall", fmt.Sprintf(
 				"An error occurred creating the opportunity: %s",
 				err.Error()))
-			templates.HomePage(user, []opportunity.Opportunity{}, f).Render(r.Context(), w)
+			homepage.HomePage(user, []opportunity.Opportunity{}, f).Render(r.Context(), w)
 			return
 		}
 
@@ -45,7 +46,7 @@ func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
 			return
 		}
 
-		templates.HomePage(user, opportunities, f).Render(r.Context(), w)
+		homepage.HomePage(user, opportunities, f).Render(r.Context(), w)
 		return
 	}
 }
@@ -78,7 +79,7 @@ func HandleGetOpptyPage(
 				_, err := docs[i].GetPresignedDownloadUrl()
 				if err != nil {
 					fd.AddError("document-table", "Unable to retrieve document URL for download.")
-					templates.OpportunityDetailsPage(
+					opptydetailspage.OpportunityDetailsPage(
 						user,
 						od,
 						docs,
@@ -103,7 +104,7 @@ func HandleGetOpptyPage(
 			od.Contacts = contacts
 		}
 
-		templates.OpportunityDetailsPage(
+		opptydetailspage.OpportunityDetailsPage(
 			user,
 			od,
 			userDocuments,
@@ -340,7 +341,7 @@ func HandleContactModal(opptyRepo opportunity.Repository) http.HandlerFunc {
 			return
 		}
 
-		templates.ContactModal(oppty, fd).Render(r.Context(), w)
+		opptydetailspage.ContactModal(oppty, fd).Render(r.Context(), w)
 	}
 }
 
@@ -364,7 +365,7 @@ func HandleAttachmentModal(opptyRepo opportunity.Repository, docRepo document.Re
 			helpers.WriteError(w, err)
 			return
 		}
-		templates.AttachmentModal(*oppty, userDocs, fd).Render(r.Context(), w)
+		opptydetailspage.AttachmentModal(*oppty, userDocs, fd).Render(r.Context(), w)
 	}
 }
 
@@ -433,7 +434,7 @@ func HandleAddNewContactToOppty(opptyRepo opportunity.Repository, contactRepo co
 			return
 		}
 
-		templates.ContactsTable(contacts).Render(r.Context(), w)
+		opptydetailspage.ContactsTable(contacts).Render(r.Context(), w)
 	}
 }
 
@@ -456,7 +457,7 @@ func HandleStatusModal(opptyRepo opportunity.Repository) http.HandlerFunc {
 			retargetStatusModal(w, r, *oppty, fd)
 			return
 		}
-		templates.StatusModal(*oppty, fd).Render(r.Context(), w)
+		opptydetailspage.StatusModal(*oppty, fd).Render(r.Context(), w)
 		return
 	}
 }
@@ -511,8 +512,8 @@ func HandleUpdateStatus(opptyRepo opportunity.Repository) http.HandlerFunc {
 			return 1
 		})
 		buf := new(bytes.Buffer)
-		templates.StatusTable(oppty.ID, oppty.Statuses).Render(r.Context(), buf)
-		templates.OpptyDetailGrid(*oppty, true).Render(r.Context(), buf)
+		opptydetailspage.StatusTable(oppty.ID, oppty.Statuses).Render(r.Context(), buf)
+		opptydetailspage.OpptyDetailGrid(*oppty, true).Render(r.Context(), buf)
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(buf.String()))
 		
@@ -530,7 +531,7 @@ func HandleGetEditDetailsForm(opptyRepo opportunity.Repository) http.HandlerFunc
 		if err != nil {
 			fd.AddError("overall", err.Error())
 		}
-		templates.OpportunityDetailForm(*oppty, fd).Render(r.Context(), w)
+		opptydetailspage.OpportunityDetailForm(*oppty, fd).Render(r.Context(), w)
 	}
 }
 
@@ -557,7 +558,7 @@ func HandleUpdate(opptyRepo opportunity.Repository, docRepo document.Repository)
 			if err != nil {
 				fd.AddError("overall", err.Error())
 			}
-			templates.OpportunityDetailsPage(u, od, docs, fd).Render(r.Context(), w)
+			opptydetailspage.OpportunityDetailsPage(u, od, docs, fd).Render(r.Context(), w)
 			return
 		}
 
@@ -572,7 +573,7 @@ func HandleUpdate(opptyRepo opportunity.Repository, docRepo document.Repository)
 			if err != nil {
 				fd.AddError("overall", err.Error())
 			}
-			templates.OpportunityDetailsPage(u, od, docs, fd).Render(r.Context(), w)
+			opptydetailspage.OpportunityDetailsPage(u, od, docs, fd).Render(r.Context(), w)
 			return
 		}
 		helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%d", oppty.ID), http.StatusFound)
@@ -673,7 +674,6 @@ func newStatusFromRequest(r *http.Request) (*status.Status, error) {
 
 	s.Name = r.PostForm.Get("status-name")
 	date := r.PostForm.Get("status-date")
-	fmt.Println(date)
 	t, err := time.Parse(time.DateOnly, date)
 	if err != nil {
 		return &s, err
@@ -698,7 +698,7 @@ func returnAttachmentsSection(
 		return
 	}
 
-	templates.AttachmentsTable(docs).Render(r.Context(), w)
+	opptydetailspage.AttachmentsTable(docs).Render(r.Context(), w)
 	return
 }
 
@@ -709,7 +709,7 @@ func retargetAttachmentModal(
 	docs []document.Document,
 	fd helpers.FormData) {
 	w.Header().Add("HX-Retarget", "#attachment-modal")
-	templates.AttachmentModal(oppty, docs, fd).Render(r.Context(), w)
+	opptydetailspage.AttachmentModal(oppty, docs, fd).Render(r.Context(), w)
 }
 
 func retargetContactModal(
@@ -718,7 +718,7 @@ func retargetContactModal(
 	oppty opportunity.Opportunity,
 	fd helpers.FormData) {
 	w.Header().Add("HX-Retarget", "#contact-modal")
-	templates.ContactModal(&oppty, fd).Render(r.Context(), w)
+	opptydetailspage.ContactModal(&oppty, fd).Render(r.Context(), w)
 }
 
 func retargetStatusModal(
@@ -727,5 +727,5 @@ func retargetStatusModal(
 	oppty opportunity.Opportunity,
 	fd helpers.FormData) {
 	w.Header().Add("HX-Retarget", "#status-modal")
-	templates.StatusModal(oppty, fd).Render(r.Context(), w)
+	opptydetailspage.StatusModal(oppty, fd).Render(r.Context(), w)
 }

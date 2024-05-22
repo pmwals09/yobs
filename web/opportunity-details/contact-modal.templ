@@ -1,0 +1,41 @@
+package opportunitydetailspage
+
+import (
+	"github.com/pmwals09/yobs/internal/models/opportunity"
+	"github.com/pmwals09/yobs/internal"
+	"github.com/pmwals09/yobs/web/components"
+	"github.com/pmwals09/yobs/web"
+)
+
+templ ContactModal(oppty *opportunity.Opportunity, fd helpers.FormData) {
+	@components.Modal("contact-modal") {
+		<h2 class="text-[1.5em] mb-4">Add a Contact</h2>
+		<form
+			method="POST"
+			action={ templates.InsertIDIntoHref("/opportunities/{}/new-contact", oppty.ID) }
+			hx-post={ templates.InsertIDIntoString("/opportunities/{}/new-contact", oppty.ID) }
+			hx-target="#contact-table"
+			hx-on::after-request=" if(event.detail.successful) this.reset()"
+		>
+			<section class="grid grid-cols-2 gap-y-2">
+				<label for="contact-name">Name</label>
+				<input type="text" name="contact-name" value=""/>
+				<label for="company-name">Company Name</label>
+				<input type="text" name="company-name" value=""/>
+				<label for="contact-title">Title</label>
+				<input type="text" name="contact-title" value=""/>
+				<label for="contact-phone">Phone</label>
+				<input type="text" name="contact-phone" value=""/>
+				<label for="contact-email">Email</label>
+				<input type="text" name="contact-email" value=""/>
+			</section>
+			@templates.RenderStandardError(fd.Errors["overall"])
+			<input
+				type="submit"
+				name="contact-submit"
+				value="Create Contact"
+				class="bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer my-3"
+			/>
+		</form>
+	}
+}

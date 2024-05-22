@@ -1,0 +1,23 @@
+package opportunitydetailspage
+
+import (
+	templates "github.com/pmwals09/yobs/web"
+)
+
+// TODO: Capture user-defined statuses
+templ AvailableStatusesCombo(value string, errorMsg []string) {
+	<input name="status-name" value={ value } type="text" list="available-statuses"/>
+	<datalist id="available-statuses">
+		<option>None</option>
+		<option>Applied</option>
+		<option>Followed Up</option>
+		<option>Interview</option>
+		<option>Pending</option>
+		<option>Offer Extended</option>
+		<option>Offer Accepted</option>
+		<option>Rejected</option>
+		<option>Closed</option>
+		<option>Archived</option>
+	</datalist>
+	@templates.RenderStandardError(errorMsg)
+}

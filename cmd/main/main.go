@@ -87,6 +87,10 @@ func authenticatedRouter(opptyRepo opportunity.Repository, docRepo document.Repo
 			r.Put("/edit", controllers.HandleUpdate(opptyRepo, docRepo))
 			r.Route("/statuses", func(r chi.Router) {
 				r.Delete("/{statusID}", controllers.HandleDeleteStatus(statusRepo))
+				r.Route("/{statusID}", func(r chi.Router) {
+					r.Put("/", controllers.HandleUpdateStatusItem(statusRepo, opptyRepo))
+					r.Get("/status-row-form", controllers.HandleStatusRowForm(statusRepo))
+				})
 			})
 		})
 	})
