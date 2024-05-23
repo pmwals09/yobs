@@ -27,7 +27,7 @@ func Base(user *user.User) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!doctype html><html><head><script src=\"https://unpkg.com/htmx.org@1.9.5\"></script><!-- Will need to host this file ourselves instead of the CDN --><script src=\"https://cdn.tailwindcss.com?plugins=forms\"></script></head><body class=\"w-4/5 mx-auto\" hx-boost><nav class=\"flex justify-between\"><ul class=\"flex gap-4\"><li><a href=\"/home\">Home</a></li><li><a href=\"/opportunities/all\">All Opportunities</a></li><li><a href=\"/tasks/active\">All Active Tasks</a></li></ul><ul class=\"flex gap-4\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!doctype html><html><head><script src=\"https://unpkg.com/htmx.org@1.9.5\"></script><!-- Will need to host this file ourselves instead of the CDN --><script src=\"https://cdn.tailwindcss.com?plugins=forms\"></script></head><body class=\"w-4/5 mx-auto\" hx-boost><nav class=\"flex justify-between\"><ul class=\"flex gap-4\"><li><a href=\"/home\">Home</a></li></ul><ul class=\"flex gap-4\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

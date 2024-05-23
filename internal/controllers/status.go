@@ -3,7 +3,6 @@ package controllers
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
