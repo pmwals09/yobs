@@ -56,9 +56,6 @@ templ OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocum
 			@ContactsTable(od.Contacts)
 			@templates.RenderStandardError(fd.Errors["contacts"])
 		</section>
-		<section class="mb-4">
-			<h2 class="text-[1.5em]">Tasks</h2>
-		</section>
 		<section id="attachments-section" class="mb-4">
 			<div class="flex gap-2 items-center">
 				<h2 class="text-[1.5em]">Attachments</h2>
@@ -71,7 +68,7 @@ templ OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocum
 			</div>
 			<div id="attachment-modal"></div>
 			if od.Documents != nil && len(od.Documents) > 0 {
-				@AttachmentsTable(od.Documents)
+				@AttachmentsTable(od.Oppty.ID, od.Documents)
 			}
 			@templates.RenderStandardError(fd.Errors["document-table"])
 		</section>

@@ -1,26 +1,36 @@
 package opportunitydetailspage
 
-import "github.com/pmwals09/yobs/internal/models/document"
+import (
+	"fmt"
 
-templ AttachmentsTable(documents []document.Document) {
-<table class="table-auto border-collapse w-full mb-4" id="attachments-table">
-	<thead>
-		<tr>
-			<th class="border-b text-left">Title</th>
-			<th class="border-b text-left">Type</th>
-			<th class="border-b text-left">File Name</th>
-		</tr>
-	</thead>
-	<tbody>
-		for _, doc := range documents {
-		<tr class="hover:bg-sky-100">
-			<td class="border-b">{ doc.Title }</td>
-			<td class="border-b">{ string(doc.Type) }</td>
-			<td class="border-b">
-				<a href={ templ.URL(doc.URL) }>{ doc.FileName }</a>
-			</td>
-		</tr>
-		}
-	</tbody>
-</table>
+	"github.com/pmwals09/yobs/internal/models/document"
+)
+
+templ AttachmentsTable(opptyId uint, documents []document.Document) {
+	<table class="table-auto border-collapse w-full mb-4" id="attachments-table">
+		<thead>
+			<tr>
+				<th class="border-b text-left">Title</th>
+				<th class="border-b text-left">Type</th>
+				<th class="border-b text-left">File Name</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			for _, doc := range documents {
+				<tr class="hover:bg-sky-100">
+					<td class="border-b">{ doc.Title }</td>
+					<td class="border-b">{ string(doc.Type) }</td>
+					<td class="border-b">
+						<a href={ templ.URL(doc.URL) }>{ doc.FileName }</a>
+					</td>
+					<td class="border-b">
+						<button hx-delete={ fmt.Sprintf("/opportunities/%d/documents/%d", opptyId, doc.ID) } hx-trigger="click">
+							Remove
+						</button>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
 }

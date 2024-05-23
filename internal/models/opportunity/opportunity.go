@@ -71,6 +71,7 @@ type Repository interface {
 	AddContact(oppty *Opportunity, contact contact.Contact) error
 	GetAllContacts(oppty *Opportunity) ([]contact.Contact, error)
 	UpdateStatus(oppty *Opportunity, status status.Status) error
+	RemoveDocument(oppty *Opportunity, doc document.Document) error
 }
 
 type OpportunityModel struct {
@@ -299,6 +300,7 @@ func (o *OpportunityModel) GetAllDocuments(oppty *Opportunity, user *user.User) 
 	var docs []document.Document
 	rows, err := o.DB.Query(`
 		SELECT
+			d.id,
 			file_name,
 			title,
 			type,
@@ -309,13 +311,13 @@ func (o *OpportunityModel) GetAllDocuments(oppty *Opportunity, user *user.User) 
 		WHERE o.id = ?;
 	`, oppty.ID)
 	if err != nil {
-		fmt.Println("QUERY ERROR", err.Error())
 		return docs, err
 	}
 
 	for rows.Next() {
 		var d document.Document
 		err := rows.Scan(
+			&d.ID,
 			&d.FileName,
 			&d.Title,
 			&d.Type,
@@ -388,5 +390,13 @@ func (g *OpportunityModel) UpdateStatus(oppty *Opportunity, status status.Status
 		status.Note,
 		status.Date,
 		oppty.ID)
+	return err
+}
+
+func (g *OpportunityModel) RemoveDocument(oppty *Opportunity, doc document.Document) error {
+	_, err := g.DB.Exec(`
+		DELETE FROM opportunity_documents
+		WHERE opportunity_id = ? AND document_id = ?;
+	`, oppty.ID, doc.ID)
 	return err
 }

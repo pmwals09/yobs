@@ -28,7 +28,6 @@ func HandleStatusRowForm(statusRepo status.Repository) http.HandlerFunc {
 			fd.AddError("overall", "Problem parsing status ID from path")
 			var status status.Status
 			opportunitydetailspage.StatusTableRowForm(uint(opptyId), status, fd).Render(r.Context(), w)
-			fmt.Printf("ERROR1: %+v\n", status)
 			return
 
 		}
@@ -36,13 +35,11 @@ func HandleStatusRowForm(statusRepo status.Repository) http.HandlerFunc {
 		if err != nil {
 			fd.AddError("overall", "Problem getting status by ID")
 			opportunitydetailspage.StatusTableRowForm(uint(opptyId), status, fd).Render(r.Context(), w)
-			fmt.Printf("ERROR2: %+v\n", status)
 			return
 		}
 		fd.AddValue("status-name", status.Name)
 		fd.AddValue("status-date", status.Date.Format(time.DateOnly))
 		fd.AddValue("status-note", status.Note)
-		fmt.Printf("%+v\n", status)
 
 		opportunitydetailspage.StatusTableRowForm(uint(opptyId), status, fd).Render(r.Context(), w)
 		return

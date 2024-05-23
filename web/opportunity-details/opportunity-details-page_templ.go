@@ -130,14 +130,14 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</section><section class=\"mb-4\"><h2 class=\"text-[1.5em]\">Tasks</h2></section><section id=\"attachments-section\" class=\"mb-4\"><div class=\"flex gap-2 items-center\"><h2 class=\"text-[1.5em]\">Attachments</h2><button class=\"bg-gray-400 px-2 py-1 rounded-full block hover:cursor-pointer my-3\" hx-get=\"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</section><section id=\"attachments-section\" class=\"mb-4\"><div class=\"flex gap-2 items-center\"><h2 class=\"text-[1.5em]\">Attachments</h2><button class=\"bg-gray-400 px-2 py-1 rounded-full block hover:cursor-pointer my-3\" hx-get=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(templates.InsertIDIntoString("/opportunities/{}/attachment-modal", od.Oppty.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/opportunity-details/opportunity-details-page.templ`, Line: 67, Col: 93}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `web/opportunity-details/opportunity-details-page.templ`, Line: 64, Col: 93}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -148,7 +148,7 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 				return templ_7745c5c3_Err
 			}
 			if od.Documents != nil && len(od.Documents) > 0 {
-				templ_7745c5c3_Err = AttachmentsTable(od.Documents).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = AttachmentsTable(od.Oppty.ID, od.Documents).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

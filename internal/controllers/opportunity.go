@@ -585,13 +585,54 @@ func HandleDeleteStatus(statusRepo status.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		statusId := chi.URLParam(r, "statusID")
 		opptyId := chi.URLParam(r, "opportunityId")
-		fmt.Println("opptyId", opptyId)
-
 		sId, err := strconv.ParseUint(statusId, 10, 64)
 		err = statusRepo.DeleteStatusByID(uint(sId))
 		if err != nil {
 		}
 		helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%s", opptyId), http.StatusFound)
+		return
+	}
+}
+
+func HandleRemoveDocFromOppty(opptyRepo opportunity.Repository, docRepo document.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		u, ok := r.Context().Value("user").(*user.User)
+		if !ok {
+			fmt.Println("Error getting user from context")
+			helpers.HTMXRedirect(w, "/home", http.StatusFound)
+			return
+		}
+		opptyId, err := strconv.ParseUint(chi.URLParam(r, "opportunityId"), 10, 64)
+		if err != nil {
+			fmt.Println("Error parsing opportunity ID:", err.Error())
+			helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%d", opptyId), http.StatusFound)
+			return
+		}
+		oppty, err := opptyRepo.GetOpportuntyById(uint(opptyId), u)
+		if err != nil {
+			fmt.Println("Error getting opportunity:", err.Error())
+			helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%d", opptyId), http.StatusFound)
+			return
+		}
+		docId, err := strconv.ParseUint(chi.URLParam(r, "documentId"), 10, 64)
+		if err != nil {
+			fmt.Println("Error parsing document ID:", err.Error())
+			helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%d", opptyId), http.StatusFound)
+			return
+		}
+		doc, err := docRepo.GetDocumentById(uint(docId), u)
+		if err != nil {
+			fmt.Println("Error getting document:", err.Error())
+			helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%d", opptyId), http.StatusFound)
+			return
+		}
+		err = opptyRepo.RemoveDocument(oppty, doc)
+		if err != nil {
+			fmt.Println("Error removing document from oppty:", err.Error())
+			helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%d", opptyId), http.StatusFound)
+			return
+		}
+		helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%d", opptyId), http.StatusFound)
 		return
 	}
 }
@@ -698,7 +739,7 @@ func returnAttachmentsSection(
 		return
 	}
 
-	opptydetailspage.AttachmentsTable(docs).Render(r.Context(), w)
+	opptydetailspage.AttachmentsTable(oppty.ID, docs).Render(r.Context(), w)
 	return
 }
 

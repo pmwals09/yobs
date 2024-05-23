@@ -85,6 +85,7 @@ func authenticatedRouter(opptyRepo opportunity.Repository, docRepo document.Repo
 			r.Post("/new-contact", controllers.HandleAddNewContactToOppty(opptyRepo, contactRepo))
 			r.Post("/update-status", controllers.HandleUpdateStatus(opptyRepo))
 			r.Put("/edit", controllers.HandleUpdate(opptyRepo, docRepo))
+			r.Delete("/documents/{documentId}", controllers.HandleRemoveDocFromOppty(opptyRepo, docRepo))
 			r.Route("/statuses", func(r chi.Router) {
 				r.Delete("/{statusID}", controllers.HandleDeleteStatus(statusRepo))
 				r.Route("/{statusID}", func(r chi.Router) {
