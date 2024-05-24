@@ -1,0 +1,39 @@
+package opportunitydetailspage
+
+import (
+	"fmt"
+
+	"github.com/pmwals09/yobs/internal/models/contact"
+	"github.com/pmwals09/yobs/internal"
+	"github.com/pmwals09/yobs/web"
+)
+
+templ ContactTableRow(opptyID uint, contact contact.Contact, fd helpers.FormData) {
+	<tr>
+		<td class="border-b">{ contact.Name }</td>
+		<td class="border-b">{ contact.CompanyName }</td>
+		<td class="border-b">{ contact.Title }</td>
+		<td class="border-b">{ contact.Phone }</td>
+		<td class="border-b">{ contact.Email }</td>
+		<td class="border-b flex justify-end gap-x-2">
+			<button
+				hx-get={ fmt.Sprintf("/opportunities/%d/contacts/%d/contact-row-form", opptyID, contact.ID) }
+				hx-swap="outerHTML"
+				hx-target="closest tr"
+				class="bg-gray-400 px-4 py-2 rounded-full block hover:cursor-pointer"
+			>
+				Edit
+			</button>
+			<button
+				hx-delete={ fmt.Sprintf("/opportunities/%d/contacts/%d", opptyID, contact.ID) }
+				hx-swap="outerHTML"
+				hx-target="closest tr"
+				hx-trigger="click"
+				class="bg-gray-400 px-4 py-2 rounded-full block hover:cursor-pointer"
+			>
+				Delete
+			</button>
+			@templates.RenderStandardError(fd.Errors["actions"])
+		</td>
+	</tr>
+}

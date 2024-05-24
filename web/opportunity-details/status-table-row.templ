@@ -16,12 +16,14 @@ templ StatusTableRow(opptyID uint, s status.Status) {
 				hx-get={ fmt.Sprintf("/opportunities/%d/statuses/%d/status-row-form", opptyID, s.ID) }
 				hx-swap="outerHTML"
 				hx-target="closest tr"
+				class="bg-gray-400 px-4 py-2 rounded-full block hover:cursor-pointer"
 			>
 				Edit
 			</button>
 			<button
 				hx-delete={ fmt.Sprintf("/opportunities/%d/statuses/%d", opptyID, s.ID) }
 				hx-trigger="click"
+				class="bg-gray-400 px-4 py-2 rounded-full block hover:cursor-pointer"
 			>
 				Delete
 			</button>

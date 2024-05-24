@@ -93,6 +93,13 @@ func authenticatedRouter(opptyRepo opportunity.Repository, docRepo document.Repo
 					r.Get("/status-row-form", controllers.HandleStatusRowForm(statusRepo))
 				})
 			})
+			r.Route("/contacts", func(r chi.Router) {
+				r.Route("/{contactId}", func(r chi.Router) {
+					r.Get("/contact-row-form", controllers.HandleContactRowForm(contactRepo))
+					r.Put("/", controllers.HandleUpdateContact(contactRepo))
+					r.Delete("/", controllers.HandleDeleteContact(contactRepo))
+				})
+			})
 		})
 	})
 	return r

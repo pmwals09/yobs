@@ -29,6 +29,14 @@ func (s Status) IsEmpty() bool {
 	return s.Name == "" || s.Date.IsZero()
 }
 
+func (s Status) ToFormDataValues() map[string]string {
+	out := make(map[string]string)
+	out["status-name"] = s.Name
+	out["status-date"] = s.Date.Format(time.DateOnly)
+	out["status-note"] = s.Note
+	return out
+}
+
 type StatusModel struct {
 	DB *sql.DB
 }

@@ -36,9 +36,7 @@ func HandleStatusRowForm(statusRepo status.Repository) http.HandlerFunc {
 			opportunitydetailspage.StatusTableRowForm(uint(opptyId), status, fd).Render(r.Context(), w)
 			return
 		}
-		fd.AddValue("status-name", status.Name)
-		fd.AddValue("status-date", status.Date.Format(time.DateOnly))
-		fd.AddValue("status-note", status.Note)
+		fd.Values = status.ToFormDataValues()
 
 		opportunitydetailspage.StatusTableRowForm(uint(opptyId), status, fd).Render(r.Context(), w)
 		return

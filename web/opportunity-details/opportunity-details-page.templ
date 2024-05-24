@@ -53,7 +53,7 @@ templ OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocum
 				>Add</button>
 			</div>
 			<div id="contact-modal"></div>
-			@ContactsTable(od.Contacts)
+			@ContactsTable(od.Oppty.ID, od.Contacts)
 			@templates.RenderStandardError(fd.Errors["contacts"])
 		</section>
 		<section id="attachments-section" class="mb-4">

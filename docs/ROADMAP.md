@@ -25,7 +25,7 @@
 - [x] As a user, I want to be able to add status updates to an opportunity to keep track of the state of an application process
   - [x] Allow the user to name their own statuses, but provide defaults
 - [x] As a user, I want to be able to attach correspondence to an opportunity to keep track of the process of applying
-- [ ] As a user, I want to be able to edit an existing opportunity, in case I make a typo or something
+- [x] As a user, I want to be able to edit an existing opportunity, in case I make a typo or something
 - [ ] As a user, I want to be able to edit my profile, in case I make a typo or something
 
 ## v1.1

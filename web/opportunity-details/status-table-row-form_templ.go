@@ -94,7 +94,7 @@ func StatusTableRowForm(opptyId uint, s status.Status, fd helpers.FormData) temp
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-include=\"closest tr\" hx-target=\"#status-table\">Save</button></td></tr>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-include=\"closest tr\" hx-target=\"#status-table\" class=\"bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer\">Save</button></td></tr>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

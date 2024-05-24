@@ -16,8 +16,8 @@ import (
 	"github.com/pmwals09/yobs/internal/models/opportunity"
 	"github.com/pmwals09/yobs/internal/models/status"
 	"github.com/pmwals09/yobs/internal/models/user"
-	opptydetailspage "github.com/pmwals09/yobs/web/opportunity-details"
 	homepage "github.com/pmwals09/yobs/web/home"
+	opptydetailspage "github.com/pmwals09/yobs/web/opportunity-details"
 )
 
 func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
@@ -434,7 +434,7 @@ func HandleAddNewContactToOppty(opptyRepo opportunity.Repository, contactRepo co
 			return
 		}
 
-		opptydetailspage.ContactsTable(contacts).Render(r.Context(), w)
+		opptydetailspage.ContactsTable(oppty.ID, contacts).Render(r.Context(), w)
 	}
 }
 
@@ -516,7 +516,7 @@ func HandleUpdateStatus(opptyRepo opportunity.Repository) http.HandlerFunc {
 		opptydetailspage.OpptyDetailGrid(*oppty, true).Render(r.Context(), buf)
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte(buf.String()))
-		
+
 	}
 }
 
@@ -633,6 +633,100 @@ func HandleRemoveDocFromOppty(opptyRepo opportunity.Repository, docRepo document
 			return
 		}
 		helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%d", opptyId), http.StatusFound)
+		return
+	}
+}
+
+func HandleContactRowForm(contactRepo contact.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var fd helpers.FormData
+		opptyID, err := strconv.ParseUint(chi.URLParam(r, "opportunityId"), 10, 64)
+		if err != nil {
+			fd.AddError("overall", "Cannot parse opportunity ID")
+		}
+		contactID, err := strconv.ParseUint(chi.URLParam(r, "contactId"), 10, 64)
+		if err != nil {
+			fd.AddError("overall", "Cannot parse contact ID")
+		}
+		if fd.Errors != nil && fd.Errors["overall"] != nil && len(fd.Errors["overall"]) > 0 {
+			opptydetailspage.ContactTableRowForm(uint(opptyID), uint(contactID), fd).Render(r.Context(), w)
+			return
+		}
+		u, ok := r.Context().Value("user").(*user.User)
+		if !ok {
+			fd.AddError("overall", "No user available")
+			opptydetailspage.ContactTableRowForm(uint(opptyID), uint(contactID), fd).Render(r.Context(), w)
+			return
+		}
+		contact, err := contactRepo.GetContactById(uint(contactID), *u)
+		fd.Values = contact.ToFormDataValues()
+		opptydetailspage.ContactTableRowForm(uint(opptyID), uint(contactID), fd).Render(r.Context(), w)
+	}
+}
+
+func HandleUpdateContact(contactRepo contact.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var fd helpers.FormData
+		opptyID, err := strconv.ParseUint(chi.URLParam(r, "opportunityId"), 10, 64)
+		if err != nil {
+			fd.AddError("overall", "Cannot parse opportunity ID")
+		}
+		contactID, err := strconv.ParseUint(chi.URLParam(r, "contactId"), 10, 64)
+		if err != nil {
+			fd.AddError("overall", "Cannot parse contact ID")
+		}
+		if fd.Errors != nil && fd.Errors["overall"] != nil && len(fd.Errors["overall"]) > 0 {
+			opptydetailspage.ContactTableRowForm(uint(opptyID), uint(contactID), fd)
+			return
+		}
+		r.ParseForm()
+		contact := contact.Contact{
+			ID:          uint(contactID),
+			Name:        r.PostForm.Get("contact-name"),
+			CompanyName: r.PostForm.Get("contact-company-name"),
+			Title:       r.PostForm.Get("contact-title"),
+			Phone:       r.PostForm.Get("contact-phone"),
+			Email:       r.PostForm.Get("contact-email"),
+		}
+		err = contactRepo.UpdateContact(contact)
+		if err != nil {
+			fd.AddError("overall", "Cannot update contact")
+			opptydetailspage.ContactTableRowForm(uint(opptyID), uint(contactID), fd)
+			return
+		}
+		opptydetailspage.ContactTableRow(uint(opptyID), contact).Render(r.Context(), w)
+	}
+}
+
+func HandleDeleteContact(contactRepo contact.Repository) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var allErr error
+		contactID, err := strconv.ParseUint(chi.URLParam(r, "contactId"), 10, 64)
+		if err != nil {
+			allErr = errors.Join(allErr, err)
+		}
+		opptyID, err := strconv.ParseInt(chi.URLParam(r, "opportunityId"), 10, 64)
+		if err != nil {
+			allErr = errors.Join(allErr, err)
+		}
+		if allErr != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("<tr>Error deleting contact</tr>"))
+			return
+		}
+		u, ok := r.Context().Value("user").(*user.User)
+		if !ok {
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("<tr>Invalid user</tr>"))
+			return
+		}
+		contact, err := contactRepo.GetContactById(uint(contactID), *u)
+		err = contactRepo.DeleteContact(uint(opptyID), contact)
+		if err != nil {
+			var fd helpers.FormData
+			fd.AddError("actions", "Error deleting contact.")
+			opptydetailspage.ContactTableRow(uint(opptyID), contact)
+		}
 		return
 	}
 }

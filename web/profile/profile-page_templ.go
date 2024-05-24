@@ -100,7 +100,7 @@ func ProfilePage(user *user.User, pa helpers.ProfileArgs) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</a></dd></dl></section><button>Update Profile</button><!-- Stats? -->")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</a></dd></dl></section><button class=\"bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer\">Update Profile</button><!-- Stats? -->")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

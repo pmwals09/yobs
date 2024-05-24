@@ -346,6 +346,7 @@ func (g *OpportunityModel) GetAllContacts(oppty *Opportunity) ([]contact.Contact
 	var contacts []contact.Contact
 	rows, err := g.DB.Query(`
 		SELECT
+			c.id,
 			c.name,
 			c.company_name,
 			c.title,
@@ -363,6 +364,7 @@ func (g *OpportunityModel) GetAllContacts(oppty *Opportunity) ([]contact.Contact
 	for rows.Next() {
 		var c contact.Contact
 		err := rows.Scan(
+			&c.ID,
 			&c.Name,
 			&c.CompanyName,
 			&c.Title,

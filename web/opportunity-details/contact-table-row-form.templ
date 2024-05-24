@@ -1,0 +1,41 @@
+package opportunitydetailspage
+
+import (
+	"fmt"
+
+	helpers "github.com/pmwals09/yobs/internal"
+	"github.com/pmwals09/yobs/web"
+)
+
+templ ContactTableRowForm(opptyID, contactID uint, fd helpers.FormData) {
+	<tr>
+		<td class="border-b">
+			<input name="contact-name" value={ fd.Values["contact-name"] }/>
+		</td>
+		<td class="border-b">
+			<input name="contact-company-name" value={ fd.Values["contact-company-name"] }/>
+		</td>
+		<td class="border-b">
+			<input name="contact-title" value={ fd.Values["contact-title"] }/>
+		</td>
+		<td class="border-b">
+			<input name="contact-phone" value={ fd.Values["contact-phone"] }/>
+		</td>
+		<td class="border-b">
+			<input name="contact-email" value={ fd.Values["contact-email"] }/>
+		</td>
+		<td class="border-b flex justify-end gap-x-2">
+			<button
+				hx-put={ fmt.Sprintf("/opportunities/%d/contacts/%d", opptyID, contactID) }
+				hx-include="closest tr"
+				hx-swap="outerHTML"
+				hx-target="closest tr"
+				hx-trigger="click"
+				class="bg-gray-400 px-4 py-2 rounded-full block hover:cursor-pointer"
+			>
+				Save
+			</button>
+		</td>
+		@templates.RenderStandardError(fd.Errors["overall"])
+	</tr>
+}

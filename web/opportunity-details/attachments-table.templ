@@ -25,7 +25,9 @@ templ AttachmentsTable(opptyId uint, documents []document.Document) {
 						<a href={ templ.URL(doc.URL) }>{ doc.FileName }</a>
 					</td>
 					<td class="border-b">
-						<button hx-delete={ fmt.Sprintf("/opportunities/%d/documents/%d", opptyId, doc.ID) } hx-trigger="click">
+						<button hx-delete={ fmt.Sprintf("/opportunities/%d/documents/%d", opptyId, doc.ID) } hx-trigger="click"
+						class="bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer"
+						>
 							Remove
 						</button>
 					</td>
