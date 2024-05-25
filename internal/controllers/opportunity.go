@@ -434,7 +434,7 @@ func HandleAddNewContactToOppty(opptyRepo opportunity.Repository, contactRepo co
 			return
 		}
 
-		opptydetailspage.ContactsTable(oppty.ID, contacts).Render(r.Context(), w)
+		opptydetailspage.ContactsTable(oppty.ID, contacts, fd).Render(r.Context(), w)
 	}
 }
 
@@ -694,7 +694,7 @@ func HandleUpdateContact(contactRepo contact.Repository) http.HandlerFunc {
 			opptydetailspage.ContactTableRowForm(uint(opptyID), uint(contactID), fd)
 			return
 		}
-		opptydetailspage.ContactTableRow(uint(opptyID), contact).Render(r.Context(), w)
+		opptydetailspage.ContactTableRow(uint(opptyID), contact, fd).Render(r.Context(), w)
 	}
 }
 
@@ -725,7 +725,7 @@ func HandleDeleteContact(contactRepo contact.Repository) http.HandlerFunc {
 		if err != nil {
 			var fd helpers.FormData
 			fd.AddError("actions", "Error deleting contact.")
-			opptydetailspage.ContactTableRow(uint(opptyID), contact)
+			opptydetailspage.ContactTableRow(uint(opptyID), contact, fd).Render(r.Context(), w)
 		}
 		return
 	}

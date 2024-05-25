@@ -122,7 +122,7 @@ func OpportunityDetailsPage(user *user.User, od helpers.OpptyDetails, userDocume
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = ContactsTable(od.Oppty.ID, od.Contacts).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = ContactsTable(od.Oppty.ID, od.Contacts, fd).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -60,7 +60,6 @@ func (fd *FormData) AddValue(key, val string) {
 type ProfileArgs struct {
 	Username string
 	Email    string
-	Resume   document.Document
 }
 
 type OpptyDetails struct {

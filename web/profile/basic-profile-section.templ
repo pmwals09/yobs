@@ -1,0 +1,25 @@
+package profilepage
+
+import (
+	helpers "github.com/pmwals09/yobs/internal"
+)
+
+templ BasicProfile(pa helpers.ProfileArgs) {
+	<section class="mb-4" id="basic-profile">
+		<dl class="grid grid-cols-[min-content_auto] gap-x-4">
+			<dt class="font-bold whitespace-nowrap">
+				Email
+			</dt>
+			<dd>{ pa.Email }</dd>
+			<dt class="font-bold whitespace-nowrap">
+				User Name
+			</dt>
+			<dd>{ pa.Username }</dd>
+		</dl>
+		<button
+			class="bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer"
+			hx-get="/profile/basic-profile-form"
+			hx-target="#basic-profile"
+		>Update Profile</button>
+	</section>
+}

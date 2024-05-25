@@ -11,10 +11,11 @@ import "io"
 import "bytes"
 
 import (
+	"github.com/pmwals09/yobs/internal"
 	"github.com/pmwals09/yobs/internal/models/contact"
 )
 
-func ContactsTable(opptyID uint, contacts []contact.Contact) templ.Component {
+func ContactsTable(opptyID uint, contacts []contact.Contact, fd helpers.FormData) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_Buffer, templ_7745c5c3_IsBuffer := templ_7745c5c3_W.(*bytes.Buffer)
 		if !templ_7745c5c3_IsBuffer {
@@ -33,7 +34,7 @@ func ContactsTable(opptyID uint, contacts []contact.Contact) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			for _, contact := range contacts {
-				templ_7745c5c3_Err = ContactTableRow(opptyID, contact).Render(ctx, templ_7745c5c3_Buffer)
+				templ_7745c5c3_Err = ContactTableRow(opptyID, contact, fd).Render(ctx, templ_7745c5c3_Buffer)
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}

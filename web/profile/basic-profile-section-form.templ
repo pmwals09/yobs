@@ -1,0 +1,27 @@
+package profilepage
+
+import (
+helpers "github.com/pmwals09/yobs/internal"
+"github.com/pmwals09/yobs/web"
+)
+
+templ ProfilePageForm(fd helpers.FormData) {
+<section class="mb-4" id="basic-profile">
+	<form action="/profile/update" method="PUT" hx-put="/profile/update" hx-target="#basic-profile">
+		<section class="grid grid-cols-[min-content_auto] gap-x-4">
+			<label class="font-bold whitespace-nowrap" for="profile-email">
+				Email
+			</label>
+			<input name="profile-email" value={ fd.Values["profile-email"] } />
+			<label class="font-bold whitespace-nowrap">
+				User Name
+			</label>
+			<input name="profile-username" value={ fd.Values["profile-username"] } />
+		</section>
+		<button type="submit" class="bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer">
+			Save
+		</button>
+	</form>
+	@templates.RenderStandardError(fd.Errors["overall"])
+</section>
+}

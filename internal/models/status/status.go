@@ -19,7 +19,7 @@ const (
 )
 
 type Status struct {
-	ID uint
+	ID   uint
 	Name string
 	Note string
 	Date time.Time
@@ -50,7 +50,7 @@ type Repository interface {
 func (sm StatusModel) DeleteStatusByID(id uint) error {
 	_, err := sm.DB.Exec(`DELETE FROM statuses WHERE id = ?`, id)
 	return err
-} 
+}
 
 func (sm StatusModel) GetStatusByID(id uint) (Status, error) {
 	var out Status
@@ -63,10 +63,10 @@ func (sm StatusModel) GetStatusByID(id uint) (Status, error) {
 		FROM statuses WHERE id = ?;
 	`, id)
 	err := res.Scan(
-	&out.ID,
-	&out.Name,
-	&out.Note,
-	&out.Date)
+		&out.ID,
+		&out.Name,
+		&out.Note,
+		&out.Date)
 	if err != nil {
 		return out, err
 	}

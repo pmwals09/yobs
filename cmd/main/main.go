@@ -18,8 +18,8 @@ import (
 	"github.com/pmwals09/yobs/internal/models/document"
 	"github.com/pmwals09/yobs/internal/models/opportunity"
 	"github.com/pmwals09/yobs/internal/models/session"
-	"github.com/pmwals09/yobs/internal/models/user"
 	"github.com/pmwals09/yobs/internal/models/status"
+	"github.com/pmwals09/yobs/internal/models/user"
 )
 
 func main() {
@@ -71,6 +71,8 @@ func authenticatedRouter(opptyRepo opportunity.Repository, docRepo document.Repo
 	r.Get("/home", controllers.HandleGetHomepage(opptyRepo))
 	r.Route("/profile", func(r chi.Router) {
 		r.Get("/", controllers.HandleGetProfilePage())
+		r.Get("/basic-profile-form", controllers.HandleGetBasicProfileForm())
+		r.Put("/update", controllers.HandleUpdateProfile(userRepo))
 	})
 	r.Route("/opportunities", func(r chi.Router) {
 		r.Post("/", controllers.HandlePostOppty(opptyRepo))

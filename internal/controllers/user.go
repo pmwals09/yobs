@@ -142,6 +142,7 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository) h
 				break
 			}
 		}
+
 		http.SetCookie(w, &c)
 
 		// NOTE: This seems unintuitive, but it works with the HTMX model. One may

@@ -2,6 +2,7 @@ package user
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/google/uuid"
 )
@@ -35,6 +36,7 @@ type Repository interface {
 	GetUserByEmailOrUsername(email string, username string) (*User, error)
 	CreateUser(user *User) error
 	GetUserById(userId uint) (*User, error)
+	UpdateUser(user *User) error
 }
 
 func (um *UserModel) GetUserByEmailOrUsername(
@@ -101,4 +103,23 @@ func (um *UserModel) GetUserById(userId uint) (*User, error) {
 	)
 
 	return &user, err
+}
+
+func (um *UserModel) UpdateUser(user *User) error {
+	fmt.Printf("%+v\n", user)
+	_, err := um.DB.Exec(`
+		UPDATE users
+		SET
+			uuid = ?,
+			username = ?,
+			email = ?,
+			password = ?
+		WHERE id = ?;
+	`,
+		user.UUID,
+		user.Username,
+		user.Email,
+		user.Password,
+		user.ID)
+	return err
 }
