@@ -18,8 +18,8 @@ type DocumentType string
 
 const (
 	Resume        DocumentType = "Resume"
-	CoverLetter                = "CoverLetter"
-	Communication              = "Communication"
+	CoverLetter   DocumentType = "CoverLetter"
+	Communication DocumentType = "Communication"
 )
 
 type Document struct {

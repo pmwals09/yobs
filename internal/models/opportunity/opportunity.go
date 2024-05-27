@@ -99,7 +99,7 @@ func (n NullableStatus) ToStatus() (status.Status, bool) {
 // Create an opportunity and it's associated initial status entry
 func (g *OpportunityModel) CreateOpportunity(opp *Opportunity) error {
 	if opp.IsEmpty() {
-		return errors.New("Empty opportunity - must have at least one of Role, Company Name, or URL")
+		return errors.New("empty opportunity - must have at least one of Role, Company Name, or URL")
 	}
 
 	ctx := context.Background()
@@ -141,6 +141,9 @@ func (g *OpportunityModel) CreateOpportunity(opp *Opportunity) error {
 		opp.Statuses[0].Note,
 		opp.Statuses[0].Date,
 		id)
+	if err != nil {
+		return txError(tx, err)
+	}
 	err = tx.Commit()
 	if err != nil {
 		return txError(tx, err)

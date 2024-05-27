@@ -56,7 +56,6 @@ func HandleRegisterUser(repo user.Repository) http.HandlerFunc {
 		var data helpers.FormData
 		data.AddError("overall", "You're registered! <a href='/login'>Login</a> using these credentials.")
 		signuppage.SignupPage(nil, data).Render(r.Context(), w)
-		return
 	}
 }
 
@@ -153,7 +152,6 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository) h
 		// the server returns the full HTML of the page to replace the boosted area,
 		// so it makes sense. This is the alternative proposed by HTMX
 		w.Header().Add("HX-Redirect", "/home")
-		return
 	}
 }
 
