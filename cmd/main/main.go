@@ -155,6 +155,9 @@ func authOnly(sessionRepo session.Repository, userRepo user.Repository) func(htt
 			session.Expiration = time.Now().Add(time.Minute * 30)
 			err = sessionRepo.UpdateSession(session)
 			if err != nil {
+				sessionRepo.DeleteSessionByUUID(session.UUID)
+				http.Redirect(w, r, "/", http.StatusFound)
+				return
 			}
 			cookie.Expires = session.Expiration
 			http.SetCookie(w, cookie)
@@ -164,7 +167,7 @@ func authOnly(sessionRepo session.Repository, userRepo user.Repository) func(htt
 				http.Redirect(w, r, "/", http.StatusFound)
 				return
 			}
-			ctx := context.WithValue(r.Context(), "user", u)
+			ctx := context.WithValue(r.Context(), user.UserCtxKey, u)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

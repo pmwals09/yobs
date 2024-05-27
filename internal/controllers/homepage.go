@@ -18,9 +18,9 @@ import (
 
 func HandleGetHomepage(opptyRepo opportunity.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if user, ok := r.Context().Value("user").(*user.User); ok {
+		if user, ok := r.Context().Value(user.UserCtxKey).(*user.User); ok {
 			if user == nil {
-				helpers.WriteError(w, errors.New("No user available"))
+				helpers.WriteError(w, errors.New("no user available"))
 				return
 			}
 
@@ -32,7 +32,7 @@ func HandleGetHomepage(opptyRepo opportunity.Repository) http.HandlerFunc {
 
 			homepage.HomePage(user, opptys, helpers.FormData{}).Render(r.Context(), w)
 		} else {
-			helpers.WriteError(w, errors.New("No user available"))
+			helpers.WriteError(w, errors.New("no user available"))
 			return
 		}
 	}
@@ -40,7 +40,7 @@ func HandleGetHomepage(opptyRepo opportunity.Repository) http.HandlerFunc {
 
 func HandleGetLandingPage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if user, ok := r.Context().Value("user").(*user.User); ok {
+		if user, ok := r.Context().Value(user.UserCtxKey).(*user.User); ok {
 			indexpage.IndexPage(user).Render(r.Context(), w)
 		} else {
 			indexpage.IndexPage(nil).Render(r.Context(), w)
@@ -50,7 +50,7 @@ func HandleGetLandingPage() http.HandlerFunc {
 
 func HandleGetLoginPage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if user, ok := r.Context().Value("user").(*user.User); ok {
+		if user, ok := r.Context().Value(user.UserCtxKey).(*user.User); ok {
 			loginpage.LoginPage(user, helpers.FormData{}).Render(r.Context(), w)
 		} else {
 			loginpage.LoginPage(nil, helpers.FormData{}).Render(r.Context(), w)
@@ -60,7 +60,7 @@ func HandleGetLoginPage() http.HandlerFunc {
 
 func HandleGetSignUpPage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if user, ok := r.Context().Value("user").(*user.User); ok {
+		if user, ok := r.Context().Value(user.UserCtxKey).(*user.User); ok {
 			signuppage.SignupPage(user, helpers.FormData{}).Render(r.Context(), w)
 		} else {
 			signuppage.SignupPage(nil, helpers.FormData{}).Render(r.Context(), w)
@@ -90,7 +90,7 @@ func HandleLogout(sessionRepo session.Repository) http.HandlerFunc {
 		cookie.Expires = time.Time{}
 		http.SetCookie(w, cookie)
 
-		err = sessionRepo.DeleteSessionByUUID(uuid)
+		sessionRepo.DeleteSessionByUUID(uuid)
 
 		http.Redirect(w, r, "/", http.StatusFound)
 	}

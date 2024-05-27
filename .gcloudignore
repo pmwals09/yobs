@@ -1,4 +1,2 @@
-.env
 *.db
 tmp/
-aats

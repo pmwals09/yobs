@@ -11,7 +11,7 @@ import (
 
 func HandleGetProfilePage() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		u := r.Context().Value("user").(*user.User)
+		u := r.Context().Value(user.UserCtxKey).(*user.User)
 		pa := helpers.ProfileArgs{
 			Username: u.Username,
 			Email:    u.Email,
@@ -22,9 +22,10 @@ func HandleGetProfilePage() http.HandlerFunc {
 
 func HandleGetBasicProfileForm() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		u, ok := r.Context().Value("user").(*user.User)
+		u, ok := r.Context().Value(user.UserCtxKey).(*user.User)
 		if !ok {
-
+			http.Redirect(w, r, "/", http.StatusUnauthorized)
+			return
 		}
 		var fd helpers.FormData
 		fd.AddValue("profile-email", u.Email)
@@ -43,7 +44,7 @@ func HandleUpdateProfile(userRepo user.Repository) http.HandlerFunc {
 			w.Write([]byte("<p class='text-red-600>Error parsing form</p>"))
 			return
 		}
-		u, ok := r.Context().Value("user").(*user.User)
+		u, ok := r.Context().Value(user.UserCtxKey).(*user.User)
 		if !ok {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("<p class='text-red-600>Error getting valid user</p>"))
@@ -68,6 +69,5 @@ func HandleUpdateProfile(userRepo user.Repository) http.HandlerFunc {
 		pa.Email = newUser.Email
 		pa.Username = newUser.Username
 		profilepage.BasicProfile(pa).Render(r.Context(), w)
-		return
 	}
 }

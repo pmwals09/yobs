@@ -7,6 +7,10 @@ import (
 	"github.com/google/uuid"
 )
 
+type Key int
+
+const UserCtxKey Key = 0
+
 type User struct {
 	ID       uint
 	UUID     uuid.UUID

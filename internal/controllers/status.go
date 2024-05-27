@@ -39,7 +39,6 @@ func HandleStatusRowForm(statusRepo status.Repository) http.HandlerFunc {
 		fd.Values = status.ToFormDataValues()
 
 		opportunitydetailspage.StatusTableRowForm(uint(opptyId), status, fd).Render(r.Context(), w)
-		return
 	}
 }
 
@@ -100,7 +99,7 @@ func HandleUpdateStatusItem(statusRepo status.Repository, opptyRepo opportunity.
 			return
 		}
 		buf := new(bytes.Buffer)
-		u, ok := r.Context().Value("user").(*user.User)
+		u, ok := r.Context().Value(user.UserCtxKey).(*user.User)
 		if !ok {
 			w.Write(buf.Bytes())
 			return
@@ -114,7 +113,6 @@ func HandleUpdateStatusItem(statusRepo status.Repository, opptyRepo opportunity.
 		opportunitydetailspage.OpptyDetailGrid(*oppty, true).Render(r.Context(), buf)
 		w.WriteHeader(http.StatusOK)
 		w.Write(buf.Bytes())
-		return
 	}
 }
 

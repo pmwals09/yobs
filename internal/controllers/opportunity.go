@@ -29,7 +29,7 @@ func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
 
 		user, err := userFromRequest(r)
 		if err != nil {
-			helpers.WriteError(w, errors.New("No user available"))
+			helpers.WriteError(w, errors.New("no user available"))
 		}
 		f := helpers.FormData{}
 		if err := repo.CreateOpportunity(newOpportunity); err != nil {
@@ -47,7 +47,6 @@ func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
 		}
 
 		homepage.HomePage(user, opportunities, f).Render(r.Context(), w)
-		return
 	}
 }
 
@@ -213,7 +212,6 @@ func HandleUploadToOppty(
 		}
 
 		returnAttachmentsSection(w, r, user, oppty, opptyRepo)
-		return
 	}
 }
 
@@ -244,8 +242,8 @@ func newOpportunityFromRequest(r *http.Request) (*opportunity.Opportunity, error
 	}
 	o.Statuses = []status.Status{initialStatus}
 	user, err := userFromRequest(r)
-	if user == nil {
-		return o, errors.New("No user available to associate with opportunity")
+	if user == nil || err != nil {
+		return o, errors.New("no user available to associate with opportunity")
 	}
 	o.WithUser(user)
 	return o, nil
@@ -255,7 +253,7 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, err := userFromRequest(r)
 		if err == nil {
-			helpers.WriteError(w, errors.New("No user available"))
+			helpers.WriteError(w, errors.New("no user available"))
 			return
 		}
 		oppty, err := opptyFromRequest(r, opptyRepo, user)
@@ -301,6 +299,15 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 		}
 
 		doc, err := docRepo.GetDocumentById(uint(docId), user)
+		if err != nil {
+			fd.AddError("existing-attachment", "Unable to retrieve document to add")
+			docs, err := docRepo.GetAllUserDocuments(user)
+			if err != nil {
+				fd.AddError("overall", "Unable to retrieve user docs")
+			}
+			retargetAttachmentModal(w, r, *oppty, docs, fd)
+			return
+		}
 
 		// Associate the existing document with this opportunity
 		err = opptyRepo.AddDocument(oppty, &doc)
@@ -315,7 +322,6 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 		}
 
 		returnAttachmentsSection(w, r, user, oppty, opptyRepo)
-		return
 	}
 }
 
@@ -349,7 +355,7 @@ func HandleAttachmentModal(opptyRepo opportunity.Repository, docRepo document.Re
 	return func(w http.ResponseWriter, r *http.Request) {
 		u, err := userFromRequest(r)
 		if err != nil {
-			helpers.WriteError(w, errors.New("Invalid user"))
+			helpers.WriteError(w, errors.New("invalid user"))
 			return
 		}
 		var fd helpers.FormData
@@ -458,7 +464,6 @@ func HandleStatusModal(opptyRepo opportunity.Repository) http.HandlerFunc {
 			return
 		}
 		opptydetailspage.StatusModal(*oppty, fd).Render(r.Context(), w)
-		return
 	}
 }
 
@@ -466,7 +471,7 @@ func HandleUpdateStatus(opptyRepo opportunity.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var fd helpers.FormData
 		s, err := newStatusFromRequest(r)
-		if s.IsEmpty() {
+		if s.IsEmpty() || err != nil {
 			fd.AddError("overall", "Unable to update status with provided data")
 			user, err := userFromRequest(r)
 			if err != nil {
@@ -515,8 +520,7 @@ func HandleUpdateStatus(opptyRepo opportunity.Repository) http.HandlerFunc {
 		opptydetailspage.StatusTable(oppty.ID, oppty.Statuses).Render(r.Context(), buf)
 		opptydetailspage.OpptyDetailGrid(*oppty, true).Render(r.Context(), buf)
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(buf.String()))
-
+		w.Write(buf.Bytes())
 	}
 }
 
@@ -577,7 +581,6 @@ func HandleUpdate(opptyRepo opportunity.Repository, docRepo document.Repository)
 			return
 		}
 		helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%d", oppty.ID), http.StatusFound)
-		return
 	}
 }
 
@@ -585,18 +588,15 @@ func HandleDeleteStatus(statusRepo status.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		statusId := chi.URLParam(r, "statusID")
 		opptyId := chi.URLParam(r, "opportunityId")
-		sId, err := strconv.ParseUint(statusId, 10, 64)
-		err = statusRepo.DeleteStatusByID(uint(sId))
-		if err != nil {
-		}
+		sId, _ := strconv.ParseUint(statusId, 10, 64)
+		statusRepo.DeleteStatusByID(uint(sId))
 		helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%s", opptyId), http.StatusFound)
-		return
 	}
 }
 
 func HandleRemoveDocFromOppty(opptyRepo opportunity.Repository, docRepo document.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		u, ok := r.Context().Value("user").(*user.User)
+		u, ok := r.Context().Value(user.UserCtxKey).(*user.User)
 		if !ok {
 			fmt.Println("Error getting user from context")
 			helpers.HTMXRedirect(w, "/home", http.StatusFound)
@@ -633,7 +633,6 @@ func HandleRemoveDocFromOppty(opptyRepo opportunity.Repository, docRepo document
 			return
 		}
 		helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%d", opptyId), http.StatusFound)
-		return
 	}
 }
 
@@ -652,13 +651,18 @@ func HandleContactRowForm(contactRepo contact.Repository) http.HandlerFunc {
 			opptydetailspage.ContactTableRowForm(uint(opptyID), uint(contactID), fd).Render(r.Context(), w)
 			return
 		}
-		u, ok := r.Context().Value("user").(*user.User)
+		u, ok := r.Context().Value(user.UserCtxKey).(*user.User)
 		if !ok {
 			fd.AddError("overall", "No user available")
 			opptydetailspage.ContactTableRowForm(uint(opptyID), uint(contactID), fd).Render(r.Context(), w)
 			return
 		}
 		contact, err := contactRepo.GetContactById(uint(contactID), *u)
+		if err != nil {
+			fd.AddError("overall", "Cannot find contact")
+			opptydetailspage.ContactTableRowForm(uint(opptyID), uint(contactID), fd).Render(r.Context(), w)
+			return
+		}
 		fd.Values = contact.ToFormDataValues()
 		opptydetailspage.ContactTableRowForm(uint(opptyID), uint(contactID), fd).Render(r.Context(), w)
 	}
@@ -714,20 +718,24 @@ func HandleDeleteContact(contactRepo contact.Repository) http.HandlerFunc {
 			w.Write([]byte("<tr>Error deleting contact</tr>"))
 			return
 		}
-		u, ok := r.Context().Value("user").(*user.User)
+		u, ok := r.Context().Value(user.UserCtxKey).(*user.User)
 		if !ok {
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("<tr>Invalid user</tr>"))
 			return
 		}
 		contact, err := contactRepo.GetContactById(uint(contactID), *u)
+		if err != nil {
+			var fd helpers.FormData
+			fd.AddError("actions", "Error finding contact to delete.")
+			opptydetailspage.ContactTableRow(uint(opptyID), contact, fd).Render(r.Context(), w)
+		}
 		err = contactRepo.DeleteContact(uint(opptyID), contact)
 		if err != nil {
 			var fd helpers.FormData
 			fd.AddError("actions", "Error deleting contact.")
 			opptydetailspage.ContactTableRow(uint(opptyID), contact, fd).Render(r.Context(), w)
 		}
-		return
 	}
 }
 
@@ -747,16 +755,16 @@ func updateOpptyFromRequest(r *http.Request, oppty *opportunity.Opportunity) err
 	oppty.Description = description
 
 	if oppty.IsEmpty() {
-		return errors.New("Insufficient data to update opportunity.")
+		return errors.New("insufficient data to update opportunity")
 	}
 	return nil
 }
 
 func userFromRequest(r *http.Request) (*user.User, error) {
-	if u, ok := r.Context().Value("user").(*user.User); !ok {
-		return u, errors.New("Unable to retrieve user from context.")
+	if u, ok := r.Context().Value(user.UserCtxKey).(*user.User); !ok {
+		return u, errors.New("unable to retrieve user from context")
 	} else if u == nil {
-		return u, errors.New("No user available")
+		return u, errors.New("no user available")
 	} else {
 		return u, nil
 	}
@@ -793,7 +801,7 @@ func newContactFromRequest(r *http.Request) (*contact.Contact, error) {
 	c.Email = email
 
 	if c.IsEmpty() {
-		return &c, errors.New("Cannot create a valid contact from the provided information")
+		return &c, errors.New("cannot create a valid contact from the provided information")
 	}
 
 	return &c, nil
@@ -834,7 +842,6 @@ func returnAttachmentsSection(
 	}
 
 	opptydetailspage.AttachmentsTable(oppty.ID, docs).Render(r.Context(), w)
-	return
 }
 
 func retargetAttachmentModal(
