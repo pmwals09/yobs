@@ -8,6 +8,7 @@ import (
 )
 
 type Key int
+
 const UserCtxKey Key = 0
 
 type User struct {
