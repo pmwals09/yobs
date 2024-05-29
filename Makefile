@@ -13,3 +13,5 @@ migrate:
 seed:
 	goose -dir ./internal/db/seeds -no-versioning sqlite ./test.db up
 
+build-prod:
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o aats ./cmd/main
