@@ -4,12 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"mime/multipart"
-	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	aatsConfig "github.com/pmwals09/yobs/internal/config"
 	"github.com/pmwals09/yobs/internal/models/user"
 	// signer "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 )
@@ -55,18 +55,20 @@ func (d *Document) GetKey() string {
 }
 
 type DocumentModel struct {
-	DB *sql.DB
+	DB     *sql.DB
+	Config aatsConfig.Config
 }
 
 type Repository interface {
 	CreateDocument(doc *Document) error
 	GetAllUserDocuments(user *user.User) ([]Document, error)
 	GetDocumentById(id uint, user *user.User) (Document, error)
+	GetConfig() aatsConfig.Config
 }
 
-func (d *Document) Upload(file multipart.File) error {
-	region := os.Getenv("AWS_REGION")
-	bucketName := os.Getenv("AWS_S3_BUCKET")
+func (d *Document) Upload(file multipart.File, aatsCfg aatsConfig.Config) error {
+	region := aatsCfg.AWSConfig.Region
+	bucketName := aatsCfg.AWSConfig.S3BucketName
 
 	cfg, err := config.LoadDefaultConfig(
 		context.Background(),
@@ -130,9 +132,9 @@ func (d *DocumentModel) CreateDocument(doc *Document) error {
 	return err
 }
 
-func (d *Document) GetPresignedDownloadUrl() (string, error) {
-	bucketName := os.Getenv("AWS_S3_BUCKET")
-	region := os.Getenv("AWS_REGION")
+func (d *Document) GetPresignedDownloadUrl(aatsCfg aatsConfig.Config) (string, error) {
+	bucketName := aatsCfg.AWSConfig.S3BucketName
+	region := aatsCfg.AWSConfig.Region
 	lifetimeSeconds := int64(60 * 30)
 
 	cfg, err := config.LoadDefaultConfig(
@@ -226,4 +228,8 @@ func (d *DocumentModel) GetDocumentById(id uint, user *user.User) (Document, err
 	doc.User = user
 
 	return doc, nil
+}
+
+func (d *DocumentModel) GetConfig() aatsConfig.Config {
+	return d.Config
 }

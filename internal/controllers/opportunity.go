@@ -74,8 +74,9 @@ func HandleGetOpptyPage(
 		if err != nil {
 			fd.AddError("document-table", "Unable to retrieve opportunity documents.")
 		} else {
+			cfg := docRepo.GetConfig()
 			for i := range docs {
-				_, err := docs[i].GetPresignedDownloadUrl()
+				_, err := docs[i].GetPresignedDownloadUrl(cfg)
 				if err != nil {
 					fd.AddError("document-table", "Unable to retrieve document URL for download.")
 					opptydetailspage.OpportunityDetailsPage(
@@ -173,7 +174,8 @@ func HandleUploadToOppty(
 
 		d.WithUser(user)
 
-		err = d.Upload(file)
+		cfg := docRepo.GetConfig()
+		err = d.Upload(file, cfg)
 		if err != nil {
 			helpers.WriteError(w, err)
 			return
@@ -202,7 +204,7 @@ func HandleUploadToOppty(
 		}
 
 		for i := range docs {
-			_, err := docs[i].GetPresignedDownloadUrl()
+			_, err := docs[i].GetPresignedDownloadUrl(cfg)
 			if err != nil {
 				w.Header().Add("HX-Retarget", "attachment-modal")
 				fd.AddError("document-table", "Unable to retrieve document URL for download.")

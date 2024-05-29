@@ -25,7 +25,7 @@ jobs:
         run: make migrate
 
       - name: Build the app
-        run: scripts/build.sh
+        run: make build-prod
 
       - name: Authenticate with GCP
         uses: google-github-actions/auth@v2
@@ -39,5 +39,12 @@ jobs:
         run: gcloud builds submit --tag us-central1-docker.pkg.dev/aats-424501/aats/pmwals09/aats:latest .
 
       - name: Deploy to Cloud Run
-        run: gcloud run deploy notely --image us-central1-docker.pkg.dev/aats-424501/aats/pmwals09/aats:latest --region us-central1 --allow-unauthenticated --project notely-412702 --max-instances=4
+        run: |
+          gcloud run deploy notely \
+          --image us-central1-docker.pkg.dev/aats-424501/aats/pmwals09/aats:latest \
+          --region us-central1 \
+          --allow-unauthenticated \
+          --project notely-412702 \
+          --max-instances=4 \
+          --update-env-vars=AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }},AWS_REGION=${{ secrets.AWS_REGION }},AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }},AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }}
 

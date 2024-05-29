@@ -10,8 +10,8 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/google/uuid"
-	"github.com/joho/godotenv"
 
+	"github.com/pmwals09/yobs/internal/config"
 	"github.com/pmwals09/yobs/internal/controllers"
 	"github.com/pmwals09/yobs/internal/db"
 	"github.com/pmwals09/yobs/internal/models/contact"
@@ -32,20 +32,20 @@ func main() {
 
 	r.Use(middleware.Timeout(60 * time.Second))
 
+	config, err := config.New()
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+
 	sqlDb, err := db.InitDb()
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)
 	}
 
-	err = godotenv.Load(".env")
-	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
-	}
-
 	opptyRepo := opportunity.OpportunityModel{DB: sqlDb}
-	docRepo := document.DocumentModel{DB: sqlDb}
+	docRepo := document.DocumentModel{DB: sqlDb, Config: *config}
 	userRepo := user.UserModel{DB: sqlDb}
 	sessionRepo := session.SessionModel{DB: sqlDb}
 	contactRepo := contact.ContactModel{DB: sqlDb}
