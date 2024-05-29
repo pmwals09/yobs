@@ -45,5 +45,5 @@ jobs:
           --region us-central1 \
           --allow-unauthenticated \
           --project aats-424501 \
-          --max-instances=4 \
-          --set-env-vars=AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }},AWS_REGION=${{ secrets.AWS_REGION }},AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }},AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }}
+          --max-instances 4 \
+          --set-env-vars AWS_ACCESS_KEY=${{ secrets.AWS_ACCESS_KEY }},AWS_REGION=${{ secrets.AWS_REGION }},AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }},AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }}
