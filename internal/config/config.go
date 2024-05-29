@@ -42,7 +42,7 @@ func New() (*Config, error) {
 	c := Config{
 		AWSConfig: awsConfig,
 	}
-	return &c, err
+	return &c, allErr
 }
 
 func newAWSConfig() (AWSConfig, error) {
