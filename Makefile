@@ -17,4 +17,4 @@ seed:
 	goose -dir ./internal/db/seeds -no-versioning turso file:./test.db up
 
 build-prod:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o aats ./cmd/main
+	GOOS=linux GOARCH=amd64 go build -o aats ./cmd/main
