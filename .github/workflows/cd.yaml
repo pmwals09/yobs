@@ -22,7 +22,7 @@ jobs:
         run: go install github.com/pressly/goose/v3/cmd/goose@latest
 
       - name: Run migrations
-        run: make migrate
+        run: TURSO_DATABASE_URL=${{ secrets.TURSO_DATABASE_URL }} TURSO_AUTH_TOKEN=${{ secrets.TURSO_AUTH_TOKEN }}make migrate-prod
 
       - name: Build the app
         run: make build-prod
@@ -46,4 +46,4 @@ jobs:
           --allow-unauthenticated \
           --project aats-424501 \
           --max-instances 4 \
-          --set-env-vars AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }},AWS_REGION=${{ secrets.AWS_REGION }},AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }},AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }}
+          --set-env-vars AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }},AWS_REGION=${{ secrets.AWS_REGION }},AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }},AWS_S3_BUCKET=${{ secrets.AWS_S3_BUCKET }},ENVIRONMENT="Production"

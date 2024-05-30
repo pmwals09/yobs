@@ -2,12 +2,22 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/pmwals09/yobs/internal/config"
+	_ "github.com/tursodatabase/go-libsql"
 )
 
-func InitDb() (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", "test.db")
+func InitDb(cfg config.Config) (*sql.DB, error) {
+	var path string
+	switch cfg.EnvironmentName {
+	case config.LocalEnvironment:
+		path = "file:./test.db"
+	case config.ProductionEnvironment:
+		path = fmt.Sprintf("%s?authToken=%s", cfg.DBConfig.URL, cfg.DBConfig.Token)
+	}
+
+	db, err := sql.Open("libsql", path)
 	if err != nil {
 		return nil, err
 	}
