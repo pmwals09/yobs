@@ -38,7 +38,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	sqlDb, err := db.InitDb()
+	sqlDb, err := db.InitDb(*config)
 	if err != nil {
 		log.Fatal(err)
 		os.Exit(1)

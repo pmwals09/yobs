@@ -7,11 +7,14 @@ templ-gen:
 build:
 	go build -o ./tmp/main ./cmd/main
 
-migrate:
-	goose -dir ./internal/db/migrations sqlite ./test.db up
+migrate-local:
+	goose -dir ./internal/db/migrations turso file:./test.db up
+
+migrate-prod:
+	goose -dir ./internal/db/migrations turso ${TURSO_DATABASE_URL}?authToken=${TURSO_AUTH_TOKEN} up
 
 seed:
-	goose -dir ./internal/db/seeds -no-versioning sqlite ./test.db up
+	goose -dir ./internal/db/seeds -no-versioning turso file:./test.db up
 
 build-prod:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o aats ./cmd/main
