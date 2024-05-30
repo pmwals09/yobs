@@ -52,6 +52,7 @@ INSERT INTO opportunities (
   url,
   user_id
 ) SELECT id, company_name, role, description, url, user_id FROM opportunities_old;
+DROP TABLE opportunities_old;
 -- +goose StatementEnd
 -- +goose Down
 -- +goose StatementBegin

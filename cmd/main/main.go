@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -32,6 +33,8 @@ func main() {
 
 	r.Use(middleware.Timeout(60 * time.Second))
 
+	logger := slog.New(slog.Default().Handler())
+
 	config, err := config.New()
 	if err != nil {
 		log.Fatal(err)
@@ -60,14 +63,14 @@ func main() {
 		r.Post("/login", controllers.HandleLogInUser(&userRepo, &sessionRepo))
 		r.Get("/logout", controllers.HandleLogout(&sessionRepo))
 	})
-	r.Mount("/", authenticatedRouter(&opptyRepo, &docRepo, &sessionRepo, &userRepo, &contactRepo, &statusRepo))
+	r.Mount("/", authenticatedRouter(&opptyRepo, &docRepo, &sessionRepo, &userRepo, &contactRepo, &statusRepo, logger))
 
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
 
-func authenticatedRouter(opptyRepo opportunity.Repository, docRepo document.Repository, sessionRepo session.Repository, userRepo user.Repository, contactRepo contact.Repository, statusRepo status.Repository) http.Handler {
+func authenticatedRouter(opptyRepo opportunity.Repository, docRepo document.Repository, sessionRepo session.Repository, userRepo user.Repository, contactRepo contact.Repository, statusRepo status.Repository, logger *slog.Logger) http.Handler {
 	r := chi.NewRouter()
-	r.Use(authOnly(sessionRepo, userRepo))
+	r.Use(authOnly(sessionRepo, userRepo, logger))
 	r.Get("/home", controllers.HandleGetHomepage(opptyRepo))
 	r.Route("/profile", func(r chi.Router) {
 		r.Get("/", controllers.HandleGetProfilePage())
@@ -107,13 +110,14 @@ func authenticatedRouter(opptyRepo opportunity.Repository, docRepo document.Repo
 	return r
 }
 
-func authOnly(sessionRepo session.Repository, userRepo user.Repository) func(http.Handler) http.Handler {
+func authOnly(sessionRepo session.Repository, userRepo user.Repository, logger *slog.Logger) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			cookies := r.Cookies()
 			var cookie *http.Cookie
 
 			if len(cookies) == 0 {
+				logger.Warn("Cookies are len 0")
 				http.Redirect(w, r, "/", http.StatusFound)
 				return
 			}
@@ -127,12 +131,14 @@ func authOnly(sessionRepo session.Repository, userRepo user.Repository) func(htt
 			}
 
 			if cookie == nil {
+				logger.Warn("Cookie is nil")
 				http.Redirect(w, r, "/", http.StatusFound)
 				return
 			}
 
 			uuid, err := uuid.Parse(cookie.Value)
 			if err != nil {
+				logger.Error("Problem parsing UUID: %w", err)
 				http.Redirect(w, r, "/", http.StatusFound)
 				sessionRepo.DeleteSessionByUUID(uuid)
 				return
@@ -140,6 +146,7 @@ func authOnly(sessionRepo session.Repository, userRepo user.Repository) func(htt
 
 			session, err := sessionRepo.GetSessionByUUID(uuid)
 			if err != nil {
+				logger.Error("Problem getting session by UUID: %w", err)
 				http.Redirect(w, r, "/", http.StatusFound)
 				sessionRepo.DeleteSessionByUUID(uuid)
 				return
@@ -148,6 +155,7 @@ func authOnly(sessionRepo session.Repository, userRepo user.Repository) func(htt
 			now := time.Now()
 			if now.After(session.Expiration) {
 				sessionRepo.DeleteSessionByUUID(session.UUID)
+				logger.Info("Redirecting because session is expired")
 				http.Redirect(w, r, "/", http.StatusFound)
 				return
 			}
@@ -155,6 +163,7 @@ func authOnly(sessionRepo session.Repository, userRepo user.Repository) func(htt
 			session.Expiration = time.Now().Add(time.Minute * 30)
 			err = sessionRepo.UpdateSession(session)
 			if err != nil {
+				logger.Error("Problem updating session: %w", err)
 				sessionRepo.DeleteSessionByUUID(session.UUID)
 				http.Redirect(w, r, "/", http.StatusFound)
 				return
@@ -164,9 +173,11 @@ func authOnly(sessionRepo session.Repository, userRepo user.Repository) func(htt
 
 			u, err := userRepo.GetUserById(session.UserID)
 			if err != nil {
+				logger.Error("Problem getting user: %w", err)
 				http.Redirect(w, r, "/", http.StatusFound)
 				return
 			}
+			logger.Info("Successfully navigated session mgmt")
 			ctx := context.WithValue(r.Context(), user.UserCtxKey, u)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
