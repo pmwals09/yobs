@@ -22,7 +22,7 @@ jobs:
         run: go install github.com/pressly/goose/v3/cmd/goose@latest
 
       - name: Run migrations
-        run: TURSO_DATABASE_URL=${{ secrets.TURSO_DATABASE_URL }} TURSO_AUTH_TOKEN=${{ secrets.TURSO_AUTH_TOKEN }}make migrate-prod
+        run: TURSO_DATABASE_URL=${{ secrets.TURSO_DATABASE_URL }} TURSO_AUTH_TOKEN=${{ secrets.TURSO_AUTH_TOKEN }} make migrate-prod
 
       - name: Build the app
         run: make build-prod
