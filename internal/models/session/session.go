@@ -2,7 +2,6 @@ package session
 
 import (
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
