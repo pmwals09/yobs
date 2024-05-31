@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"slices"
 	"strconv"
@@ -20,19 +21,22 @@ import (
 	opptydetailspage "github.com/pmwals09/yobs/web/opportunity-details"
 )
 
-func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
+func HandlePostOppty(repo opportunity.Repository, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		newOpportunity, err := newOpportunityFromRequest(r)
 		if err != nil {
+			logger.Error("Problem getting oppty from request", "error", err)
 			helpers.WriteError(w, err)
 		}
 
 		user, err := userFromRequest(r)
 		if err != nil {
+			logger.Error("Problem getting user from request", "error", err)
 			helpers.WriteError(w, errors.New("no user available"))
 		}
 		f := helpers.FormData{}
 		if err := repo.CreateOpportunity(newOpportunity); err != nil {
+			logger.Error("Problem creating opportunity", "error", err)
 			f.AddError("overall", fmt.Sprintf(
 				"An error occurred creating the opportunity: %s",
 				err.Error()))
@@ -42,6 +46,7 @@ func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
 
 		opportunities, opptyErr := repo.GetAllOpportunities(user)
 		if opptyErr != nil {
+			logger.Error("Problem getting all opportunities", "error", err)
 			helpers.WriteError(w, opptyErr)
 			return
 		}
@@ -53,6 +58,7 @@ func HandlePostOppty(repo opportunity.Repository) http.HandlerFunc {
 func HandleGetOpptyPage(
 	opptyRepo opportunity.Repository,
 	docRepo document.Repository,
+	logger *slog.Logger,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var od helpers.OpptyDetails
@@ -60,11 +66,13 @@ func HandleGetOpptyPage(
 
 		user, err := userFromRequest(r)
 		if err != nil {
+			logger.Error("Problem getting user from request")
 			helpers.WriteError(w, err)
 			return
 		}
 		opp, err := opptyFromRequest(r, opptyRepo, user)
 		if err != nil {
+			logger.Error("Problem getting oppty from request", "error", err)
 			helpers.WriteError(w, err)
 			return
 		}
@@ -72,12 +80,14 @@ func HandleGetOpptyPage(
 
 		docs, err := opptyRepo.GetAllDocuments(opp, user)
 		if err != nil {
+			logger.Error("Problem getting all documents", "error", err)
 			fd.AddError("document-table", "Unable to retrieve opportunity documents.")
 		} else {
 			cfg := docRepo.GetConfig()
 			for i := range docs {
 				_, err := docs[i].GetPresignedDownloadUrl(cfg)
 				if err != nil {
+					logger.Error("Problem getting document URL", "id", docs[i].ID, "error", err)
 					fd.AddError("document-table", "Unable to retrieve document URL for download.")
 					opptydetailspage.OpportunityDetailsPage(
 						user,
@@ -94,11 +104,13 @@ func HandleGetOpptyPage(
 
 		userDocuments, err := docRepo.GetAllUserDocuments(user)
 		if err != nil {
+			logger.Error("Problem getting all documents", "error", err)
 			fd.AddError("existing-attachment", "Unable to retrieve user documents.")
 		}
 
 		contacts, err := opptyRepo.GetAllContacts(opp)
 		if err != nil {
+			logger.Error("Problem getting all contacts", "error", err)
 			fd.AddError("contacts", fmt.Sprintf("Unable to retrieve opportunity contacts: %s", err.Error()))
 		} else {
 			od.Contacts = contacts
@@ -115,14 +127,17 @@ func HandleGetOpptyPage(
 func HandleUploadToOppty(
 	opptyRepo opportunity.Repository,
 	docRepo document.Repository,
+	logger *slog.Logger,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var fd helpers.FormData
 		user, err := userFromRequest(r)
 		if err != nil {
+			logger.Error("Problem getting user from request", "error", err)
 			fd.AddError("overall", "Error retrieving user")
 			docs, err := docRepo.GetAllUserDocuments(user)
 			if err != nil {
+				logger.Error("Problem getting all user documents", "error", err)
 				fd.AddError("existing-attachment", "Error retrieving user documents")
 			}
 			var oppty opportunity.Opportunity
@@ -131,24 +146,41 @@ func HandleUploadToOppty(
 		}
 		oppty, err := opptyFromRequest(r, opptyRepo, user)
 		if err != nil {
+			logger.Error("Problem getting oppty from request", "error", err)
 			fd.AddError("overall", "Error retrieving opportunity")
 			docs, err := docRepo.GetAllUserDocuments(user)
 			if err != nil {
+				logger.Error("Problem getting all user documents", "error", err)
 				fd.AddError("existing-attachment", "Error retrieving user documents")
 			}
 			retargetAttachmentModal(w, r, *oppty, docs, fd)
 			return
 		}
 
-		r.ParseMultipartForm(10 << 20)
+		err = r.ParseMultipartForm(10 << 20)
+		if err != nil {
+			msg := "Problem parsing file - did you attach one?"
+			logger.Error(msg, "error", err)
+			fd.AddError("attachment-file", msg)
+			docs, err := docRepo.GetAllUserDocuments(user)
+			if err != nil {
+				logger.Error("Problem getting all user documents", "error", err)
+				fd.AddError("existing-attachment", "Error retrieving user documents")
+			}
+			retargetAttachmentModal(w, r, *oppty, docs, fd)
+			return
+		}
 		file, handler, err := r.FormFile("attachment-file")
 		if file != nil {
 			defer file.Close()
 		}
 		if err != nil {
-			fd.AddError("attachment-file", "Problem parsing file - did you attach one?")
+			msg := "Problem parsing file - did you attach one?"
+			logger.Error(msg, "error", err)
+			fd.AddError("attachment-file", msg)
 			docs, err := docRepo.GetAllUserDocuments(user)
 			if err != nil {
+				logger.Error("Problem getting all user documents", "error", err)
 				fd.AddError("existing-attachment", "Error retrieving user documents")
 			}
 			retargetAttachmentModal(w, r, *oppty, docs, fd)
@@ -177,20 +209,26 @@ func HandleUploadToOppty(
 		cfg := docRepo.GetConfig()
 		err = d.Upload(file, cfg)
 		if err != nil {
+			logger.Error("Problem uploading document", "error", err)
 			helpers.WriteError(w, err)
 			return
 		}
 
 		if err := docRepo.CreateDocument(d); err != nil {
+			logger.Error("Problem creating document", "error", err)
 			helpers.WriteError(w, err)
 			return
 		}
 
 		if err = opptyRepo.AddDocument(oppty, d); err != nil {
-			fd.AddError("overall", "Unable to add document to the opportunity")
+			msg := "Unable to add document to the opportunity"
+			logger.Error(msg, "error", err)
+			fd.AddError("overall", msg)
 			docs, err := docRepo.GetAllUserDocuments(user)
 			if err != nil {
-				fd.AddError("existing-attachment", "Error retrieving user documents")
+				msg := "Error retrieving user documents"
+				logger.Error(msg, "error", err)
+				fd.AddError("existing-attachment", msg)
 			}
 			retargetAttachmentModal(w, r, *oppty, docs, fd)
 			return
@@ -198,7 +236,9 @@ func HandleUploadToOppty(
 
 		docs, err := opptyRepo.GetAllDocuments(oppty, user)
 		if err != nil {
-			fd.AddError("overall", "Unable to retrieve associated documents after submission.")
+			msg := "Unable to retrieve associated documents after submission."
+			logger.Error(msg, "error", err)
+			fd.AddError("overall", msg)
 			retargetAttachmentModal(w, r, *oppty, docs, fd)
 			return
 		}
@@ -207,7 +247,9 @@ func HandleUploadToOppty(
 			_, err := docs[i].GetPresignedDownloadUrl(cfg)
 			if err != nil {
 				w.Header().Add("HX-Retarget", "attachment-modal")
-				fd.AddError("document-table", "Unable to retrieve document URL for download.")
+				msg := "Unable to retrieve document URL for download."
+				logger.Error(msg, "id", docs[i].ID, "error", err)
+				fd.AddError("document-table", msg)
 				retargetAttachmentModal(w, r, *oppty, docs, fd)
 				return
 			}
@@ -251,20 +293,26 @@ func newOpportunityFromRequest(r *http.Request) (*opportunity.Opportunity, error
 	return o, nil
 }
 
-func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document.Repository) http.HandlerFunc {
+func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document.Repository, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, err := userFromRequest(r)
 		if err == nil {
-			helpers.WriteError(w, errors.New("no user available"))
+			msg := "no user available"
+			logger.Error(msg, "error", err)
+			helpers.WriteError(w, errors.New(msg))
 			return
 		}
 		oppty, err := opptyFromRequest(r, opptyRepo, user)
 		var fd helpers.FormData
 		if err != nil {
-			fd.AddError("overall", "Unable to retrieve opportunity.")
+			msg := "Unable to retrieve opportunity."
+			logger.Error(msg, "error", err)
+			fd.AddError("overall", msg)
 			docs, err := docRepo.GetAllUserDocuments(user)
 			if err != nil {
-				fd.AddError("existing-attachment", "Unable to retrieve user docs")
+				msg := "Unable to retrieve user docs"
+				logger.Error(msg, "error", err)
+				fd.AddError("existing-attachment", msg)
 			}
 			retargetAttachmentModal(w, r, *oppty, docs, fd)
 			return
@@ -273,7 +321,9 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 		// Get the selected document from the formdata
 		err = r.ParseForm()
 		if err != nil {
-			fd.AddError("overall", "Unable to parse form")
+			msg := "Unable to parse form"
+			logger.Error(msg, "error", err)
+			fd.AddError("overall", msg)
 			docs, _ := docRepo.GetAllUserDocuments(user)
 			retargetAttachmentModal(w, r, *oppty, docs, fd)
 			return
@@ -291,10 +341,14 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 		}
 		docId, err := strconv.ParseUint(docIdStr, 10, 64)
 		if err != nil {
-			fd.AddError("existing-attachment", "Unable to parse document ID.")
+			msg := "Unable to parse document ID."
+			logger.Error(msg, "error", err)
+			fd.AddError("existing-attachment", msg)
 			docs, err := docRepo.GetAllUserDocuments(user)
 			if err != nil {
-				fd.AddError("overall", "Unable to retrieve user docs")
+				msg := "Unable to retrieve user docs"
+				logger.Error(msg, "error", err)
+				fd.AddError("overall", msg)
 			}
 			retargetAttachmentModal(w, r, *oppty, docs, fd)
 			return
@@ -302,10 +356,14 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 
 		doc, err := docRepo.GetDocumentById(uint(docId), user)
 		if err != nil {
-			fd.AddError("existing-attachment", "Unable to retrieve document to add")
+			msg := "Unable to retrieve document to add"
+			logger.Error(msg, "error", err)
+			fd.AddError("existing-attachment", msg)
 			docs, err := docRepo.GetAllUserDocuments(user)
 			if err != nil {
-				fd.AddError("overall", "Unable to retrieve user docs")
+				msg := "Unable to retrieve user docs"
+				logger.Error(msg, "error", err)
+				fd.AddError("overall", msg)
 			}
 			retargetAttachmentModal(w, r, *oppty, docs, fd)
 			return
@@ -314,10 +372,14 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 		// Associate the existing document with this opportunity
 		err = opptyRepo.AddDocument(oppty, &doc)
 		if err != nil {
-			fd.AddError("existing-attachment", "Unable to add document to opportunity.")
+			msg := "Unable to add document to opportunity."
+			logger.Error(msg, "error", err)
+			fd.AddError("existing-attachment", msg)
 			docs, err := docRepo.GetAllUserDocuments(user)
 			if err != nil {
-				fd.AddError("overall", "Unable to retrieve user docs")
+				msg := "Unable to retrieve user docs"
+				logger.Error(msg, "error", err)
+				fd.AddError("overall", msg)
 			}
 			retargetAttachmentModal(w, r, *oppty, docs, fd)
 			return
@@ -327,14 +389,16 @@ func HandleAddExistingToOppty(opptyRepo opportunity.Repository, docRepo document
 	}
 }
 
-func HandleContactModal(opptyRepo opportunity.Repository) http.HandlerFunc {
+func HandleContactModal(opptyRepo opportunity.Repository, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, err := userFromRequest(r)
 		var fd helpers.FormData
 		if err != nil {
+			logger.Error("Can't get user from request", "error", err)
 			allErrors := err
 			oppty, err := opptyFromRequest(r, opptyRepo, user)
 			if err != nil {
+				logger.Error("Can't get oppty from request", "error", err)
 				allErrors = errors.Join(allErrors, err)
 			}
 			fd.AddError("overall", allErrors.Error())
@@ -344,6 +408,7 @@ func HandleContactModal(opptyRepo opportunity.Repository) http.HandlerFunc {
 
 		oppty, err := opptyFromRequest(r, opptyRepo, user)
 		if err != nil {
+			logger.Error("Can't get oppty from request", "error", err)
 			fd.AddError("overall", err.Error())
 			retargetContactModal(w, r, *oppty, fd)
 			return
@@ -353,23 +418,27 @@ func HandleContactModal(opptyRepo opportunity.Repository) http.HandlerFunc {
 	}
 }
 
-func HandleAttachmentModal(opptyRepo opportunity.Repository, docRepo document.Repository) http.HandlerFunc {
+func HandleAttachmentModal(opptyRepo opportunity.Repository, docRepo document.Repository, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u, err := userFromRequest(r)
 		if err != nil {
-			helpers.WriteError(w, errors.New("invalid user"))
+			msg := "invalid user"
+			logger.Error(msg, "error", err)
+			helpers.WriteError(w, errors.New(msg))
 			return
 		}
 		var fd helpers.FormData
 
 		oppty, err := opptyFromRequest(r, opptyRepo, u)
 		if err != nil {
+			logger.Error("Can't get oppty from request", "error", err)
 			helpers.WriteError(w, err)
 			return
 		}
 
 		userDocs, err := docRepo.GetAllUserDocuments(u)
 		if err != nil {
+			logger.Error("Can't get all user documents", "error", err)
 			helpers.WriteError(w, err)
 			return
 		}
@@ -377,18 +446,21 @@ func HandleAttachmentModal(opptyRepo opportunity.Repository, docRepo document.Re
 	}
 }
 
-func HandleAddNewContactToOppty(opptyRepo opportunity.Repository, contactRepo contact.Repository) http.HandlerFunc {
+func HandleAddNewContactToOppty(opptyRepo opportunity.Repository, contactRepo contact.Repository, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		newContact, err := newContactFromRequest(r)
 		var fd helpers.FormData
 		if err != nil {
+			logger.Error("Can't get contact from request", "error", err)
 			allErrors := err
 			user, err := userFromRequest(r)
 			if err != nil {
+				logger.Error("Can't get user from request", "error", err)
 				allErrors = errors.Join(allErrors, err)
 			}
 			oppty, err := opptyFromRequest(r, opptyRepo, user)
 			if err != nil {
+				logger.Error("Can't get oppty from request", "error", err)
 				allErrors = errors.Join(allErrors, err)
 			}
 			fd.AddError("overall", allErrors.Error())
@@ -398,9 +470,11 @@ func HandleAddNewContactToOppty(opptyRepo opportunity.Repository, contactRepo co
 
 		user, err := userFromRequest(r)
 		if err != nil {
+			logger.Error("Can't get user from request", "error", err)
 			allErrors := err
 			oppty, err := opptyFromRequest(r, opptyRepo, user)
 			if err != nil {
+				logger.Error("Can't get oppty from request", "error", err)
 				allErrors = errors.Join(allErrors, err)
 			}
 			fd.AddError("overall", allErrors.Error())
@@ -410,9 +484,11 @@ func HandleAddNewContactToOppty(opptyRepo opportunity.Repository, contactRepo co
 
 		err = contactRepo.CreateContact(newContact, *user)
 		if err != nil {
+			logger.Error("Error creating contact", "error", err)
 			allErrors := err
 			oppty, err := opptyFromRequest(r, opptyRepo, user)
 			if err != nil {
+				logger.Error("Can't get oppty from request", "error", err)
 				allErrors = errors.Join(allErrors, err)
 			}
 			fd.AddError("overall", allErrors.Error())
@@ -422,6 +498,7 @@ func HandleAddNewContactToOppty(opptyRepo opportunity.Repository, contactRepo co
 
 		oppty, err := opptyFromRequest(r, opptyRepo, user)
 		if err != nil {
+			logger.Error("Can't get oppty from request", "error", err)
 			fd.AddError("overall", err.Error())
 			retargetContactModal(w, r, *oppty, fd)
 			return
@@ -429,6 +506,7 @@ func HandleAddNewContactToOppty(opptyRepo opportunity.Repository, contactRepo co
 
 		err = opptyRepo.AddContact(oppty, *newContact)
 		if err != nil {
+			logger.Error("Can't add contact to oppty", "error", err)
 			fd.AddError("overall", err.Error())
 			retargetContactModal(w, r, *oppty, fd)
 			return
@@ -437,6 +515,7 @@ func HandleAddNewContactToOppty(opptyRepo opportunity.Repository, contactRepo co
 		// db stuff done, it's rendering time
 		contacts, err := opptyRepo.GetAllContacts(oppty)
 		if err != nil {
+			logger.Error("Can't get all oppty contacts", "error", err)
 			fd.AddError("overall", err.Error())
 			retargetContactModal(w, r, *oppty, fd)
 			return
@@ -446,14 +525,16 @@ func HandleAddNewContactToOppty(opptyRepo opportunity.Repository, contactRepo co
 	}
 }
 
-func HandleStatusModal(opptyRepo opportunity.Repository) http.HandlerFunc {
+func HandleStatusModal(opptyRepo opportunity.Repository, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, err := userFromRequest(r)
 		var fd helpers.FormData
 		if err != nil {
+			logger.Error("Can't get user from request", "error", err)
 			fd.AddError("overall", err.Error())
 			oppty, err := opptyFromRequest(r, opptyRepo, user)
 			if err != nil {
+				logger.Error("Can't get oppty from request", "error", err)
 				fd.AddError("overall", err.Error())
 			}
 			retargetStatusModal(w, r, *oppty, fd)
@@ -461,6 +542,7 @@ func HandleStatusModal(opptyRepo opportunity.Repository) http.HandlerFunc {
 		}
 		oppty, err := opptyFromRequest(r, opptyRepo, user)
 		if err != nil {
+			logger.Error("Can't get oppty from request", "error", err)
 			fd.AddError("overall", err.Error())
 			retargetStatusModal(w, r, *oppty, fd)
 			return
@@ -469,18 +551,22 @@ func HandleStatusModal(opptyRepo opportunity.Repository) http.HandlerFunc {
 	}
 }
 
-func HandleUpdateStatus(opptyRepo opportunity.Repository) http.HandlerFunc {
+func HandleUpdateStatus(opptyRepo opportunity.Repository, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var fd helpers.FormData
 		s, err := newStatusFromRequest(r)
 		if s.IsEmpty() || err != nil {
-			fd.AddError("overall", "Unable to update status with provided data")
+			msg := "Unable to update status with provided data"
+			logger.Error(msg, "error", err)
+			fd.AddError("overall", msg)
 			user, err := userFromRequest(r)
 			if err != nil {
+				logger.Error("Can't get user from request", "error", err)
 				fd.AddError("overall", err.Error())
 			}
 			oppty, err := opptyFromRequest(r, opptyRepo, user)
 			if err != nil {
+				logger.Error("Can't get oppty from request", "error", err)
 				fd.AddError("overall", err.Error())
 			}
 			retargetStatusModal(w, r, *oppty, fd)
@@ -488,8 +574,10 @@ func HandleUpdateStatus(opptyRepo opportunity.Repository) http.HandlerFunc {
 		}
 		user, err := userFromRequest(r)
 		if err != nil {
+			logger.Error("Can't get user from request", "error", err)
 			oppty, err := opptyFromRequest(r, opptyRepo, user)
 			if err != nil {
+				logger.Error("Can't get oppty from request", "error", err)
 				fd.AddError("overall", err.Error())
 			}
 			retargetStatusModal(w, r, *oppty, fd)
@@ -497,12 +585,14 @@ func HandleUpdateStatus(opptyRepo opportunity.Repository) http.HandlerFunc {
 		}
 		oppty, err := opptyFromRequest(r, opptyRepo, user)
 		if err != nil {
+			logger.Error("Can't get oppty from request", "error", err)
 			fd.AddError("overall", err.Error())
 			retargetStatusModal(w, r, *oppty, fd)
 			return
 		}
 		err = opptyRepo.UpdateStatus(oppty, *s)
 		if err != nil {
+			logger.Error("Can't update oppty status", "error", err)
 			fd.AddError("overall", err.Error())
 			retargetStatusModal(w, r, *oppty, fd)
 			return
@@ -526,35 +616,40 @@ func HandleUpdateStatus(opptyRepo opportunity.Repository) http.HandlerFunc {
 	}
 }
 
-func HandleGetEditDetailsForm(opptyRepo opportunity.Repository) http.HandlerFunc {
+func HandleGetEditDetailsForm(opptyRepo opportunity.Repository, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var fd helpers.FormData
 		u, err := userFromRequest(r)
 		if err != nil {
+			logger.Error("Can't get user from request", "error", err)
 			fd.AddError("overall", err.Error())
 		}
 		oppty, err := opptyFromRequest(r, opptyRepo, u)
 		if err != nil {
+			logger.Error("Can't get oppty from request", "error", err)
 			fd.AddError("overall", err.Error())
 		}
 		opptydetailspage.OpportunityDetailForm(*oppty, fd).Render(r.Context(), w)
 	}
 }
 
-func HandleUpdate(opptyRepo opportunity.Repository, docRepo document.Repository) http.HandlerFunc {
+func HandleUpdate(opptyRepo opportunity.Repository, docRepo document.Repository, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var fd helpers.FormData
 		var od helpers.OpptyDetails
 		u, err := userFromRequest(r)
 		if err != nil {
+			logger.Error("Can't get user from request", "error", err)
 			fd.AddError("overall", err.Error())
 		}
 		oppty, err := opptyFromRequest(r, opptyRepo, u)
 		if err != nil {
+			logger.Error("Can't get oppty from request", "error", err)
 			fd.AddError("overall", err.Error())
 		}
 		err = updateOpptyFromRequest(r, oppty)
 		if err != nil {
+			logger.Error("Can't update oppty from request", "error", err)
 			fd.AddError("overall", err.Error())
 			// NOTE: If we've got this far, we shouldn't error out here when we
 			// run this query again
@@ -562,6 +657,7 @@ func HandleUpdate(opptyRepo opportunity.Repository, docRepo document.Repository)
 			od.Oppty = *oppty
 			docs, err := opptyRepo.GetAllDocuments(oppty, u)
 			if err != nil {
+				logger.Error("Can't get all documents", "error", err)
 				fd.AddError("overall", err.Error())
 			}
 			opptydetailspage.OpportunityDetailsPage(u, od, docs, fd).Render(r.Context(), w)
@@ -570,6 +666,7 @@ func HandleUpdate(opptyRepo opportunity.Repository, docRepo document.Repository)
 
 		err = opptyRepo.UpdateOpportunity(oppty)
 		if err != nil {
+			logger.Error("Can't update oppty", "error", err)
 			fd.AddError("overall", err.Error())
 			// NOTE: If we've got this far, we shouldn't error out here when we
 			// run this query again
@@ -577,6 +674,7 @@ func HandleUpdate(opptyRepo opportunity.Repository, docRepo document.Repository)
 			od.Oppty = *oppty
 			docs, err := opptyRepo.GetAllDocuments(oppty, u)
 			if err != nil {
+				logger.Error("Can't get all user documents", "error", err)
 				fd.AddError("overall", err.Error())
 			}
 			opptydetailspage.OpportunityDetailsPage(u, od, docs, fd).Render(r.Context(), w)
@@ -586,7 +684,7 @@ func HandleUpdate(opptyRepo opportunity.Repository, docRepo document.Repository)
 	}
 }
 
-func HandleDeleteStatus(statusRepo status.Repository) http.HandlerFunc {
+func HandleDeleteStatus(statusRepo status.Repository, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		statusId := chi.URLParam(r, "statusID")
 		opptyId := chi.URLParam(r, "opportunityId")
@@ -596,41 +694,44 @@ func HandleDeleteStatus(statusRepo status.Repository) http.HandlerFunc {
 	}
 }
 
-func HandleRemoveDocFromOppty(opptyRepo opportunity.Repository, docRepo document.Repository) http.HandlerFunc {
+func HandleRemoveDocFromOppty(opptyRepo opportunity.Repository, docRepo document.Repository, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u, ok := r.Context().Value(user.UserCtxKey).(*user.User)
 		if !ok {
-			fmt.Println("Error getting user from context")
+			msg := "Error getting user from context"
+			logger.Error(msg)
+			fmt.Println(msg)
 			helpers.HTMXRedirect(w, "/home", http.StatusFound)
 			return
 		}
 		opptyId, err := strconv.ParseUint(chi.URLParam(r, "opportunityId"), 10, 64)
 		if err != nil {
-			fmt.Println("Error parsing opportunity ID:", err.Error())
+			msg := "Error parsing opportunity ID"
+			logger.Error(msg, "error", err)
 			helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%d", opptyId), http.StatusFound)
 			return
 		}
 		oppty, err := opptyRepo.GetOpportuntyById(uint(opptyId), u)
 		if err != nil {
-			fmt.Println("Error getting opportunity:", err.Error())
+			logger.Error("Error getting opportunity:", "error", err)
 			helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%d", opptyId), http.StatusFound)
 			return
 		}
 		docId, err := strconv.ParseUint(chi.URLParam(r, "documentId"), 10, 64)
 		if err != nil {
-			fmt.Println("Error parsing document ID:", err.Error())
+			logger.Error("Error parsing document ID:", "error", err)
 			helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%d", opptyId), http.StatusFound)
 			return
 		}
 		doc, err := docRepo.GetDocumentById(uint(docId), u)
 		if err != nil {
-			fmt.Println("Error getting document:", err.Error())
+			logger.Error("Error getting document:", "error", err)
 			helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%d", opptyId), http.StatusFound)
 			return
 		}
 		err = opptyRepo.RemoveDocument(oppty, doc)
 		if err != nil {
-			fmt.Println("Error removing document from oppty:", err.Error())
+			logger.Error("Error removing document from oppty:", "error", err)
 			helpers.HTMXRedirect(w, fmt.Sprintf("/opportunities/%d", opptyId), http.StatusFound)
 			return
 		}
@@ -638,16 +739,20 @@ func HandleRemoveDocFromOppty(opptyRepo opportunity.Repository, docRepo document
 	}
 }
 
-func HandleContactRowForm(contactRepo contact.Repository) http.HandlerFunc {
+func HandleContactRowForm(contactRepo contact.Repository, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var fd helpers.FormData
 		opptyID, err := strconv.ParseUint(chi.URLParam(r, "opportunityId"), 10, 64)
 		if err != nil {
-			fd.AddError("overall", "Cannot parse opportunity ID")
+			msg := "Cannot parse opportunity ID"
+			logger.Error(msg, "error", err)
+			fd.AddError("overall", msg)
 		}
 		contactID, err := strconv.ParseUint(chi.URLParam(r, "contactId"), 10, 64)
 		if err != nil {
-			fd.AddError("overall", "Cannot parse contact ID")
+			msg := "Cannot parse contact ID"
+			logger.Error(msg, "error", err)
+			fd.AddError("overall", msg)
 		}
 		if fd.Errors != nil && fd.Errors["overall"] != nil && len(fd.Errors["overall"]) > 0 {
 			opptydetailspage.ContactTableRowForm(uint(opptyID), uint(contactID), fd).Render(r.Context(), w)
@@ -655,13 +760,17 @@ func HandleContactRowForm(contactRepo contact.Repository) http.HandlerFunc {
 		}
 		u, ok := r.Context().Value(user.UserCtxKey).(*user.User)
 		if !ok {
-			fd.AddError("overall", "No user available")
+			msg := "No user available"
+			logger.Error(msg, "error", err)
+			fd.AddError("overall", msg)
 			opptydetailspage.ContactTableRowForm(uint(opptyID), uint(contactID), fd).Render(r.Context(), w)
 			return
 		}
 		contact, err := contactRepo.GetContactById(uint(contactID), *u)
 		if err != nil {
-			fd.AddError("overall", "Cannot find contact")
+			msg := "Cannot find contact"
+			logger.Error(msg, "error", err)
+			fd.AddError("overall", msg)
 			opptydetailspage.ContactTableRowForm(uint(opptyID), uint(contactID), fd).Render(r.Context(), w)
 			return
 		}
@@ -670,22 +779,31 @@ func HandleContactRowForm(contactRepo contact.Repository) http.HandlerFunc {
 	}
 }
 
-func HandleUpdateContact(contactRepo contact.Repository) http.HandlerFunc {
+func HandleUpdateContact(contactRepo contact.Repository, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var fd helpers.FormData
 		opptyID, err := strconv.ParseUint(chi.URLParam(r, "opportunityId"), 10, 64)
 		if err != nil {
-			fd.AddError("overall", "Cannot parse opportunity ID")
+			msg := "Cannot parse opportunity ID"
+			logger.Error(msg, "error", err)
+			fd.AddError("overall", msg)
 		}
 		contactID, err := strconv.ParseUint(chi.URLParam(r, "contactId"), 10, 64)
 		if err != nil {
-			fd.AddError("overall", "Cannot parse contact ID")
+			msg := "Cannot parse contact ID"
+			logger.Error(msg, "error", err)
+			fd.AddError("overall", msg)
 		}
 		if fd.Errors != nil && fd.Errors["overall"] != nil && len(fd.Errors["overall"]) > 0 {
 			opptydetailspage.ContactTableRowForm(uint(opptyID), uint(contactID), fd)
 			return
 		}
-		r.ParseForm()
+		err = r.ParseForm()
+		if err != nil {
+			msg := "Cannot parse form"
+			logger.Error(msg, "error", err)
+			fd.AddError("overall", msg)
+		}
 		contact := contact.Contact{
 			ID:          uint(contactID),
 			Name:        r.PostForm.Get("contact-name"),
@@ -696,7 +814,9 @@ func HandleUpdateContact(contactRepo contact.Repository) http.HandlerFunc {
 		}
 		err = contactRepo.UpdateContact(contact)
 		if err != nil {
-			fd.AddError("overall", "Cannot update contact")
+			msg := "Cannot update contact"
+			logger.Error(msg, "error", err)
+			fd.AddError("overall", msg)
 			opptydetailspage.ContactTableRowForm(uint(opptyID), uint(contactID), fd)
 			return
 		}
@@ -704,15 +824,17 @@ func HandleUpdateContact(contactRepo contact.Repository) http.HandlerFunc {
 	}
 }
 
-func HandleDeleteContact(contactRepo contact.Repository) http.HandlerFunc {
+func HandleDeleteContact(contactRepo contact.Repository, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var allErr error
 		contactID, err := strconv.ParseUint(chi.URLParam(r, "contactId"), 10, 64)
 		if err != nil {
+			logger.Error("Can't get contactID from url", "error", err)
 			allErr = errors.Join(allErr, err)
 		}
 		opptyID, err := strconv.ParseInt(chi.URLParam(r, "opportunityId"), 10, 64)
 		if err != nil {
+			logger.Error("Can't get opptyID from url", "error", err)
 			allErr = errors.Join(allErr, err)
 		}
 		if allErr != nil {
@@ -722,6 +844,7 @@ func HandleDeleteContact(contactRepo contact.Repository) http.HandlerFunc {
 		}
 		u, ok := r.Context().Value(user.UserCtxKey).(*user.User)
 		if !ok {
+			logger.Error("Invalid user")
 			w.WriteHeader(http.StatusUnauthorized)
 			w.Write([]byte("<tr>Invalid user</tr>"))
 			return
@@ -729,13 +852,17 @@ func HandleDeleteContact(contactRepo contact.Repository) http.HandlerFunc {
 		contact, err := contactRepo.GetContactById(uint(contactID), *u)
 		if err != nil {
 			var fd helpers.FormData
-			fd.AddError("actions", "Error finding contact to delete.")
+			msg := "Error finding contact to delete."
+			logger.Error(msg, "error", err)
+			fd.AddError("actions", msg)
 			opptydetailspage.ContactTableRow(uint(opptyID), contact, fd).Render(r.Context(), w)
 		}
 		err = contactRepo.DeleteContact(uint(opptyID), contact)
 		if err != nil {
 			var fd helpers.FormData
-			fd.AddError("actions", "Error deleting contact.")
+			msg := "Error deleting contact."
+			logger.Error(msg, "error", err)
+			fd.AddError("actions", msg)
 			opptydetailspage.ContactTableRow(uint(opptyID), contact, fd).Render(r.Context(), w)
 		}
 	}

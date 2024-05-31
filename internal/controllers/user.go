@@ -16,11 +16,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func HandleRegisterUser(repo user.Repository) http.HandlerFunc {
+func HandleRegisterUser(repo user.Repository, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		newUserInfo := newUserFromRequest(r)
-		if errorData, err := validateUserInfo(newUserInfo, repo); err != nil {
+		if errorData, err := validateUserInfo(newUserInfo, repo, logger); err != nil {
+			logger.Error("Cannot validate user info", "error", err, "errorData", errorData)
 			data := helpers.FormData{
 				Errors: errorData,
 				Values: newUserInfo,
@@ -37,6 +38,7 @@ func HandleRegisterUser(repo user.Repository) http.HandlerFunc {
 			14,
 		)
 		if err != nil {
+			logger.Error("Could not hash password", "error", err)
 			var data helpers.FormData
 			data.AddError("password", "Invalid password - please try another")
 			data.AddError("passwordRepeat", "Invalid password - please try another")
@@ -47,6 +49,7 @@ func HandleRegisterUser(repo user.Repository) http.HandlerFunc {
 		u.Password = string(pwHash)
 
 		if err = repo.CreateUser(u); err != nil {
+			logger.Error("Could not create user", "error", err)
 			var data helpers.FormData
 			data.AddError("overall", "Error creating user")
 			data.Values = newUserInfo
@@ -57,6 +60,7 @@ func HandleRegisterUser(repo user.Repository) http.HandlerFunc {
 		var data helpers.FormData
 		data.AddError("overall", "You're registered! <a href='/login'>Login</a> using these credentials.")
 		signuppage.SignupPage(nil, data).Render(r.Context(), w)
+		logger.Info("Successfully signed up user")
 	}
 }
 
@@ -87,6 +91,7 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository, l
 		)
 
 		if err != nil {
+			logger.Error("Could not get user", "error", err)
 			var f helpers.FormData
 			f.AddError("overall", "Unable to log in - please try again")
 			loginpage.LoginPage(nil, f).Render(r.Context(), w)
@@ -97,6 +102,7 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository, l
 			[]byte(user.Password),
 			[]byte(newUserInfo["password"]),
 		); err != nil {
+			logger.Error("Password compare failed", "error", err)
 			var f helpers.FormData
 			f.AddError("overall", "Unable to log in - please try again")
 			loginpage.LoginPage(nil, f).Render(r.Context(), w)
@@ -138,11 +144,13 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository, l
 				http.SetCookie(w, cookie)
 				oldUuid, err := uuid.Parse(cookie.Value)
 				if err != nil {
+					logger.Error("Error parsing uuid from cookie", "error", err)
 					helpers.WriteError(w, err)
 					return
 				}
 				err = sessionRepo.DeleteSessionByUUID(oldUuid)
 				if err != nil {
+					logger.Error("Error deleting old session", "error", err)
 					helpers.WriteError(w, err)
 					return
 				}
@@ -175,7 +183,7 @@ func newUserFromRequest(r *http.Request) map[string]string {
 	return newUserInfo
 }
 
-func validateUserInfo(userInfo map[string]string, repo user.Repository) (map[string][]string, error) {
+func validateUserInfo(userInfo map[string]string, repo user.Repository, logger *slog.Logger) (map[string][]string, error) {
 	errorData := make(map[string][]string)
 	errorMessages := []string{}
 
@@ -226,6 +234,7 @@ func validateUserInfo(userInfo map[string]string, repo user.Repository) (map[str
 	}
 
 	if err != nil && err != sql.ErrNoRows {
+		logger.Error("Could not validate user", "error", err)
 		errorMessage := "Error validating username and email"
 		errorData["email"] = []string{errorMessage}
 		errorData["username"] = []string{errorMessage}

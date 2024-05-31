@@ -3,6 +3,7 @@ package controllers
 import (
 	"bytes"
 	"errors"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -15,7 +16,7 @@ import (
 	"github.com/pmwals09/yobs/web/opportunity-details"
 )
 
-func HandleStatusRowForm(statusRepo status.Repository) http.HandlerFunc {
+func HandleStatusRowForm(statusRepo status.Repository, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		statusId := chi.URLParam(r, "statusID")
 		id, err := strconv.ParseUint(statusId, 10, 64)
@@ -24,7 +25,9 @@ func HandleStatusRowForm(statusRepo status.Repository) http.HandlerFunc {
 		err = errors.Join(err, oErr)
 		var fd helpers.FormData
 		if err != nil {
-			fd.AddError("overall", "Problem parsing status ID from path")
+			msg := "Problem parsing status ID from path"
+			logger.Error(msg, "error", err)
+			fd.AddError("overall", msg)
 			var status status.Status
 			opportunitydetailspage.StatusTableRowForm(uint(opptyId), status, fd).Render(r.Context(), w)
 			return
@@ -32,7 +35,9 @@ func HandleStatusRowForm(statusRepo status.Repository) http.HandlerFunc {
 		}
 		status, err := statusRepo.GetStatusByID(uint(id))
 		if err != nil {
-			fd.AddError("overall", "Problem getting status by ID")
+			msg := "Problem getting status by ID"
+			logger.Error(msg, "error", err)
+			fd.AddError("overall", msg)
 			opportunitydetailspage.StatusTableRowForm(uint(opptyId), status, fd).Render(r.Context(), w)
 			return
 		}
@@ -42,7 +47,7 @@ func HandleStatusRowForm(statusRepo status.Repository) http.HandlerFunc {
 	}
 }
 
-func HandleUpdateStatusItem(statusRepo status.Repository, opptyRepo opportunity.Repository) http.HandlerFunc {
+func HandleUpdateStatusItem(statusRepo status.Repository, opptyRepo opportunity.Repository, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var fd helpers.FormData
 
@@ -53,8 +58,15 @@ func HandleUpdateStatusItem(statusRepo status.Repository, opptyRepo opportunity.
 		opptyId, oErr := strconv.ParseUint(opportunityId, 10, 64)
 		err = errors.Join(err, oErr)
 		if err != nil {
-			fd.AddError("overall", "Error parsing IDs from route")
-			r.ParseForm()
+			msg := "Error parsing IDs from route"
+			logger.Error(msg, "error", err)
+			fd.AddError("overall", msg)
+			err := r.ParseForm()
+			if err != nil {
+				msg := "Error parsing form"
+				fd.AddError("overall", msg)
+				logger.Error(msg, "error", err)
+			}
 			fd.Values = map[string]string{
 				"status-name": r.PostForm.Get("status-name"),
 				"status-date": r.PostForm.Get("status-date"),
@@ -70,8 +82,15 @@ func HandleUpdateStatusItem(statusRepo status.Repository, opptyRepo opportunity.
 		// get the updated status form data from the request
 		s, err := statusFromRequest(r)
 		if err != nil {
-			fd.AddError("overall", "Error parsing status data")
-			r.ParseForm()
+			msg := "Error parsing status data"
+			logger.Error(msg, "error", err)
+			fd.AddError("overall", msg)
+			err := r.ParseForm()
+			if err != nil {
+				msg := "Error parsing form"
+				fd.AddError("overall", msg)
+				logger.Error(msg, "error", err)
+			}
 			fd.Values = map[string]string{
 				"status-name": r.PostForm.Get("status-name"),
 				"status-date": r.PostForm.Get("status-date"),
@@ -88,7 +107,9 @@ func HandleUpdateStatusItem(statusRepo status.Repository, opptyRepo opportunity.
 		// attempt to upate the resource in the database
 		err = statusRepo.UpdateStatus(s)
 		if err != nil {
-			fd.AddError("overall", "Error updating status in database")
+			msg := "Error updating status in database"
+			logger.Error(msg, "error", err)
+			fd.AddError("overall", msg)
 			fd.Values = map[string]string{
 				"status-name": s.Name,
 				"status-date": s.Date.Format(time.DateOnly),
@@ -101,11 +122,13 @@ func HandleUpdateStatusItem(statusRepo status.Repository, opptyRepo opportunity.
 		buf := new(bytes.Buffer)
 		u, ok := r.Context().Value(user.UserCtxKey).(*user.User)
 		if !ok {
+			logger.Error("No user in ctx")
 			w.Write(buf.Bytes())
 			return
 		}
 		oppty, err := opptyRepo.GetOpportuntyById(uint(opptyId), u)
 		if err != nil {
+			logger.Error("Problem getting opportunity by ID", "error", err)
 			w.Write(buf.Bytes())
 			return
 		}

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	helpers "github.com/pmwals09/yobs/internal"
@@ -9,9 +10,13 @@ import (
 	"github.com/pmwals09/yobs/web/profile"
 )
 
-func HandleGetProfilePage() http.HandlerFunc {
+func HandleGetProfilePage(logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		u := r.Context().Value(user.UserCtxKey).(*user.User)
+		u, ok := r.Context().Value(user.UserCtxKey).(*user.User)
+		if !ok {
+			logger.Error("No user in ctx")
+			http.Redirect(w, r, "/", http.StatusUnauthorized)
+		}
 		pa := helpers.ProfileArgs{
 			Username: u.Username,
 			Email:    u.Email,
@@ -20,10 +25,11 @@ func HandleGetProfilePage() http.HandlerFunc {
 	}
 }
 
-func HandleGetBasicProfileForm() http.HandlerFunc {
+func HandleGetBasicProfileForm(logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		u, ok := r.Context().Value(user.UserCtxKey).(*user.User)
 		if !ok {
+			logger.Error("No user in context")
 			http.Redirect(w, r, "/", http.StatusUnauthorized)
 			return
 		}
@@ -35,17 +41,19 @@ func HandleGetBasicProfileForm() http.HandlerFunc {
 	}
 }
 
-func HandleUpdateProfile(userRepo user.Repository) http.HandlerFunc {
+func HandleUpdateProfile(userRepo user.Repository, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var newUser user.User
 		err := r.ParseForm()
 		if err != nil {
+			logger.Error("Problem parsing form", "error", err)
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("<p class='text-red-600>Error parsing form</p>"))
 			return
 		}
 		u, ok := r.Context().Value(user.UserCtxKey).(*user.User)
 		if !ok {
+			logger.Error("No user in context")
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte("<p class='text-red-600>Error getting valid user</p>"))
 			return
@@ -60,6 +68,7 @@ func HandleUpdateProfile(userRepo user.Repository) http.HandlerFunc {
 		fmt.Printf("%+v\n", newUser)
 		err = userRepo.UpdateUser(&newUser)
 		if err != nil {
+			logger.Error("Problem updating user", "error", err)
 			var fd helpers.FormData
 			fd.AddError("overall", "Error updating user information")
 			profilepage.ProfilePageForm(fd).Render(r.Context(), w)
