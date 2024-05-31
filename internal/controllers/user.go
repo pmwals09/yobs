@@ -3,6 +3,7 @@ package controllers
 import (
 	"database/sql"
 	"errors"
+	"log/slog"
 	"net/http"
 	"strings"
 
@@ -59,7 +60,7 @@ func HandleRegisterUser(repo user.Repository) http.HandlerFunc {
 	}
 }
 
-func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository) http.HandlerFunc {
+func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository, logger *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.ParseForm()
 		newUserInfo := newUserFromRequest(r)
@@ -102,12 +103,19 @@ func HandleLogInUser(userRepo user.Repository, sessionRepo session.Repository) h
 			return
 		}
 
-		// NOTE: I don't like this arrangement. It would be really easy to create
-		// a session object, but not insert it into the database before sending a
-		// cookie to the browser
 		s := session.New()
 		s.WithUser(user)
-		sessionRepo.CreateSession(s)
+		err = sessionRepo.CreateSession(s)
+		if err != nil {
+			logger.Error("Unable to create a session", "error", err.Error())
+			var f helpers.FormData
+			f.AddError("overall", "Unable to log in - please try again")
+			f.AddValue("password", newUserInfo["password"])
+			f.AddValue("usernameOrEmail", newUserInfo["username-or-email"])
+			loginpage.LoginPage(nil, f).Render(r.Context(), w)
+			return
+
+		}
 		cName := "yobs"
 		c := http.Cookie{
 			Name:     cName,

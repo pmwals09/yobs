@@ -60,7 +60,7 @@ func main() {
 	r.Get("/login", controllers.HandleGetLoginPage())
 	r.Route("/user", func(r chi.Router) {
 		r.Post("/register", controllers.HandleRegisterUser(&userRepo))
-		r.Post("/login", controllers.HandleLogInUser(&userRepo, &sessionRepo))
+		r.Post("/login", controllers.HandleLogInUser(&userRepo, &sessionRepo, logger))
 		r.Get("/logout", controllers.HandleLogout(&sessionRepo))
 	})
 	r.Mount("/", authenticatedRouter(&opptyRepo, &docRepo, &sessionRepo, &userRepo, &contactRepo, &statusRepo, logger))
