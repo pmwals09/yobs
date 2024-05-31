@@ -2,6 +2,7 @@ package session
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -76,13 +77,17 @@ func (sm *SessionModel) GetSessionByUUID(uuid uuid.UUID) (*Session, error) {
   `,
 		uuid)
 	var session Session
+	var initTime string
+	var expiryTime string
 	err := row.Scan(
 		&session.ID,
 		&session.UUID,
-		&session.InitTime,
-		&session.Expiration,
+		&initTime,
+		&expiryTime,
 		&session.UserID,
 	)
+	fmt.Println(initTime)
+	fmt.Println(expiryTime)
 
 	return &session, err
 }
