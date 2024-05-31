@@ -62,14 +62,22 @@ func (sm StatusModel) GetStatusByID(id uint) (Status, error) {
 			date
 		FROM statuses WHERE id = ?;
 	`, id)
+	var dateStr string
 	err := res.Scan(
 		&out.ID,
 		&out.Name,
 		&out.Note,
-		&out.Date)
+		&dateStr)
 	if err != nil {
 		return out, err
 	}
+
+	if t, err := time.Parse(time.DateOnly, dateStr); err != nil {
+		return out, err
+	} else {
+		out.Date = t
+	}
+
 	return out, nil
 }
 

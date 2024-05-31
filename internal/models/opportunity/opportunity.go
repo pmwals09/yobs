@@ -184,6 +184,7 @@ func (g *OpportunityModel) GetOpportuntyById(opptyId uint, user *user.User) (*Op
 	}
 	for res.Next() {
 		var nStatus NullableStatus
+		var dateStr string
 		err := res.Scan(
 			&oppty.ID,
 			&oppty.CompanyName,
@@ -193,9 +194,14 @@ func (g *OpportunityModel) GetOpportuntyById(opptyId uint, user *user.User) (*Op
 			&nStatus.ID,
 			&nStatus.Name,
 			&nStatus.Note,
-			&nStatus.Date)
+			&dateStr)
 		if err != nil {
 			return &oppty, err
+		}
+		if t, err := time.Parse(time.DateOnly, dateStr); err != nil {
+			return &oppty, err
+		} else {
+			nStatus.Date = sql.NullTime{Time: t, Valid: true}
 		}
 		if status, ok := nStatus.ToStatus(); ok {
 			oppty.Statuses = append(oppty.Statuses, status)
@@ -231,6 +237,7 @@ func (g *OpportunityModel) GetAllOpportunities(user *user.User) ([]Opportunity, 
 	for rows.Next() {
 		var oppty Opportunity
 		var nStatus NullableStatus
+		var dateStr string
 		err := rows.Scan(
 			&oppty.ID,
 			&oppty.CompanyName,
@@ -240,9 +247,14 @@ func (g *OpportunityModel) GetAllOpportunities(user *user.User) ([]Opportunity, 
 			&nStatus.ID,
 			&nStatus.Name,
 			&nStatus.Note,
-			&nStatus.Date)
+			&dateStr)
 		if err != nil {
 			return opptys, err
+		}
+		if t, err := time.Parse(time.DateOnly, dateStr); err != nil {
+			return opptys, err
+		} else {
+			nStatus.Date = sql.NullTime{ Time: t, Valid: true }
 		}
 		if val, ok := opptyMap[oppty.ID]; ok {
 			if status, sOk := nStatus.ToStatus(); sOk {

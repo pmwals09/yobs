@@ -76,13 +76,30 @@ func (sm *SessionModel) GetSessionByUUID(uuid uuid.UUID) (*Session, error) {
   `,
 		uuid)
 	var session Session
+	var initTimeStr string
+	var expirationStr string
 	err := row.Scan(
 		&session.ID,
 		&session.UUID,
-		&session.InitTime,
-		&session.Expiration,
+		&initTimeStr,
+		&expirationStr,
 		&session.UserID,
 	)
+	if err != nil {
+		return &session, err
+	}
+
+	if t, err := time.Parse(time.RFC3339, initTimeStr); err != nil {
+		return &session, err
+	} else {
+		session.InitTime = t
+	}
+
+	if t, err := time.Parse(time.RFC3339, expirationStr); err != nil {
+		return &session, err
+	} else {
+		session.Expiration = t
+	}
 
 	return &session, err
 }
