@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS opportunities (
   role TEXT,
   description TEXT,
   url TEXT,
-  application_date DATETIME,
+  application_date TEXT,
   status TEXT,
   user_id INTEGER NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id)

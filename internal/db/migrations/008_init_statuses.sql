@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS statuses (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   name TEXT,
   note TEXT,
-  date DATETIME,
+  date TEXT,
   opportunity_id INTEGER NOT NULL,
   FOREIGN KEY (opportunity_id) REFERENCES opportunities(id)
   ON DELETE CASCADE
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS opportunities_old (
   role TEXT,
   description TEXT,
   url TEXT,
-  application_date DATETIME,
+  application_date TEXT,
   status TEXT,
   user_id INTEGER NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id)
@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS opportunities (
   role TEXT,
   description TEXT,
   url TEXT,
-  application_date DATETIME,
+  application_date TEXT,
   status TEXT,
   user_id INTEGER NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id)
