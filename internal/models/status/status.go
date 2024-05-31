@@ -81,6 +81,6 @@ func (sm StatusModel) UpdateStatus(s Status) error {
 			date = ?,
 			note = ?
 		WHERE id = ?;
-	`, s.Name, s.Date, s.Note, s.ID)
+	`, s.Name, s.Date.Format(time.DateOnly), s.Note, s.ID)
 	return err
 }

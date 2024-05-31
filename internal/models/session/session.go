@@ -57,8 +57,8 @@ func (sm *SessionModel) CreateSession(s *Session) error {
     ) VALUES ( ?, ?, ?, ? );
   `,
 		s.UUID,
-		s.InitTime,
-		s.Expiration,
+		s.InitTime.Format(time.RFC3339),
+		s.Expiration.Format(time.RFC3339),
 		s.UserID,
 	)
 
@@ -86,8 +86,6 @@ func (sm *SessionModel) GetSessionByUUID(uuid uuid.UUID) (*Session, error) {
 		&expiryTime,
 		&session.UserID,
 	)
-	fmt.Println(initTime)
-	fmt.Println(expiryTime)
 
 	return &session, err
 }

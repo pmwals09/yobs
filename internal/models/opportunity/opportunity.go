@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/pmwals09/yobs/internal/models/contact"
 	"github.com/pmwals09/yobs/internal/models/document"
@@ -139,7 +140,7 @@ func (g *OpportunityModel) CreateOpportunity(opp *Opportunity) error {
 `,
 		opp.Statuses[0].Name,
 		opp.Statuses[0].Note,
-		opp.Statuses[0].Date,
+		opp.Statuses[0].Date.Format(time.DateOnly),
 		id)
 	if err != nil {
 		return txError(tx, err)
@@ -392,7 +393,7 @@ func (g *OpportunityModel) UpdateStatus(oppty *Opportunity, status status.Status
 `,
 		status.Name,
 		status.Note,
-		status.Date,
+		status.Date.Format(time.DateOnly),
 		oppty.ID)
 	return err
 }
