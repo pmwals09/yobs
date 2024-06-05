@@ -111,7 +111,7 @@ func (sm *SessionModel) UpdateSession(s *Session) error {
     UPDATE sessions
     SET expiration = ?
     WHERE id = ?
-  `, s.Expiration, s.ID)
+  `, s.Expiration.Format(time.RFC3339), s.ID)
 
 	return err
 }

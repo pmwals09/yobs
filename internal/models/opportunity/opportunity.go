@@ -116,7 +116,7 @@ func (g *OpportunityModel) CreateOpportunity(opp *Opportunity) error {
 			description,
 			url,
 			user_id
-		) VALUES (?, ?, ?, ?, ?, ?);
+		) VALUES (?, ?, ?, ?, ?);
 	`,
 		opp.CompanyName,
 		opp.Role,
