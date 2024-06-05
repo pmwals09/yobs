@@ -12,7 +12,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.10
 	github.com/google/uuid v1.3.1
 	github.com/joho/godotenv v1.5.1
-	github.com/tursodatabase/go-libsql v0.0.0-20240429120401-651096bbee0b
+	github.com/tursodatabase/libsql-client-go v0.0.0-20240416075003-747366ff79c4
 	golang.org/x/crypto v0.13.0
 )
 
@@ -35,4 +35,5 @@ require (
 	github.com/aws/smithy-go v1.14.2 // indirect
 	github.com/libsql/sqlite-antlr4-parser v0.0.0-20240327125255-dbf53b6cbf06 // indirect
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8 // indirect
+	nhooyr.io/websocket v1.8.10 // indirect
 )

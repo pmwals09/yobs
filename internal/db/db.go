@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/pmwals09/yobs/internal/config"
-	_ "github.com/tursodatabase/go-libsql"
+	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
 
 func InitDb(cfg config.Config) (*sql.DB, error) {
