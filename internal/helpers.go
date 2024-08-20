@@ -3,6 +3,7 @@ package helpers
 import (
 	"fmt"
 	"html/template"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -66,4 +67,9 @@ type OpptyDetails struct {
 	Oppty     opportunity.Opportunity
 	Documents []document.Document
 	Contacts  []contact.Contact
+}
+
+func logError(msg string, logger slog.Logger) {
+	logger.Error(msg)
+
 }
