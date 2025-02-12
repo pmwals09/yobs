@@ -2,3 +2,7 @@
 *.db
 tmp/
 aats
+.DS_Store
+*.db
+*_templ.go
+build

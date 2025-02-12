@@ -1,0 +1,23 @@
+[Unit]
+Description=AATS Service
+After=network.target
+
+[Service]
+# The Linux user that will run the service
+User=admin
+Group=admin
+
+# The path to your Go binary
+ExecStart=/home/admin/aats/build
+
+# Automatically restart service if it fails
+Restart=always
+RestartSec=5s
+
+# Inherit or set environment variables
+EnvironmentFile=/home/admin/aats/.env
+
+[Install]
+WantedBy=multi-user.target
+
+

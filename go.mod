@@ -1,11 +1,11 @@
 module github.com/pmwals09/yobs
 
-go 1.21
+go 1.23
 
-toolchain go1.22.2
+toolchain go1.23.4
 
 require (
-	github.com/a-h/templ v0.2.680
+	github.com/a-h/templ v0.3.833
 	github.com/aws/aws-sdk-go-v2 v1.21.0
 	github.com/aws/aws-sdk-go-v2/config v1.18.40
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.38.5
