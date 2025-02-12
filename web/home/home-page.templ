@@ -16,31 +16,31 @@ templ HomePage(user *user.User, opportunities []opportunity.Opportunity, f helpe
 	<table class="table-auto border-collapse w-full" id="main-content">
 		<thead>
 			<tr>
-				<th class="border-b text-left">Company Name</th>
-				<th class="border-b text-left">Role</th>
-				<th class="border-b text-left">URL</th>
-				<th class="border-b text-left">Status</th>
-				<th class="border-b text-left">Application Date</th>
-				<th class="border-b text-left">Actions</th>
+				<th class="border-b border-gray-200 text-left p-px">Company Name</th>
+				<th class="border-b border-gray-200 text-left p-px">Role</th>
+				<th class="border-b border-gray-200 text-left p-px">URL</th>
+				<th class="border-b border-gray-200 text-left p-px">Status</th>
+				<th class="border-b border-gray-200 text-left p-px">Application Date</th>
+				<th class="border-b border-gray-200 text-left p-px">Actions</th>
 			</tr>
 		</thead>
 		<tbody>
 			for _, o := range opportunities {
 			<tr class="hover:bg-sky-100">
-				<td class="border-b">{ o.CompanyName }</td>
-				<td class="border-b">{ o.Role }</td>
-				<td class="border-b">{ o.URL }</td>
+				<td class="border-b border-gray-200 p-px">{ o.CompanyName }</td>
+				<td class="border-b border-gray-200 p-px">{ o.Role }</td>
+				<td class="border-b border-gray-200 p-px">{ o.URL }</td>
 				if o.Statuses != nil && len(o.Statuses) > 0 {
-				<td class="border-b">{ string(o.Statuses[0].Name) }</td>
+				<td class="border-b border-gray-200 p-px">{ string(o.Statuses[0].Name) }</td>
 				} else {
-				<td class="border-b"></td>
+				<td class="border-b border-gray-200 p-px"></td>
 				}
 				if o.Statuses != nil && len(o.Statuses) > 0 {
-				<td class="border-b">{ templates.FormatApplicationDate(o.Statuses[0].Date) }</td>
+				<td class="border-b border-gray-200 p-px">{ templates.FormatApplicationDate(o.Statuses[0].Date) }</td>
 				} else {
-				<td class="border-b"></td>
+				<td class="border-b border-gray-200 p-px"></td>
 				}
-				<td class="border-b flex gap-2">
+				<td class="border-b border-gray-200 flex gap-2 p-px">
 					<a class="btn" href={ templates.InsertIDIntoHref("opportunities/{}", o.ID) }>
 						Details
 					</a>

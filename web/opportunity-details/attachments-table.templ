@@ -10,21 +10,21 @@ templ AttachmentsTable(opptyId uint, documents []document.Document) {
 	<table class="table-auto border-collapse w-full mb-4" id="attachments-table">
 		<thead>
 			<tr>
-				<th class="border-b text-left">Title</th>
-				<th class="border-b text-left">Type</th>
-				<th class="border-b text-left">File Name</th>
+				<th class="border-b border-gray-200 text-left p-px">Title</th>
+				<th class="border-b border-gray-200 text-left p-px">Type</th>
+				<th class="border-b border-gray-200 text-left p-px">File Name</th>
 				<th></th>
 			</tr>
 		</thead>
 		<tbody>
 			for _, doc := range documents {
 				<tr class="hover:bg-sky-100">
-					<td class="border-b">{ doc.Title }</td>
-					<td class="border-b">{ string(doc.Type) }</td>
-					<td class="border-b">
+					<td class="border-b border-gray-200 p-px">{ doc.Title }</td>
+					<td class="border-b border-gray-200 p-px">{ string(doc.Type) }</td>
+					<td class="border-b border-gray-200 p-px">
 						<a href={ templ.URL(doc.URL) }>{ doc.FileName }</a>
 					</td>
-					<td class="border-b">
+					<td class="border-b border-gray-200 p-px">
 						<button hx-delete={ fmt.Sprintf("/opportunities/%d/documents/%d", opptyId, doc.ID) } hx-trigger="click"
 						class="bg-gray-400 px-4 py-2 rounded-full mx-auto block hover:cursor-pointer"
 						>

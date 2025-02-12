@@ -6,3 +6,6 @@ aats
 *.db
 *_templ.go
 build
+node_modules/
+static/js/build.js
+static/css/build.css

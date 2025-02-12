@@ -10,12 +10,12 @@ import (
 
 templ ContactTableRow(opptyID uint, contact contact.Contact, fd helpers.FormData) {
 	<tr>
-		<td class="border-b">{ contact.Name }</td>
-		<td class="border-b">{ contact.CompanyName }</td>
-		<td class="border-b">{ contact.Title }</td>
-		<td class="border-b">{ contact.Phone }</td>
-		<td class="border-b">{ contact.Email }</td>
-		<td class="border-b flex justify-end gap-x-2">
+		<td class="border-b border-gray-200 p-px">{ contact.Name }</td>
+		<td class="border-b border-gray-200 p-px">{ contact.CompanyName }</td>
+		<td class="border-b border-gray-200 p-px">{ contact.Title }</td>
+		<td class="border-b border-gray-200 p-px">{ contact.Phone }</td>
+		<td class="border-b border-gray-200 p-px">{ contact.Email }</td>
+		<td class="border-b border-gray-200 flex justify-end gap-x-2 p-px">
 			<button
 				hx-get={ fmt.Sprintf("/opportunities/%d/contacts/%d/contact-row-form", opptyID, contact.ID) }
 				hx-swap="outerHTML"

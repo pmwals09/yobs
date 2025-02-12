@@ -8,9 +8,8 @@ templ Base(user *user.User) {
 	<!DOCTYPE html>
 	<html>
 		<head>
-			<script src="https://unpkg.com/htmx.org@1.9.5"></script>
-			<!-- Will need to host this file ourselves instead of the CDN -->
-			<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+			<script src="/static/js/build.js"></script>
+			<link rel="stylesheet" href="/static/css/build.css" />
 		</head>
 		<body class="w-4/5 mx-auto" hx-boost>
 			<nav class="flex justify-between">

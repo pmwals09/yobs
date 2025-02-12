@@ -9,22 +9,22 @@ import (
 
 templ ContactTableRowForm(opptyID, contactID uint, fd helpers.FormData) {
 	<tr>
-		<td class="border-b">
+		<td class="border-b border-gray-200">
 			<input name="contact-name" value={ fd.Values["contact-name"] }/>
 		</td>
-		<td class="border-b">
+		<td class="border-b border-gray-200">
 			<input name="contact-company-name" value={ fd.Values["contact-company-name"] }/>
 		</td>
-		<td class="border-b">
+		<td class="border-b border-gray-200">
 			<input name="contact-title" value={ fd.Values["contact-title"] }/>
 		</td>
-		<td class="border-b">
+		<td class="border-b border-gray-200">
 			<input name="contact-phone" value={ fd.Values["contact-phone"] }/>
 		</td>
-		<td class="border-b">
+		<td class="border-b border-gray-200">
 			<input name="contact-email" value={ fd.Values["contact-email"] }/>
 		</td>
-		<td class="border-b flex justify-end gap-x-2">
+		<td class="border-b border-gray-200 flex justify-end gap-x-2">
 			<button
 				hx-put={ fmt.Sprintf("/opportunities/%d/contacts/%d", opptyID, contactID) }
 				hx-include="closest tr"

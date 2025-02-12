@@ -10,18 +10,18 @@ import (
 
 templ StatusTableRowForm(opptyId uint, s status.Status, fd helpers.FormData) {
 	<tr>
-		<td class="border-b">
+		<td class="border-b border-gray-200">
 			@AvailableStatusesCombo(fd.Values["status-name"], fd.Errors["status-name"])
 		</td>
-		<td class="border-b">
+		<td class="border-b border-gray-200">
 			<input name="status-date" value={ fd.Values["status-date"] } type="date"/>
 			@templates.RenderStandardError(fd.Errors["status-date"])
 		</td>
-		<td class="border-b">
+		<td class="border-b border-gray-200">
 			<textarea value={ fd.Values["status-note"] }></textarea>
 			@templates.RenderStandardError(fd.Errors["status-note"])
 		</td>
-		<td class="border-b">
+		<td class="border-b border-gray-200">
 			<button
 				hx-put={ fmt.Sprintf("/opportunities/%d/statuses/%d", opptyId, s.ID) }
 				hx-include="closest tr"

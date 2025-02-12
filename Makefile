@@ -6,6 +6,8 @@ format:
 
 .PHONY: templ-gen
 templ-gen:
+	yarn build:tw
+	yarn build:js
 	templ generate
 
 .PHONY: build

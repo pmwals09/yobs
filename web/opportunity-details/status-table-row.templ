@@ -8,10 +8,10 @@ import (
 
 templ StatusTableRow(opptyID uint, s status.Status) {
 	<tr>
-		<td class="border-b">{ s.Name }</td>
-		<td class="border-b">{ templates.FormatApplicationDate(s.Date) }</td>
-		<td class="border-b">{ s.Note }</td>
-		<td class="border-b flex justify-end gap-x-2">
+		<td class="border-b border-gray-200 p-px">{ s.Name }</td>
+		<td class="border-b border-gray-200 p-px">{ templates.FormatApplicationDate(s.Date) }</td>
+		<td class="border-b border-gray-200 p-px">{ s.Note }</td>
+		<td class="border-b border-gray-200 flex justify-end gap-x-2 p-px">
 			<button
 				hx-get={ fmt.Sprintf("/opportunities/%d/statuses/%d/status-row-form", opptyID, s.ID) }
 				hx-swap="outerHTML"

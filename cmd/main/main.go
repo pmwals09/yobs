@@ -21,6 +21,7 @@ import (
 	"github.com/pmwals09/yobs/internal/models/session"
 	"github.com/pmwals09/yobs/internal/models/status"
 	"github.com/pmwals09/yobs/internal/models/user"
+	"github.com/pmwals09/yobs/static"
 )
 
 func main() {
@@ -53,6 +54,11 @@ func main() {
 	sessionRepo := session.SessionModel{DB: sqlDb}
 	contactRepo := contact.ContactModel{DB: sqlDb}
 	statusRepo := status.StatusModel{DB: sqlDb}
+
+	r.Get("/static/*", func(w http.ResponseWriter, r *http.Request) {
+		http.StripPrefix("/static",
+			http.FileServerFS(static.StaticFS)).ServeHTTP(w, r)
+	})
 
 	r.Get("/", controllers.HandleGetLandingPage(logger))
 	r.Get("/ping", controllers.HandlePing)
