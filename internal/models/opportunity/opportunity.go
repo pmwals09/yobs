@@ -254,7 +254,7 @@ func (g *OpportunityModel) GetAllOpportunities(user *user.User) ([]Opportunity, 
 		if t, err := time.Parse(time.DateOnly, dateStr); err != nil {
 			return opptys, err
 		} else {
-			nStatus.Date = sql.NullTime{ Time: t, Valid: true }
+			nStatus.Date = sql.NullTime{Time: t, Valid: true}
 		}
 		if val, ok := opptyMap[oppty.ID]; ok {
 			if status, sOk := nStatus.ToStatus(); sOk {
